@@ -41,6 +41,10 @@ public class SelectRoomPanel extends JPanel {
                 if (parent instanceof JPanel) {
                     CardLayout cl = (CardLayout) parent.getLayout();
                     cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+
+
+                    // GameRoomPanel로 이동 후 MessageDialog 호출
+                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
                 }
             }
         });

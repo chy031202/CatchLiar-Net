@@ -47,6 +47,7 @@ public class Client {
     private void buildGUI() {
         //패널 관리를 위한 카드레이아웃
         mainPanel = new JPanel(new CardLayout());
+        //GameRoomPanel gameRoomPanel = new GameRoomPanel(frame);
 
         JPanel displaypanel = createDisplayPanel();
         mainPanel.add(displaypanel, "displayPanel");
@@ -55,7 +56,7 @@ public class Client {
         SelectRoomPanel selectRoomPanel = new SelectRoomPanel();
         mainPanel.add(selectRoomPanel, "selectRoomPanel");
 
-        GameRoomPanel gameRoomPanel = new GameRoomPanel();
+        GameRoomPanel gameRoomPanel = new GameRoomPanel(frame);
         mainPanel.add(gameRoomPanel, "gameRoomPanel");
 
         frame.add(mainPanel);
