@@ -2,14 +2,29 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 
 public class Client {
+
+    Server server = new Server(0);
     private JFrame frame;
     private Socket socket;
+
     private JTextField t_nickname;
+    private JTextField t_hostAddr;
+    private JTextField t_portNum;
+
+    private Thread receiveThread = null;
+
     private JButton b_start;
     private JPanel mainPanel;
+
+    private String serverAddress ="localhost";
+    private int serverPort;
 
     public static void main(String[] args) {
         String serverAddress = "localhost";
@@ -22,8 +37,8 @@ public class Client {
     public Client(String serverAddress, int serverPort){
         frame = new JFrame("Client");
 
-//        this.serverAddress = serverAddress;
-//        this.serverPort = serverPort;
+        this.serverAddress = serverAddress;
+        this.serverPort = serverPort;
         frame.setBounds(50, 200, 600, 400);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -50,6 +65,9 @@ public class Client {
         JPanel display = new JPanel();
         display.setLayout(new BoxLayout(display, BoxLayout.Y_AXIS));
 
+        t_hostAddr = new JTextField("localhost", 15);
+        t_portNum = new JTextField("54321", 15);
+
         //캐치라이어 제목. 나중에 이미지로 뽑아서
         //바꿀것 
         JLabel Title = new JLabel("캐치라이어");
@@ -70,8 +88,27 @@ public class Client {
         b_start.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CardLayout cl = (CardLayout)mainPanel.getLayout();
-                cl.show(mainPanel, "selectRoomPanel");
+                try {
+                    String nickname = t_nickname.getText();
+                    if (nickname.isEmpty()) {
+                        JOptionPane.showMessageDialog(frame, "닉네임을 입력해주세요!", "경고", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                    Client.this.serverAddress = t_hostAddr.getText();
+                    Client.this.serverPort = Integer.parseInt(t_portNum.getText());
+
+                    connectToServer();
+                    sendNickname(nickname); // 닉네임 서버에 전송
+                    
+                    //방 선택 패널 이동
+                    CardLayout cl = (CardLayout)mainPanel.getLayout();
+                    cl.show(mainPanel, "selectRoomPanel");
+                } catch (IOException ex) {
+                    //throw new RuntimeException(ex);
+                    System.err.println(ex.getMessage());
+                    System.exit(-1);
+                }
+
             }
         });
 
@@ -83,9 +120,44 @@ public class Client {
         display.add(t_nickname);
         return display;
     }
-    
 
 
+    private Writer out = null;
+    private Reader in = null;
+    private void connectToServer() throws UnknownHostException, IOException {
 
+        socket = new Socket();
+        SocketAddress sa = new InetSocketAddress(serverAddress, serverPort);
+        socket.connect(sa, 3000);
+
+        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+
+        receiveThread = new Thread(() -> receiveMessage());
+        receiveThread.start();
+    }
+
+    private void receiveMessage() {
+        try {
+            String message;
+            while ((message = ((BufferedReader) in).readLine()) != null) {
+                System.out.println("서버로부터 메시지 수신: " + message);
+            }
+        } catch (IOException e) {
+            System.err.println("서버 연결 종료: " + e.getMessage());
+        }
+    }
+
+
+    private void sendNickname(String nickname) {
+        try {
+            if (out != null) {
+                out.write("/uid:" + nickname + "\n");
+                out.flush();
+            }
+        } catch (IOException e) {
+            System.err.println("닉네임 전송 오류: " + e.getMessage());
+        }
+    }
 
 }
