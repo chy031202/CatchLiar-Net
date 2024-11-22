@@ -83,8 +83,8 @@ public class Client {
         b_start = new JButton("시작");
         b_start.setAlignmentX(JButton.CENTER_ALIGNMENT);
 
-        //방 선택 화면 전환
-        //소켓 연결 x
+        //방 선택 화면
+        //소켓 연결 와뇰
         b_start.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
