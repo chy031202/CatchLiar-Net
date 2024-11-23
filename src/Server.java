@@ -11,17 +11,20 @@ public class Server {
     private ServerSocket serverSocket = null;
     private JFrame frame;
     private JTextArea t_display;
+    private GameRoomPanel gameRoomPanel;
 
     private JButton b_connect, b_disconnect, b_exit;
     private Thread acceptThread = null;
 
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
+    private Vector<Room> rooms = new Vector<>();
 
     public Server(int port){
         this.port = port;
         frame = new JFrame( "P2P ChatServer");
         frame.setBounds(700, 200, 600, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        gameRoomPanel = new GameRoomPanel(frame); //
     };
 
     public static void main(String[] args){
@@ -139,7 +142,7 @@ public class Server {
 
                 printDisplay("클라이언트가 연결되었습니다." + cAddr + "\n");
 
-                ClientHandler cHandler = new ClientHandler(clientSocket);
+                ClientHandler cHandler = new ClientHandler(clientSocket, frame);
                 users.add(cHandler);
                 cHandler.start();
 
@@ -167,17 +170,18 @@ public class Server {
         private BufferedWriter out;
 
         private String uid;
+        private Room currentRoom = null; // 현재 클라이언트가 속한 방
+        private JFrame parentFrame;
 
-        public ClientHandler (Socket clientSocket) {
+        public ClientHandler (Socket clientSocket, JFrame parentFrame) {
             this.clientSocket = clientSocket;
-
+            this.parentFrame = parentFrame;
         }
 
         private void receiveMessage(Socket cs) {
 
             /* 클라이언트 소켓에서 입력 스트림 생성 */
             try {
-
                 BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream(), "UTF-8"));
                 out = new BufferedWriter(new OutputStreamWriter(cs.getOutputStream(), "UTF-8"));
                 String message;
@@ -190,12 +194,24 @@ public class Server {
                         printDisplay("새 참가자" + uid);
                         printDisplay("현재 참가자 수" + users.size());
                         continue;
+                    } else if (message.startsWith("/room:")) {
+                        String roomName = message.split(":")[1];
+                        // 이전 방에서 퇴장
+                        if (currentRoom != null) {
+                            leaveRoom();
+                        }
+                        // 새로운 방에 입장
+                        joinRoom(roomName);
+                        // 패널 부착
+//                        gameRoomPanel.createUserPanel(uid);
+
+                        printDisplay(uid + "님이 " + roomName + " 방에 입장했습니다.");
+                        broadcasting(uid + "님이 " + roomName + " 방에 입장했습니다.");
+                    } else {
+                        message = uid + ": " + message;
+                        printDisplay(message);
+                        broadcasting(message);
                     }
-
-                    message = uid + ": "+ message;
-                    printDisplay(message);
-                    broadcasting(message);
-
                 }
 
                 users.removeElement(this);
@@ -213,6 +229,68 @@ public class Server {
             }
         }
 
+        private void joinRoom(String roomName) {
+            // 방 검색 또는 생성
+            currentRoom = findOrCreateRoom(roomName);
+
+            // 방에 클라이언트 추가
+            currentRoom.addMember(uid);
+
+            // 방 전체에 입장 메시지 전송
+            broadcastToRoom(currentRoom, uid + "님이 " + roomName + " 방에 입장했습니다.");
+            System.out.println(roomName + " 방에 " + uid + "님 입장 (현재 인원: " + currentRoom.getMembers().size() + "명)");
+        }
+
+        private Room findOrCreateRoom(String roomName) {
+            synchronized (rooms) {
+                for (Room room : rooms) {
+                    if (room.getName().equals(roomName)) {
+                        return room;
+                    }
+                }
+
+                // 새로운 방 생성
+                Room newRoom = new Room(roomName, parentFrame);
+                rooms.add(newRoom);
+                System.out.println("새로운 방 생성: " + roomName);
+                return newRoom;
+            }
+        }
+        private void leaveRoom() {
+            if (currentRoom == null) return;
+
+            currentRoom.removeMember(uid);
+            broadcastToRoom(currentRoom, uid + "님이 방을 퇴장했습니다.");
+
+            // 방이 비었으면 삭제
+            if (currentRoom.isEmpty()) {
+                rooms.remove(currentRoom);
+                System.out.println("방 [" + currentRoom.getName() + "]이 삭제되었습니다.");
+            }
+
+            currentRoom = null;
+        }
+
+        private void broadcastToRoom(Room room, String message) {
+            // 방에 있는 모든 클라이언트에게 메시지 전송
+            for (String memberUid : room.getMembers()) {
+                ClientHandler member = findClientByUid(memberUid);
+                if (member != null) {
+                    System.out.println(memberUid + "에게 " + message + "전송");
+                    member.sendMessage(message);
+                }
+            }
+        }
+
+        private ClientHandler findClientByUid(String uid) {
+            // 벡터에서 해당 UID를 가진 클라이언트를 찾아 반환
+            for (ClientHandler c : users) {
+                if (c.uid.equals(uid)) {
+                    return c;
+                }
+            }
+            return null;
+        }
 
         private void sendMessage(String msg) {
             try {
@@ -253,4 +331,34 @@ public class Server {
         t_display.setCaretPosition(t_display.getDocument().getLength());
 
     }
+
+//    private class Room {
+//        private String name; // 방 이름
+//        private Vector<String> members; // 방에 있는 클라이언트 닉네임 목록
+//
+//        public Room(String name) {
+//            this.name = name;
+//            this.members = new Vector<>();
+//        }
+//
+//        public String getName() {
+//            return name;
+//        }
+//
+//        public Vector<String> getMembers() {
+//            return members;
+//        }
+//
+//        public void addMember(String member) {
+//            members.add(member);
+//        }
+//
+//        public void removeMember(String member) {
+//            members.remove(member);
+//        }
+//
+//        public boolean isEmpty() {
+//            return members.isEmpty();
+//        }
+//    }
 }

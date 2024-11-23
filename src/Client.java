@@ -26,6 +26,8 @@ public class Client {
     private String serverAddress ="localhost";
     private int serverPort;
 
+    public static Writer out = null;
+
     public static void main(String[] args) {
         String serverAddress = "localhost";
         int serverPort = 54321;
@@ -70,10 +72,10 @@ public class Client {
         t_portNum = new JTextField("54321", 15);
 
         //캐치라이어 제목. 나중에 이미지로 뽑아서
-        //바꿀것 
+        //바꿀것
         JLabel Title = new JLabel("캐치라이어");
         Title.setAlignmentX(JLabel.CENTER_ALIGNMENT);
-        
+
         JLabel nicknameLabel = new JLabel("닉네임");
         nicknameLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT); //중앙정렬
 
@@ -100,7 +102,7 @@ public class Client {
 
                     connectToServer();
                     sendNickname(nickname); // 닉네임 서버에 전송
-                    
+
                     //방 선택 패널 이동
                     CardLayout cl = (CardLayout)mainPanel.getLayout();
                     cl.show(mainPanel, "selectRoomPanel");
@@ -123,7 +125,7 @@ public class Client {
     }
 
 
-    private Writer out = null;
+//    private Writer out = null;
     private Reader in = null;
     private void connectToServer() throws UnknownHostException, IOException {
 

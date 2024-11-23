@@ -97,4 +97,40 @@ public class GameRoomPanel extends JPanel {
         gamePanel.add(user);
         return  gamePanel;
     }
+
+    // 유저 패널을 UserSidePanel에 추가하는 메서드
+    public void addUserToPanel(String username) {
+        System.out.println("addUserToPanel " + username);
+
+        // UserSidePanel이 제대로 가져와지는지 확인하는 로그 추가
+        JPanel userSidePanel = (JPanel) getComponent(1);  // UserSidePanel 위치는 BorderLayout.WEST
+        if (userSidePanel == null) {
+            System.out.println("userSidePanel is null");
+        } else {
+            System.out.println("userSidePanel found: " + userSidePanel);
+        }
+
+        JPanel userPanel = createUserPanel(username);
+        userSidePanel.add(userPanel);  // 새 유저 패널을 UserSidePanel에 추가
+
+        // UI 업데이트를 스윙 이벤트 큐에 추가하여 강제로 리프레시
+        SwingUtilities.invokeLater(() -> {
+            userSidePanel.revalidate();    // 레이아웃 다시 계산
+            userSidePanel.repaint();       // 다시 그리기
+        });
+    }
+
+    // 유저 정보를 담은 패널을 생성하는 메서드
+    public JPanel createUserPanel(String username) {
+        System.out.println("createUserPanel " + username);
+        JPanel userPanel = new JPanel();
+        userPanel.setLayout(new BorderLayout());
+        userPanel.setBackground(Color.LIGHT_GRAY); // 원하는 색상 설정
+
+        JLabel userLabel = new JLabel(username);
+        userPanel.add(userLabel, BorderLayout.CENTER);
+
+        return userPanel;
+    }
+
 }

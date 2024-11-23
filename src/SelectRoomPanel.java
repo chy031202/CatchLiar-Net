@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class SelectRoomPanel extends JPanel {
     private JButton foodRoomButton;
@@ -37,14 +38,19 @@ public class SelectRoomPanel extends JPanel {
         foodRoomButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String roomName = "food";
+                try {
+                    sendRoomSelection(roomName); // 방 선택 서버로 전송
+                } catch (IOException ex) {
+                    System.err.println("방 접속 오류: " + ex.getMessage());
+                }
+
                 Container parent = getParent();
                 if (parent instanceof JPanel) {
                     CardLayout cl = (CardLayout) parent.getLayout();
                     cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
-
-
                     // GameRoomPanel로 이동 후 MessageDialog 호출
-                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
+//                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
                 }
             }
         });
@@ -72,5 +78,11 @@ public class SelectRoomPanel extends JPanel {
         //방 선택 패널 이동
 
 
+    }
+    private void sendRoomSelection(String roomName) throws IOException {
+        if (Client.out != null) {
+            Client.out.write("/room:" + roomName + "\n");
+            Client.out.flush();
+        }
     }
 }
