@@ -125,7 +125,7 @@ public class GameRoomPanel extends JPanel {
         System.out.println("createUserPanel " + username);
         JPanel userPanel = new JPanel();
         userPanel.setLayout(new BorderLayout());
-        userPanel.setBackground(Color.LIGHT_GRAY); // 원하는 색상 설정
+        userPanel.setBackground(Color.PINK); // 원하는 색상 설정
 
         JLabel userLabel = new JLabel(username);
         userPanel.add(userLabel, BorderLayout.CENTER);
