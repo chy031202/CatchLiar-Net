@@ -16,11 +16,17 @@ public class SelectRoomPanel extends JPanel {
         setLayout(new BorderLayout());
 
 
-        JLabel title = new JLabel("키워드(방) 선택");
+        ImageIcon roomLogoIcon = new ImageIcon(SelectRoomPanel.class.getResource("/images/roomLogo.png"));
+        Image originalImage = roomLogoIcon.getImage(); // 원본 이미지 가져오기
+        Image resizedImage = originalImage.getScaledInstance(400, 130, Image.SCALE_SMOOTH); // 새 크기로 조정
+        ImageIcon resizedIcon = new ImageIcon(resizedImage); // 크기 조정된 이미지를 새로운 ImageIcon으로 설정
+        JLabel title = new JLabel(resizedIcon); // JLabel에 설정
+        title.setOpaque(true);
+        title.setBackground(new Color(60, 30, 30)); // 배경색 설정
         title.setHorizontalAlignment(JLabel.CENTER);
-        title.setFont(new Font("맑은 고딕", Font.BOLD, 30)); // 폰트 크기 조정
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0)); // 여백 추가
-        title.setForeground(Color.WHITE); // 글자 색상
+        add(title, BorderLayout.NORTH);
+
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(2, 2, 20, 20)); // 2x2 배열, 간격 20px
@@ -45,8 +51,16 @@ public class SelectRoomPanel extends JPanel {
 
                 Container parent = getParent();
                 if (parent instanceof JPanel) {
+                    //CardLayout cl = (CardLayout) parent.getLayout();
+                    // GameRoomPanel을 생성하여 방 이름 전달
+                    JPanel mainPanel = (JPanel) parent;
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(parent);
+
+                    GameRoomPanel gameRoomPanel = new GameRoomPanel(frame, roomName);
+                    mainPanel.add(gameRoomPanel, "gameRoomPanel");
+
                     CardLayout cl = (CardLayout) parent.getLayout();
-                    cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+                    cl.show(parent, "gameRoomPanel");
                     // GameRoomPanel로 이동 후 MessageDialog 호출
 //                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
                 }
@@ -60,8 +74,14 @@ public class SelectRoomPanel extends JPanel {
 
                 Container parent = getParent();
                 if (parent instanceof JPanel) {
+                    JPanel mainPanel = (JPanel) parent;
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(parent);
+
+                    GameRoomPanel gameRoomPanel = new GameRoomPanel(frame, roomName);
+                    mainPanel.add(gameRoomPanel, "gameRoomPanel");
+
                     CardLayout cl = (CardLayout) parent.getLayout();
-                    cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+                    cl.show(parent, "gameRoomPanel");
                     // GameRoomPanel로 이동 후 MessageDialog 호출
 //                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
                 }
@@ -75,8 +95,14 @@ public class SelectRoomPanel extends JPanel {
 
                 Container parent = getParent();
                 if (parent instanceof JPanel) {
+                    JPanel mainPanel = (JPanel) parent;
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(parent);
+
+                    GameRoomPanel gameRoomPanel = new GameRoomPanel(frame, roomName);
+                    mainPanel.add(gameRoomPanel, "gameRoomPanel");
+
                     CardLayout cl = (CardLayout) parent.getLayout();
-                    cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+                    cl.show(parent, "gameRoomPanel");
                     // GameRoomPanel로 이동 후 MessageDialog 호출
 //                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
                 }
@@ -90,8 +116,14 @@ public class SelectRoomPanel extends JPanel {
 
                 Container parent = getParent();
                 if (parent instanceof JPanel) {
+                    JPanel mainPanel = (JPanel) parent;
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(parent);
+
+                    GameRoomPanel gameRoomPanel = new GameRoomPanel(frame, roomName);
+                    mainPanel.add(gameRoomPanel, "gameRoomPanel");
+
                     CardLayout cl = (CardLayout) parent.getLayout();
-                    cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+                    cl.show(parent, "gameRoomPanel");
                     // GameRoomPanel로 이동 후 MessageDialog 호출
 //                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
                 }
@@ -104,7 +136,7 @@ public class SelectRoomPanel extends JPanel {
         buttonPanel.add(animalRoomButton);
         buttonPanel.add(characterRoomButton);
 
-        add(title, BorderLayout.NORTH);
+        //add(title, BorderLayout.NORTH);
         add(buttonPanel, BorderLayout.CENTER);
     }
     private JButton createRoomButton(String text) {

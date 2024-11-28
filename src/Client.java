@@ -60,11 +60,28 @@ public class Client {
         SelectRoomPanel selectRoomPanel = new SelectRoomPanel(this);
         mainPanel.add(selectRoomPanel, "selectRoomPanel");
 
-        GameRoomPanel gameRoomPanel = new GameRoomPanel(frame);
-        mainPanel.add(gameRoomPanel, "gameRoomPanel");
+//        GameRoomPanel gameRoomPanel = new GameRoomPanel(frame);
+//        mainPanel.add(gameRoomPanel, "gameRoomPanel");
 
         frame.add(mainPanel);
 
+    }
+
+    public class BackgroundPanel extends JPanel {
+        private Image background;
+
+        // 생성자에서 배경 이미지 설정
+        public BackgroundPanel(String imagePath) {
+            background = new ImageIcon(getClass().getResource(imagePath)).getImage();
+            setLayout(null); // 컴포넌트 배치를 자유롭게 설정
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            // 배경 이미지 그리기
+            g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+        }
     }
     private JPanel createDisplayPanel(){
         JPanel display = new JPanel();
@@ -74,9 +91,12 @@ public class Client {
         t_portNum = new JTextField("54321", 15);
 
         //캐치라이어 제목. 나중에 이미지로 뽑아서
-        //바꿀것
-        JLabel Title = new JLabel("캐치라이어");
-        Title.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+
+        BackgroundPanel backgroundPanel = new BackgroundPanel("/images/main.png");
+        backgroundPanel.setLayout(new BoxLayout(backgroundPanel, BoxLayout.Y_AXIS)); // BoxLayout 사용
+
+//        JLabel Title = new JLabel("캐치라이어");
+//        Title.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 
         JLabel nicknameLabel = new JLabel("닉네임");
         nicknameLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT); //중앙정렬
@@ -117,13 +137,13 @@ public class Client {
             }
         });
 
-        display.add(Title);
+        //display.add(Title);
         //display.add(Box.createVerticalStrut(10)); // 위쪽 여백
-        display.add(b_start);
-        display.add(Box.createVerticalStrut(50));
-        display.add(nicknameLabel);
-        display.add(t_nickname);
-        return display;
+        backgroundPanel.add(b_start);
+        backgroundPanel.add(Box.createVerticalStrut(50));
+        backgroundPanel.add(nicknameLabel);
+        backgroundPanel.add(t_nickname);
+        return backgroundPanel;
     }
 
 

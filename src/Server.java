@@ -27,8 +27,25 @@ public class Server {
         frame = new JFrame( "P2P ChatServer");
         frame.setBounds(700, 200, 600, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        gameRoomPanel = new GameRoomPanel(frame); //
+        //gameRoomPanel = new GameRoomPanel(frame); //
     };
+
+    private Room findOrCreateRoom(String roomName) {
+        synchronized (rooms) {
+            for (Room room : rooms) {
+                if (room.getName().equals(roomName)) {
+                    return room; // 기존 방 반환
+                }
+            }
+
+            // 새로운 방 생성
+            Room newRoom = new Room(roomName, frame); // 방 이름과 프레임 전달
+            rooms.add(newRoom);
+            System.out.println("새로운 방 생성: " + roomName);
+            printDisplay("새로운 방 생성: " + roomName);
+            return newRoom;
+        }
+    }
 
     public static void main(String[] args){
         int port = 54321;
