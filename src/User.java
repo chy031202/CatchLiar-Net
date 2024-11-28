@@ -2,7 +2,7 @@ import java.io.Serializable;
 
 public class User implements Serializable {
 
-    public final static int ROOM_SELECT = 11;
+    //public final static int ROOM_SELECT = 11;
 
     private static final long serialVersionUID = 1L;
 
@@ -22,6 +22,17 @@ public class User implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+    private boolean isLoggedIn = true;
+
+    public boolean isLoggedIn() {
+        return isLoggedIn;
+    }
+
+    public void logout() {
+        this.isLoggedIn = false;
     }
 
 }

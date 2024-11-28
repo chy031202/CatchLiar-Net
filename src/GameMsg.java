@@ -5,7 +5,10 @@ public class GameMsg implements Serializable {
 
     public final static int LOGIN = 1;
     public final static int CHAT_MESSAGE = 2;
+    public final static int EXIT = 3; // 로그아웃 모드
     //private static final int name = ;
+
+    public final static int ROOM_SELECT = 11;//방 선택
 
     public int mode;   // 모드 값
 
@@ -22,11 +25,20 @@ public class GameMsg implements Serializable {
         this.user = user;
     }
 
+    //방 선택 위한 생성자
     public GameMsg(String uid, int mode, String message) {
         this.mode = mode;
         this.message = message;
         this.user = new User(uid); // uid를 이용해 User 생성
     }
+
+    public GameMsg(String uid, int mode) {
+        this.mode = mode;
+        this.user = new User(uid);
+    }
+
+
+
 
 
     public int getMode() {

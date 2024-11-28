@@ -204,7 +204,7 @@ public class Server {
                             printDisplay("현재 참가자 수" + users.size());
                             break;
 
-                        case User.ROOM_SELECT: // 방 입장 처리
+                        case GameMsg.ROOM_SELECT: // 방 입장 처리
                             String roomName = msg.getMsg(); // 방 이름은 msg.msg에 저장
                             if (currentRoom != null) {
                                 leaveRoom(); // 이전 방에서 퇴장

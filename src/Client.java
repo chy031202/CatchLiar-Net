@@ -13,6 +13,7 @@ public class Client {
     Server server = new Server(0);
     private JFrame frame;
     private Socket socket;
+    private String uid;
 
     private JTextField t_nickname;
     private JTextField t_hostAddr;
@@ -26,7 +27,8 @@ public class Client {
     private String serverAddress ="localhost";
     private int serverPort;
 
-    public static Writer out = null;
+    public static ObjectOutputStream out = null; // 객체 출력 스트림
+    private ObjectInputStream in = null;
 
     public static void main(String[] args) {
         String serverAddress = "localhost";
@@ -101,7 +103,7 @@ public class Client {
                     Client.this.serverPort = Integer.parseInt(t_portNum.getText());
 
                     connectToServer();
-                    sendNickname(nickname); // 닉네임 서버에 전송
+                    sendNickname(); // 닉네임 서버에 전송
 
                     //방 선택 패널 이동
                     CardLayout cl = (CardLayout)mainPanel.getLayout();
@@ -126,15 +128,30 @@ public class Client {
 
 
 //    private Writer out = null;
-    private Reader in = null;
+//private void printDisplay(ImageIcon icon) {
+//    t_display.setCaretPosition(t_display.getDocument().getLength());
+//
+//    if (icon.getIconWidth() > 400) {
+//        Image img = icon.getImage();
+//        Image changeImg = img.getScaledInstance(400, -1, Image.SCALE_SMOOTH);
+//        icon = new ImageIcon(changeImg);
+//    }
+//
+//    t_display.insertIcon(icon);
+//
+//    printDisplay("");
+//    t_input.setText("");
+//}
+
     private void connectToServer() throws UnknownHostException, IOException {
 
         socket = new Socket();
         SocketAddress sa = new InetSocketAddress(serverAddress, serverPort);
         socket.connect(sa, 3000);
 
-        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+        out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+        out.flush();
+        in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 
         receiveThread = new Thread(() -> receiveMessage());
         receiveThread.start();
@@ -142,25 +159,72 @@ public class Client {
 
     private void receiveMessage() {
         try {
-            String message;
-            while ((message = ((BufferedReader) in).readLine()) != null) {
-                System.out.println("서버로부터 메시지 수신: " + message);
+            GameMsg inMsg = (GameMsg) in.readObject();
+            //String message;
+//            while ((message = in.readObject()) != null) {
+//                System.out.println("서버로부터 메시지 수신: " + message);
+//            }
+            if (inMsg == null) {
+                disconnect();
+                System.err.println("서버 연결 끊김");
+                return;
+            }
+            switch (inMsg.mode) {
+                //채팅 모드 등...
+                case GameMsg.CHAT_MESSAGE:
+                    System.out.println("서버로부터 메시지 수신: ");
+                    break;
+                    //이모티콘 전송 모드 등...
+//                case GameMsg.MODE_TX_IMAGE :
+//                    printDisplay(inMsg.userID + ": " + inMsg.message);
+//                    printDisplay(inMsg.image);
+//                    break;
             }
         } catch (IOException e) {
             System.err.println("서버 연결 종료: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
-
-    private void sendNickname(String nickname) {
+    private void disconnect() {
+        send(new GameMsg(uid, GameMsg.EXIT));
+        try {
+            receiveThread = null;
+            socket.close();
+        } catch (IOException e) {
+            System.err.println("클라이언트 닫기 오류> "+e.getMessage());
+            System.exit(-1);
+        }
+    }
+    void send(GameMsg msg) {
         try {
             if (out != null) {
-                out.write("/uid:" + nickname + "\n");
+                out.writeObject(msg); // 객체 전송
                 out.flush();
+            } else {
+                System.err.println("출력 스트림이 초기화되지 않았습니다.");
             }
         } catch (IOException e) {
-            System.err.println("닉네임 전송 오류: " + e.getMessage());
+            System.err.println("클라이언트 일반 전송 오류: " + e.getMessage());
         }
+    }
+
+//    private void sendNickname(String nickname) {
+//        try {
+//            if (out != null) {
+//                out.write("/uid:" + nickname + "\n");
+//                out.flush();
+//            }
+//        } catch (IOException e) {
+//            System.err.println("닉네임 전송 오류: " + e.getMessage());
+//        }
+//    }
+
+    //객체전송으로 바꿈
+    private void sendNickname() {
+        uid = t_nickname.getText();
+        send(new GameMsg(uid, GameMsg.LOGIN));
     }
 
 }

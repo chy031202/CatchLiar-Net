@@ -80,9 +80,16 @@ public class SelectRoomPanel extends JPanel {
 
     }
     private void sendRoomSelection(String roomName) throws IOException {
-        if (Client.out != null) {
-            Client.out.write("/room:" + roomName + "\n");
-            Client.out.flush();
-        }
+//        if (Client.out != null) {
+//            Client.out.write("/room:" + roomName + "\n");
+//            Client.out.flush();
+//        }
+//        GameMsg roomSelectionMsg = new GameMsg(Client.out, GameMsg.ROOM_SELECT, roomName);
+//
+//        if (Client.out != null) {
+//            Client.send(roomSelectionMsg);
+//        } else {
+//            System.err.println("클라이언트 참조를 찾을 수 없습니다.");
+//        }
     }
 }
