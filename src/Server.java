@@ -19,6 +19,9 @@ public class Server {
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
 
+    //소켓 설정
+    private ObjectInputStream in;
+
     public Server(int port){
         this.port = port;
         frame = new JFrame( "P2P ChatServer");
@@ -167,7 +170,8 @@ public class Server {
 
     private class ClientHandler extends Thread{
         private Socket clientSocket;
-        private BufferedWriter out;
+        private ObjectOutputStream out;
+        //private BufferedWriter out;
 
         private String uid;
         private Room currentRoom = null; // 현재 클라이언트가 속한 방
@@ -182,44 +186,67 @@ public class Server {
 
             /* 클라이언트 소켓에서 입력 스트림 생성 */
             try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream(), "UTF-8"));
-                out = new BufferedWriter(new OutputStreamWriter(cs.getOutputStream(), "UTF-8"));
-                String message;
+//                BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream(), "UTF-8"));
+//                out = new BufferedWriter(new OutputStreamWriter(cs.getOutputStream(), "UTF-8"));
+                out = new ObjectOutputStream(new BufferedOutputStream(cs.getOutputStream()));
+                out.flush();
+                in = new ObjectInputStream(new BufferedInputStream(cs.getInputStream()));
+
+                //String message;
+                GameMsg msg;
 
 
-                while ((message = in.readLine()) !=null ) {
-                    if(message.contains("/uid:")) {
-                        String[] tok = message.split(":");
-                        uid = tok[1];
-                        printDisplay("새 참가자" + uid);
-                        printDisplay("현재 참가자 수" + users.size());
-                        continue;
-                    } else if (message.startsWith("/room:")) {
-                        String roomName = message.split(":")[1];
-                        // 이전 방에서 퇴장
-                        if (currentRoom != null) {
-                            leaveRoom();
-                        }
-                        // 새로운 방에 입장
-                        joinRoom(roomName);
-                        // 패널 부착
-//                        gameRoomPanel.createUserPanel(uid);
+                while  ((msg = (GameMsg) in.readObject()) != null) {
+                    switch (msg.getMode()){
+                        case GameMsg.LOGIN :
+                            uid = msg.user.name;
+                            printDisplay("새 참가자" + uid);
+                            printDisplay("현재 참가자 수" + users.size());
+                            break;
 
-                        printDisplay(uid + "님이 " + roomName + " 방에 입장했습니다.");
-                        broadcasting(uid + "님이 " + roomName + " 방에 입장했습니다.");
-                    } else {
-                        message = uid + ": " + message;
-                        printDisplay(message);
-                        broadcasting(message);
+                        case User.ROOM_SELECT: // 방 입장 처리
+                            String roomName = msg.getMsg(); // 방 이름은 msg.msg에 저장
+                            if (currentRoom != null) {
+                                leaveRoom(); // 이전 방에서 퇴장
+                            }
+                            joinRoom(roomName); // 새로운 방에 입장
+                            printDisplay(uid + "님이 " + roomName + " 방에 입장했습니다.");
+                            broadcasting(uid + "님이 " + roomName + " 방에 입장했습니다.");
+                            break;
+
+                        default: // 알 수 없는 모드 처리
+                            printDisplay("알 수 없는 모드: " + msg.mode);
+                            break;
+
                     }
-                }
 
+//                    else if (message.startsWith("/room:")) {
+//                        String roomName = message.split(":")[1];
+//                        // 이전 방에서 퇴장
+//                        if (currentRoom != null) {
+//                            leaveRoom();
+//                        }
+//                        // 새로운 방에 입장
+//                        joinRoom(roomName);
+//                        // 패널 부착
+////                        gameRoomPanel.createUserPanel(uid);
+//
+//                        printDisplay(uid + "님이 " + roomName + " 방에 입장했습니다.");
+//                        broadcasting(uid + "님이 " + roomName + " 방에 입장했습니다.");
+//                    } else {
+//                        message = uid + ": " + message;
+//                        printDisplay(message);
+//                        broadcasting(message);
+//                    }
+                }
                 users.removeElement(this);
                 printDisplay(uid+"퇴장. 현재 참가자 수 : "+ users.size());
             } catch (IOException e) {
                 users.removeElement(this);
                 System.err.println("연결 끊김. 현재 참가자 수 : " + users.size());
-            }finally {
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } finally {
                 try {
                     cs.close();
                 } catch (IOException e) {
@@ -291,16 +318,20 @@ public class Server {
             }
             return null;
         }
+        private void send(GameMsg msg) {
+            try {
+                out.writeObject(msg);
+                out.flush();
+            } catch (IOException e) {
+                System.err.println("클라이언트 일반 전송 오류: " + e.getMessage());
+            }
+        }
 
         private void sendMessage(String msg) {
-            try {
-                //int message = Integer.parseInt(messageText);
-                ((BufferedWriter) out).write(msg+"\n");
-                out.flush();
-                System.out.println(out);
-            } catch (IOException e) {
-                System.err.println("서버 반향 전송 오류> "+ e.getMessage());
-            }
+            //GameMsg gameMessage = new GameMsg(GameMsg.CHAT_MESSAGE, message, 0, null);
+            //send(new GameMsg(uid, GameMsg.CHAT_MESSAGE, msg));
+            User currentUser = new User(uid); // uid로 User 생성
+            send(new GameMsg(GameMsg.CHAT_MESSAGE, msg, 0, currentUser));
         } //sendMessgae
 
         private void broadcasting(String msg) {
