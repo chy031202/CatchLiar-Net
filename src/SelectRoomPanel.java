@@ -9,8 +9,10 @@ public class SelectRoomPanel extends JPanel {
     private JButton placeRoomButton;
     private JButton animalRoomButton;
     private JButton characterRoomButton;
+    private Client client;
 
-    public SelectRoomPanel() {
+    public SelectRoomPanel(Client client) {
+        this.client = client;
         setLayout(new BorderLayout());
 
 
@@ -39,11 +41,8 @@ public class SelectRoomPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String roomName = "food";
-                try {
-                    sendRoomSelection(roomName); // 방 선택 서버로 전송
-                } catch (IOException ex) {
-                    System.err.println("방 접속 오류: " + ex.getMessage());
-                }
+                sendRoomSelection(roomName); // 방 선택 서버로 전송
+
 
                 Container parent = getParent();
                 if (parent instanceof JPanel) {
@@ -79,17 +78,8 @@ public class SelectRoomPanel extends JPanel {
 
 
     }
-    private void sendRoomSelection(String roomName) throws IOException {
-//        if (Client.out != null) {
-//            Client.out.write("/room:" + roomName + "\n");
-//            Client.out.flush();
-//        }
-//        GameMsg roomSelectionMsg = new GameMsg(Client.out, GameMsg.ROOM_SELECT, roomName);
-//
-//        if (Client.out != null) {
-//            Client.send(roomSelectionMsg);
-//        } else {
-//            System.err.println("클라이언트 참조를 찾을 수 없습니다.");
-//        }
+    private void sendRoomSelection(String roomName) {
+        GameMsg roomSelectionMsg = new GameMsg(client.getUid(), GameMsg.ROOM_SELECT, roomName);
+        client.send(roomSelectionMsg);
     }
 }

@@ -57,7 +57,7 @@ public class Client {
         mainPanel.add(displaypanel, "displayPanel");
 
         // Select Room Panel 생성 및 추가
-        SelectRoomPanel selectRoomPanel = new SelectRoomPanel();
+        SelectRoomPanel selectRoomPanel = new SelectRoomPanel(this);
         mainPanel.add(selectRoomPanel, "selectRoomPanel");
 
         GameRoomPanel gameRoomPanel = new GameRoomPanel(frame);
@@ -225,6 +225,10 @@ public class Client {
     private void sendNickname() {
         uid = t_nickname.getText();
         send(new GameMsg(uid, GameMsg.LOGIN));
+    }
+
+    public String getUid() {
+        return uid;
     }
 
 }
