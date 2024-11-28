@@ -43,6 +43,50 @@ public class SelectRoomPanel extends JPanel {
                 String roomName = "food";
                 sendRoomSelection(roomName); // 방 선택 서버로 전송
 
+                Container parent = getParent();
+                if (parent instanceof JPanel) {
+                    CardLayout cl = (CardLayout) parent.getLayout();
+                    cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+                    // GameRoomPanel로 이동 후 MessageDialog 호출
+//                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
+                }
+            }
+        });
+        placeRoomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String roomName = "place";
+                sendRoomSelection(roomName); // 방 선택 서버로 전송
+
+                Container parent = getParent();
+                if (parent instanceof JPanel) {
+                    CardLayout cl = (CardLayout) parent.getLayout();
+                    cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+                    // GameRoomPanel로 이동 후 MessageDialog 호출
+//                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
+                }
+            }
+        });
+        animalRoomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String roomName = "animal";
+                sendRoomSelection(roomName); // 방 선택 서버로 전송
+
+                Container parent = getParent();
+                if (parent instanceof JPanel) {
+                    CardLayout cl = (CardLayout) parent.getLayout();
+                    cl.show(parent, "gameRoomPanel"); // "gameRoomPanel"로 이동
+                    // GameRoomPanel로 이동 후 MessageDialog 호출
+//                    SwingUtilities.invokeLater(() -> MessageDialog.showRandomMessage((JFrame) SwingUtilities.getWindowAncestor(parent)));
+                }
+            }
+        });
+        characterRoomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String roomName = "animal";
+                sendRoomSelection(roomName); // 방 선택 서버로 전송
 
                 Container parent = getParent();
                 if (parent instanceof JPanel) {

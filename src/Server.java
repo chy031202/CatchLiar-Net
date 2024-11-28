@@ -264,8 +264,9 @@ public class Server {
             currentRoom.addMember(uid);
 
             // 방 전체에 입장 메시지 전송
-            broadcastToRoom(currentRoom, uid + "님이 " + roomName + " 방에 입장했습니다.");
+            broadcastToRoom(currentRoom, uid + "님이 " + roomName + " 방에 입장했습니다.(현재 인원: \" + currentRoom.getMembers().size() + \"명)");
             System.out.println(roomName + " 방에 " + uid + "님 입장 (현재 인원: " + currentRoom.getMembers().size() + "명)");
+            printDisplay(roomName + " 방에 " + uid + "님 입장 (현재 인원: " + currentRoom.getMembers().size() + "명)");
         }
 
         private Room findOrCreateRoom(String roomName) {
@@ -280,6 +281,7 @@ public class Server {
                 Room newRoom = new Room(roomName, parentFrame);
                 rooms.add(newRoom);
                 System.out.println("새로운 방 생성: " + roomName);
+                printDisplay("새로운 방 생성: " + roomName);
                 return newRoom;
             }
         }
