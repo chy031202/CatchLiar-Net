@@ -3,12 +3,10 @@ import java.awt.*;
 
 
 public class GameRoomPanel extends JPanel {
-    public GameRoomPanel(JFrame parentFrame) {
+    public GameRoomPanel(JFrame parentFrame,  String roomName) {
         setLayout(new BorderLayout());
 
-
-
-        JLabel title = new JLabel("00방(ex명소)", SwingConstants.CENTER);
+        JLabel title = new JLabel(roomName + "방", SwingConstants.CENTER);
         add(title, BorderLayout.NORTH);
 
         add(UserSidePanel(), BorderLayout.WEST);

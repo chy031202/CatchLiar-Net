@@ -9,8 +9,10 @@ public class Room {
     public Room(String name, JFrame parentFrame) {
         this.name = name;
         this.members = new Vector<>();
-        this.gameRoomPanel = new GameRoomPanel(parentFrame);
+        this.gameRoomPanel = new GameRoomPanel(parentFrame, name);
     }
+
+
 
     public String getName() {
         return name;

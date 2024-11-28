@@ -60,8 +60,8 @@ public class Client {
         SelectRoomPanel selectRoomPanel = new SelectRoomPanel(this);
         mainPanel.add(selectRoomPanel, "selectRoomPanel");
 
-        GameRoomPanel gameRoomPanel = new GameRoomPanel(frame);
-        mainPanel.add(gameRoomPanel, "gameRoomPanel");
+//        GameRoomPanel gameRoomPanel = new GameRoomPanel(frame);
+//        mainPanel.add(gameRoomPanel, "gameRoomPanel");
 
         frame.add(mainPanel);
 
