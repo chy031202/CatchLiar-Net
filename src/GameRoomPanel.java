@@ -87,6 +87,7 @@ public class GameRoomPanel extends JPanel {
         return  itemPanel;
     }
 
+    //캔버스 
     private JPanel GamePanel(){
         JPanel gamePanel = new JPanel();
         gamePanel.setBackground(Color.WHITE);
