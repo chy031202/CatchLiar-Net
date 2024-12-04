@@ -1,8 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
 
 public class GameRoomPanel extends JPanel {
+    //private JPanel gamePanel;
+
+
+
     public GameRoomPanel(JFrame parentFrame,  String roomName) {
         setLayout(new BorderLayout());
 
@@ -76,25 +83,100 @@ public class GameRoomPanel extends JPanel {
         return imgPanel;
     }
 
-    //색깔 같은거 있는 패널
-    private JPanel ItemPanel(){
-        JPanel itemPanel = new JPanel();
-        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
-        itemPanel.setBackground(Color.lightGray);
-        JLabel user = new JLabel("색깔 선택");
+    //캔버스
+    class GamePanel extends JPanel{
+        private int startX, startY, endX, endY;
+        private Color currentColor = Color.BLACK;
+        private boolean isErasing = false;
 
-        itemPanel.add(user);
-        return  itemPanel;
+
+
+        public GamePanel() {
+            setBackground(Color.WHITE);
+            setPreferredSize(new Dimension(550, 490));
+
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    startX = e.getX();
+                    startY = e.getY();
+                }
+            });
+
+            addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    endX = e.getX();
+                    endY = e.getY();
+
+                    Graphics g = getGraphics();
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.setStroke(new BasicStroke(3));
+
+                    if (isErasing) {
+                        g2d.setColor(Color.WHITE);
+                        g2d.setStroke(new BasicStroke(10)); // 지우개 크기
+                    } else {
+                        g2d.setColor(currentColor);
+                    }
+
+                    g2d.drawLine(startX, startY, endX, endY);
+
+                    startX = endX;
+                    startY = endY;
+                }
+            });
+        }
+
+        // 현재 색상을 설정하는 메서드
+        public void setCurrentColor(Color color) {
+            this.currentColor = color;
+        }
+
+        // 지우개 상태를 설정하는 메서드
+        public void setErasing(boolean erasing) {
+            this.isErasing = erasing;
+        }
+    }
+    private GamePanel gamePanel;
+
+    private JPanel GamePanel() {
+        gamePanel = new GamePanel(); // GamePanel 클래스의 인스턴스 생성
+        return gamePanel; // JPanel로 반환 가능
     }
 
-    //캔버스 
-    private JPanel GamePanel(){
-        JPanel gamePanel = new JPanel();
-        gamePanel.setBackground(Color.WHITE);
-        JLabel user = new JLabel("메인 패널");
+    //색깔 같은거 있는 패널
+    private JPanel ItemPanel() {
+        JPanel itemPanel = new JPanel();
+        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
+        itemPanel.setBackground(Color.LIGHT_GRAY);
 
-        gamePanel.add(user);
-        return  gamePanel;
+        JLabel title = new JLabel("도구 선택");
+        itemPanel.add(title);
+
+        JButton colorButton = new JButton("색상 선택");
+        colorButton.addActionListener(e -> {
+            Color selectedColor = JColorChooser.showDialog(null, "색상 선택", Color.BLACK);
+            if (selectedColor != null) {
+                // gamePanel 내부 메서드 호출
+                ((GamePanel) gamePanel).setCurrentColor(selectedColor);
+            }
+        });
+        itemPanel.add(colorButton);
+
+        JButton eraseButton = new JButton("지우개");
+        eraseButton.addActionListener(e -> {
+            ((GamePanel) gamePanel).setErasing(true);
+        });
+        itemPanel.add(eraseButton);
+
+        JButton drawButton = new JButton("그리기");
+        drawButton.addActionListener(e -> {
+            ((GamePanel) gamePanel).setErasing(false);
+        });
+        itemPanel.add(drawButton);
+
+        return itemPanel;
     }
 
     // 유저 패널을 UserSidePanel에 추가하는 메서드
