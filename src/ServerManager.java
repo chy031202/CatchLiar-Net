@@ -87,6 +87,7 @@ public class ServerManager {
                             server.printDisplay("새 참가자: " + userName);
                             sendGameMsg(new GameMsg(GameMsg.LOGIN_OK, user));
                             break;
+
                         case GameMsg.ROOM_SELECT:
                             user = inMsg.user;
                             enterRoom(inMsg.getMsg());
@@ -94,13 +95,12 @@ public class ServerManager {
                             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_OK, user, inMsg.getMsg()));
                             broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg()));
                             break;
-//                        case GameMsg.USER_LIST_UPDATE:
-//                            user = inMsg.user;
 
                         case GameMsg.LOGOUT:
                             server.printDisplay(userName + "님이 로그아웃했습니다.");
                             disconnectClient();
                             break;
+
                         default:
                             server.printDisplay("서버 receiveMessage 알 수 없는 메시지 모드: " + inMsg.getMode());
                     }
@@ -129,8 +129,6 @@ public class ServerManager {
         }
 
         private void enterRoom(String roomName) {
-//            String roomName = inMsg.getMsg();
-//            User user = inMsg.user;
                 synchronized (rooms) {
                 // 방 검색
                 Room room = rooms.stream()
@@ -147,13 +145,10 @@ public class ServerManager {
                     currentRoom.removeMember(userName);
                 }
 
-//                user.getCurrentRoom()
-
                 // 유저의 방 정보 업데이트
                 user.joinRoom(room);
                 user.setCurrentRoom(room);
                 currentRoom = room; // 현재 클라이언트의 방 업데이트
-
 
                 server.printDisplay(userName + "님이 방 [" + room.getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
@@ -176,7 +171,6 @@ public class ServerManager {
         public void run() {
             receiveMessage(clientSocket);
         }
-
 
     }
 }

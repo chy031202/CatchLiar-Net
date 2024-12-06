@@ -69,7 +69,7 @@ public class ClientManager {
             SwingUtilities.invokeLater(() -> {
                 switch (inMsg.mode) {
                     case GameMsg.LOGIN_OK:
-                        user = inMsg.getUser();
+                        user = inMsg.getUser(); // user 여기에서 저장해야 유지됨
                         client.changeSelectRoomPanel();
                         break;
                     case GameMsg.ROOM_SELECT_OK:
@@ -85,8 +85,6 @@ public class ClientManager {
                             System.out.println("추가된 후 userNames : " + userNames);
                             client.updateUserToRoom(userNames);
                         }
-//                        sendUserList(inMsg.user);
-//                        client.updateUserToRoom(userNames);
                         break;
                     //채팅 모드 등...
                     case GameMsg.CHAT_MESSAGE:
@@ -138,17 +136,5 @@ public class ClientManager {
     public void sendRoomSelection(String roomName) {
         sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
     }
-
-    public void sendUserList(User newUser) {
-        if (!userNames.contains(newUser.getName())) {
-            userNames.add(newUser.getName());
-        }
-        sendGameMsg(new GameMsg(GameMsg.USER_LIST_UPDATE, newUser));
-    }
-
-//    public String getUid() {
-//        return uid;
-//    }
-
 
 }

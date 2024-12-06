@@ -10,25 +10,16 @@ public class GameRoomPanel extends JPanel {
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
         this.gameMsg = gameMsg;
-//        this.roomName = roomName;
 
         buildGUI();
-//        System.out.println("GameRoomPanel 생성자" + gameMsg.getUser().getRoom());
     }
 
     public void updateUser(Vector<String> userNames) {
         System.out.println("들어온 유저 목록: " + userNames);
-        // 현재 방의 멤버 목록을 가져와서 userNames를 갱신
-//        if (user.getCurrentRoom() != null) {
-//            Vector<String> currentMembers = user.getCurrentRoom().getMembers();
-//            for (String memberName : currentMembers) {
-//                if (!userNames.contains(memberName)) {
-//                    userNames.add(memberName); // 새로 들어온 유저만 목록에 추가
-//                }
-//            }
-//        }
+
         this.userNames = userNames;
         System.out.println("현재 userNames : " + userNames);
+
         refreshUserSidePanel();  // 유저 목록 UI 갱신
     }
 
@@ -57,7 +48,6 @@ public class GameRoomPanel extends JPanel {
     }
 
 
-
     private void buildGUI() {
         setBounds(50, 200, 800, 600);
         setLayout(new BorderLayout());
@@ -67,9 +57,6 @@ public class GameRoomPanel extends JPanel {
         add(createUserSidePanel(), BorderLayout.WEST);
         add(createCenterPanel(), BorderLayout.CENTER);
         add(createRightPanel(), BorderLayout.EAST);
-
-
-        System.out.println("GameRoomPanel buildGUI");
     }
 
     private JPanel createUserSidePanel(){
@@ -77,13 +64,6 @@ public class GameRoomPanel extends JPanel {
         panel.setLayout(new GridLayout(0, 1));  // 1열 4행으로 세로로 나열
 
         panel.setBackground(Color.CYAN);
-
-//        panel.setPreferredSize(new Dimension(200, 400));  // 너비 200, 높이 400
-//        panel.setMaximumSize(new Dimension(200, Integer.MAX_VALUE));
-//        panel.setMinimumSize(new Dimension(200, 400));
-
-//        JLabel userLabel = new JLabel("유저 패널");
-//        panel.add(userLabel);
 
         // 현재 유저 목록을 JLabel로 표시
         for (String userName : userNames) {
