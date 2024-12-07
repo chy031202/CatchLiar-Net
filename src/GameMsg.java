@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -13,10 +14,19 @@ public class GameMsg implements Serializable {
     public final static int ROOM_SELECT_OK = 12;
     public final static int ROOM_NEW_MEMBER = 13;
 
+    //그림 관련 처리
+    public final static int DRAW_ACTION = 21;
+
     public int mode;   // 모드 값
     User user;  //유저 정보
     String message; //방 이름 or 채팅 메시지
     int time; //남은 시간(해당 라운드)
+
+    //그림 관련
+    private int startX, startY, endX, endY;
+    private Color drawColor; // 그림 색상
+
+
 
     public GameMsg(int mode, User user, String message, int time) {
         this.mode = mode;
@@ -24,6 +34,8 @@ public class GameMsg implements Serializable {
         this.message = message;
         this.time = time;
     }
+
+
 
     // 로그인!! 로그아웃?
     public GameMsg(int mode, String name) {
@@ -52,6 +64,18 @@ public class GameMsg implements Serializable {
             System.out.println("방 선택 성공: " + user.getName() + " , 들어간 방 : " + message);
         }
 
+    }
+
+    // 그림 관련 생성자
+    public GameMsg(int mode, int startX, int startY, int endX, int endY, Color color) {
+        this.mode = mode;
+        this.user = user;
+
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+        this.drawColor = drawColor;
     }
 
 
@@ -86,6 +110,23 @@ public class GameMsg implements Serializable {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public int getStartX() { return startX; }
+
+    public int getStartY() { return startY; }
+
+    public int getEndX() {
+        return endX;
+    }
+
+    public int getEndY() {
+        return endY;
+    }
+
+    public Color getColor() {
+        return drawColor;
+    }
+
 
     @Override
     public String toString() {

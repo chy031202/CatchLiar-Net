@@ -101,6 +101,11 @@ public class ServerManager {
                             disconnectClient();
                             break;
 
+                        case GameMsg.DRAW_ACTION:
+                            server.printDisplay("서버 receiveMessage DRAW_ACTION: " + inMsg);
+                            broadcasting(inMsg); // 그림 데이터를 다른 클라이언트들에게 전송
+                            break;
+
                         default:
                             server.printDisplay("서버 receiveMessage 알 수 없는 메시지 모드: " + inMsg.getMode());
                     }

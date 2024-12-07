@@ -1,11 +1,18 @@
+import javax.sound.sampled.Line;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class GameRoomPanel extends JPanel {
     private ClientManager clientManager;
     private GameMsg gameMsg;
-    private Vector<String> userNames = new Vector<>();  // 방에 들어온 유저 이름 저장
+    private Vector<String> userNames = new Vector<>();// 방에 들어온 유저 이름 저장
+
+    private GamePanel gamePanel;
 
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
@@ -77,8 +84,8 @@ public class GameRoomPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        JPanel gamepanel = GamePanel();
-        JPanel Itempanel = ItemPanel();
+        JPanel gamepanel = createGamePanel();
+        JPanel Itempanel = createItemPanel();
 
         panel.add(gamepanel, BorderLayout.CENTER);
         panel.add(Itempanel, BorderLayout.SOUTH);
@@ -86,22 +93,42 @@ public class GameRoomPanel extends JPanel {
         return panel;
     }
 
-    private JPanel GamePanel(){
-        JPanel gamePanel = new JPanel();
-        gamePanel.setBackground(Color.BLACK);
-        JLabel user = new JLabel("메인 패널");
-
-        gamePanel.add(user);
-        return gamePanel;
+    private JPanel createGamePanel() {
+        gamePanel = new GamePanel(clientManager); // GamePanel 클래스의 인스턴스 생성
+        return gamePanel; // JPanel로 반환 가능
     }
 
-    private JPanel ItemPanel(){
+
+    private JPanel createItemPanel(){
         JPanel itemPanel = new JPanel();
         itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
-        itemPanel.setBackground(Color.lightGray);
-        JLabel user = new JLabel("색깔 선택");
+        itemPanel.setBackground(Color.LIGHT_GRAY);
 
-        itemPanel.add(user);
+        JLabel title = new JLabel("도구 선택");
+        itemPanel.add(title);
+
+        JButton colorButton = new JButton("색상 선택");
+        colorButton.addActionListener(e -> {
+            Color selectedColor = JColorChooser.showDialog(null, "색상 선택", Color.BLACK);
+            if (selectedColor != null) {
+                // gamePanel 내부 메서드 호출
+                gamePanel.setCurrentColor(selectedColor);
+            }
+        });
+        itemPanel.add(colorButton);
+
+        JButton eraseButton = new JButton("지우개");
+        eraseButton.addActionListener(e -> {
+            gamePanel.setErasing(true);
+        });
+        itemPanel.add(eraseButton);
+
+        JButton drawButton = new JButton("그리기");
+        drawButton.addActionListener(e -> {
+            gamePanel.setErasing(false);
+        });
+        itemPanel.add(drawButton);
+
         return itemPanel;
     }
 

@@ -24,11 +24,16 @@ public class SelectRoomPanel extends JPanel {
     private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel();
 
-        JLabel title = new JLabel("키워드(방) 선택");
+        ImageIcon roomLogoIcon = new ImageIcon(SelectRoomPanel.class.getResource("/images/roomLogo.png"));
+        Image originalImage = roomLogoIcon.getImage(); // 원본 이미지 가져오기
+        Image resizedImage = originalImage.getScaledInstance(400, 130, Image.SCALE_SMOOTH); // 새 크기로 조정
+        ImageIcon resizedIcon = new ImageIcon(resizedImage); // 크기 조정된 이미지를 새로운 ImageIcon으로 설정
+        JLabel title = new JLabel(resizedIcon); // JLabel에 설정
+        title.setOpaque(true);
+        title.setBackground(new Color(60, 30, 30)); // 배경색 설정
         title.setHorizontalAlignment(JLabel.CENTER);
-        title.setFont(new Font("맑은 고딕", Font.BOLD, 30)); // 폰트 크기 조정
-        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0)); // 여백 추가
-        title.setForeground(Color.WHITE);
+        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0)); // 여백 추
+
 
         titlePanel.add(title);
 

@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -90,6 +91,10 @@ public class ClientManager {
                     case GameMsg.CHAT_MESSAGE:
                         System.out.println("receiveMessage 서버로부터 메시지 수신: ");
                         break;
+                    case GameMsg.DRAW_ACTION:
+                        System.out.println("클라이언트 receiveMessage DRAW_ACTION: " + inMsg);
+                        client.getGamePanel().drawLine(inMsg.getStartX(), inMsg.getStartY(), inMsg.getEndX(), inMsg.getEndY(), inMsg.getColor());
+                        break;
                     //이모티콘 전송 모드 등...
 //                case GameMsg.MODE_TX_IMAGE :
 //                    printDisplay(inMsg.userID + ": " + inMsg.message);
@@ -137,4 +142,26 @@ public class ClientManager {
         sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
     }
 
+    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color) {
+        if (out == null) {
+            System.err.println("출력 스트림이 초기화되지 않았습니다. 데이터를 전송할 수 없습니다.");
+            return;
+        }
+        try {
+            // 현재 사용자의 정보와 방 정보를 포함하여 메시지 생성
+            GameMsg msg = new GameMsg(
+                    GameMsg.DRAW_ACTION, // 메시지 모드
+//                    userName,            // 현재 유저 이름
+//                    user != null && user.getCurrentRoom() != null ? user.getCurrentRoom().getRoomName() : null, // 현재 방 이름
+                    startX,              // 그림 시작 X좌표
+                    startY,              // 그림 시작 Y좌표
+                    endX,                // 그림 끝 X좌표
+                    endY,                // 그림 끝 Y좌표
+                    color);
+            out.writeObject(msg);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
