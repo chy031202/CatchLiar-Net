@@ -22,7 +22,7 @@ public class Client extends JFrame {
     }
 
     private void buildGUI() {
-        setBounds(50, 200, 800, 600);
+        setBounds(50, 200, 600, 400);
         // JPanel을 생성하고 BoxLayout을 설정
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
