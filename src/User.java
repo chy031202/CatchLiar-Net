@@ -15,16 +15,16 @@ public class User implements Serializable {
 
     public void joinRoom(Room room) {
         if (currentRoom != null) {
-            currentRoom.removeMember(this.name);
+            currentRoom.removeMember(this);
         }
         currentRoom = room; // 유저가 특정 방에 들어감
-        currentRoom.addMember(this.name); // 방에 유저를 추가
+        currentRoom.addMember(this); // 방에 유저를 추가
         System.out.println("User joinRoom : " + this.name + " , room : " + currentRoom.getRoomName());
     }
 
     public void leaveRoom() {
         if (currentRoom != null) {
-            currentRoom.removeMember(this.getName()); // 방에서 유저 제거
+            currentRoom.removeMember(this); // 방에서 유저 제거
             currentRoom = null; // 방 정보 초기화
         }
     }

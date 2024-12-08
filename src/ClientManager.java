@@ -17,7 +17,7 @@ public class ClientManager {
 
     private User user;
     private String userName;
-    private Vector<String> userNames = new Vector<>();
+    private Vector<User> userNames = new Vector<>();
 
     public ClientManager(String serverAddress, int serverPort, Client client) {
         this.serverAddress = serverAddress;
@@ -87,11 +87,10 @@ public class ClientManager {
 //                        System.out.println("추가된 후 userNames : " + userNames);
 //                        client.updateUserToRoom(userNames);
                         // 새로들어온 유저의 user.getCurrentRoom.getMembers를 userNames에 넣어. 그러고 client.업데이트함수 불러서 그걸로 userData 업데이트하게해
-                        if (!userNames.contains(inMsg.user.name)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
-                            userNames.add(inMsg.user.name);
+                        if (!userNames.contains(inMsg.user)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
+                            userNames.add(inMsg.user);
                             inMsg.user.currentRoom.setMembers(userNames);
                             System.out.println("추가된 후 userNames : " + userNames);
-//                            client.updateUserToRoom(userNames);
                         }
                         client.updateUserToRoom(userNames);
                         break;

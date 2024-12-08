@@ -51,7 +51,7 @@ public class Client extends JFrame {
         repaint();
     }
 
-    public void updateUserToRoom(Vector<String> userNames) {
+    public void updateUserToRoom(Vector<User> userNames) {
         if(gameRoomPanel != null) {
             System.out.println("updateUserToRoom : " + userNames);
             gameRoomPanel.updateUser(userNames);

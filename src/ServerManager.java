@@ -142,7 +142,7 @@ public class ServerManager {
                         });
                 // 현재 클라이언트가 방에 속해있다면 제거
                 if (currentRoom != null) {
-                    currentRoom.removeMember(userName);
+                    currentRoom.removeMember(user);
                 }
 
                 // 유저의 방 정보 업데이트

@@ -53,7 +53,13 @@ public class GameMsg implements Serializable {
         }
 
     }
-
+//    // NEW_MEMBER
+//    public GameMsg(int mode, User user, Room room) {
+//        this.mode = mode;
+//        this.user = user;
+//        this.user.currentRoom = room;
+//        this.user.currentRoom.addMember();
+//    }
 
 
     public int getMode() {
