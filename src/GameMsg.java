@@ -38,7 +38,7 @@ public class GameMsg implements Serializable {
         this.user = user;
     }
 
-    //방 선택, ROOM_SELECT_OK
+    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것
@@ -53,6 +53,7 @@ public class GameMsg implements Serializable {
         }
 
     }
+
 
 
     public int getMode() {

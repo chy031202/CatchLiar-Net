@@ -82,14 +82,18 @@ public class ClientManager {
                         break;
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
-//                        System.out.println("추가되기 전 userNames : " + userNames);
-                        client.updateUserToRoom(userNames);
-//                        // 새로들어온 유저의 user.getCurrentRoom.getMembers를 userNames에 넣어. 그러고 client.업데이트함수 불러서 그걸로 userData 업데이트하게해
-//                        if (!userNames.contains(inMsg.user.name)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
-//                            userNames.add(inMsg.user.name);
-//                            System.out.println("추가된 후 userNames : " + userNames);
+                        System.out.println("추가되기 전 userNames : " + userNames);
+//                        userNames = inMsg.getUser().currentRoom.getMembers();
+//                        System.out.println("추가된 후 userNames : " + userNames);
+//                        client.updateUserToRoom(userNames);
+                        // 새로들어온 유저의 user.getCurrentRoom.getMembers를 userNames에 넣어. 그러고 client.업데이트함수 불러서 그걸로 userData 업데이트하게해
+                        if (!userNames.contains(inMsg.user.name)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
+                            userNames.add(inMsg.user.name);
+                            inMsg.user.currentRoom.setMembers(userNames);
+                            System.out.println("추가된 후 userNames : " + userNames);
 //                            client.updateUserToRoom(userNames);
-//                        }
+                        }
+                        client.updateUserToRoom(userNames);
                         break;
                     //채팅 모드 등...
                     case GameMsg.CHAT_MESSAGE:

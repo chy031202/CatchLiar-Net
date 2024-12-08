@@ -61,18 +61,23 @@ public class GameRoomPanel extends JPanel {
 
     private JPanel createUserSidePanel(){
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 1));  // 1열 4행으로 세로로 나열
+//        panel.setLayout(new GridLayout(0, 1));  // 1열 4행으로 세로로 나열
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // 세로 방향 정렬
 
         panel.setBackground(Color.CYAN);
 
         // 현재 유저 목록을 JLabel로 표시
         for (String userName : userNames) {
-            panel.add(createIndividualUserPanel(userName));
-//            panel.add(new JLabel(userName));  // 유저 이름을 JLabel로 추가
+            JPanel userPanel = createIndividualUserPanel(userName);
+            userPanel.setMaximumSize(new Dimension(300, 100)); // 패널의 최대 크기 설정
+            panel.add(userPanel);
+            panel.add(Box.createRigidArea(new Dimension(0, 10))); // 간격 추가
+//            panel.add(createIndividualUserPanel(userName));
         }
 
         return panel;
     }
+
 
     private JPanel createIndividualUserPanel(String userName) {
         JPanel panel = new JPanel(new GridLayout(1, 2));

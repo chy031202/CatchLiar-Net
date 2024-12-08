@@ -93,7 +93,7 @@ public class ServerManager {
                             enterRoom(inMsg.getMsg());
                             server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장했습니다.");
                             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_OK, user, inMsg.getMsg()));
-                            broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg()));
+                            broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom
                             break;
 
                         case GameMsg.LOGOUT:
@@ -129,7 +129,7 @@ public class ServerManager {
         }
 
         private void enterRoom(String roomName) {
-                synchronized (rooms) {
+            synchronized (rooms) {
                 // 방 검색
                 Room room = rooms.stream()
                         .filter(r -> r.getRoomName().equals(roomName)) // 이름이 같은 방 필터링

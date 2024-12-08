@@ -23,6 +23,7 @@ public class SelectRoomPanel extends JPanel {
 
     private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(new Color(60, 30, 30)); // 배경색 설정
 
         JLabel title = new JLabel("키워드(방) 선택");
         title.setHorizontalAlignment(JLabel.CENTER);

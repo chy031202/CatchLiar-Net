@@ -31,6 +31,8 @@ public class Room implements Serializable {
     public Vector<String> getMembers() {
         return members;
     }
+    public void setMembers(Vector<String> members) { this.members = members; }
+
     public int getMemberCount() { return members.size(); }
     public boolean isEmpty() {
         return members.isEmpty();
