@@ -14,6 +14,7 @@ public class Room implements Serializable {
     public void addMember(String member) {
         members.add(member);
         System.out.println("Room 에서 addMember : " + roomName + "에서 " + member + "님이 입장");
+        System.out.println("현재 방에 있는 멤버들 : " + members);
     }
 
     public void removeMember(String member) {

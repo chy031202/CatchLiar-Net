@@ -150,7 +150,7 @@ public class ServerManager {
                 user.setCurrentRoom(room);
                 currentRoom = room; // 현재 클라이언트의 방 업데이트
 
-                server.printDisplay(userName + "님이 방 [" + room.getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
+                server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
         }
 

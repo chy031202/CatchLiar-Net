@@ -67,8 +67,32 @@ public class GameRoomPanel extends JPanel {
 
         // 현재 유저 목록을 JLabel로 표시
         for (String userName : userNames) {
-            panel.add(new JLabel(userName));  // 유저 이름을 JLabel로 추가
+            panel.add(createIndividualUserPanel(userName));
+//            panel.add(new JLabel(userName));  // 유저 이름을 JLabel로 추가
         }
+
+        return panel;
+    }
+
+    private JPanel createIndividualUserPanel(String userName) {
+        JPanel panel = new JPanel(new GridLayout(1, 2));
+//        panel.setBackground(Color.CYAN);
+
+        JPanel leftPanel = new JPanel(new GridLayout(2, 1));
+        JPanel leftTopPanel = new JPanel();
+        leftTopPanel.add(new JLabel(userName + " 님"));
+        leftTopPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // 테두리
+        leftPanel.add(leftTopPanel);
+
+        JPanel leftBottomPanel = new JPanel();
+        leftBottomPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // 테두리
+        leftPanel.add(leftBottomPanel);
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // 테두리
+
+        panel.add(leftPanel);
+        panel.add(rightPanel);
 
         return panel;
     }
