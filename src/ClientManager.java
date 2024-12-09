@@ -16,6 +16,8 @@ public class ClientManager {
     private ObjectInputStream in;
     private Thread receiveThread;
 
+    private GamePanel gamePanel;
+
     private User user;
     private String userName;
     private Vector<String> userNames = new Vector<>();
@@ -76,6 +78,7 @@ public class ClientManager {
                     case GameMsg.ROOM_SELECT_OK:
                         System.out.println("클라이언트 receiveMessage : " + inMsg.mode + "," + inMsg.user.name + "," + inMsg.message);
                         client.changeGameRoomPanel(inMsg);
+                        client.getGamePanel().clearLines();
                         break;
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
@@ -92,8 +95,10 @@ public class ClientManager {
                         System.out.println("receiveMessage 서버로부터 메시지 수신: ");
                         break;
                     case GameMsg.DRAW_ACTION:
-                        System.out.println("클라이언트 receiveMessage DRAW_ACTION: " + inMsg);
+//                        System.out.println("클라이언트 receiveMessage DRAW_ACTION: " + inMsg);
                         client.getGamePanel().drawLine(inMsg.getStartX(), inMsg.getStartY(), inMsg.getEndX(), inMsg.getEndY(), inMsg.getColor());
+
+
                         break;
                     //이모티콘 전송 모드 등...
 //                case GameMsg.MODE_TX_IMAGE :
@@ -158,6 +163,11 @@ public class ClientManager {
                     endX,                // 그림 끝 X좌표
                     endY,                // 그림 끝 Y좌표
                     color);
+            System.out.println(String.format(
+                    "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d",
+                    startX, startY, endX, endY,
+                    color.getRed(), color.getGreen(), color.getBlue()
+            ));
             out.writeObject(msg);
             out.flush();
         } catch (IOException e) {

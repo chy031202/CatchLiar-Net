@@ -1,6 +1,10 @@
+import java.awt.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 public class ServerManager {
@@ -11,6 +15,7 @@ public class ServerManager {
     private Thread acceptThread = null;
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
+    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
         this.port = port;
@@ -102,7 +107,13 @@ public class ServerManager {
                             break;
 
                         case GameMsg.DRAW_ACTION:
-                            server.printDisplay("서버 receiveMessage DRAW_ACTION: " + inMsg);
+                            Color color = inMsg.getColor() != null ? inMsg.getColor() : Color.BLACK;
+//                            server.printDisplay(String.format(
+//                                    "DRAW_ACTION 수신 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d",
+//                                    inMsg.getStartX(), inMsg.getStartY(),
+//                                    inMsg.getEndX(), inMsg.getEndY(),
+//                                    inMsg.getColor().getRed(), inMsg.getColor().getGreen(), inMsg.getColor().getBlue()
+//                            ));
                             broadcasting(inMsg); // 그림 데이터를 다른 클라이언트들에게 전송
                             break;
 
@@ -128,8 +139,17 @@ public class ServerManager {
         }
 
         private void broadcasting(GameMsg msg) {
-            for (ClientHandler c : users) {
-                c.sendGameMsg(msg);
+            if (currentRoom == null) {
+                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
+                return;
+            }
+            // 같은 방에 있는 멤버들에게만 메시지를 전송
+            synchronized (currentRoom) {
+                for (String memberName : currentRoom.getMembers()) {
+                    users.stream()
+                            .filter(c -> c.userName.equals(memberName)) // 해당 이름의 클라이언트를 찾음
+                            .forEach(c -> c.sendGameMsg(msg));
+                }
             }
         }
 

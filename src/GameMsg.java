@@ -24,7 +24,7 @@ public class GameMsg implements Serializable {
 
     //그림 관련
     private int startX, startY, endX, endY;
-    private Color drawColor; // 그림 색상
+    private Color color; // 그림 색상
 
 
 
@@ -75,7 +75,7 @@ public class GameMsg implements Serializable {
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
-        this.drawColor = drawColor;
+        this.color = (color != null) ? color : Color.BLACK;
     }
 
 
@@ -124,7 +124,7 @@ public class GameMsg implements Serializable {
     }
 
     public Color getColor() {
-        return drawColor;
+        return color;
     }
 
 

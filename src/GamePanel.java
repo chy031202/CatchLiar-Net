@@ -1,4 +1,4 @@
-import javax.sound.sampled.Line;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -13,7 +13,11 @@ public class GamePanel extends JPanel {
     private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
     private ClientManager clientManager;
-    private List<Line> lines = new ArrayList<>();
+    private static List<DrawingLine> lines = new ArrayList<>();
+    private List<DrawingLine> tempLines = new ArrayList<>();
+
+    private int prevX, prevY;
+    private boolean isDrawing = false;
 
     public GamePanel(ClientManager clientManager) {
         this.clientManager = clientManager;
@@ -23,30 +27,71 @@ public class GamePanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                startX = e.getX();
-                startY = e.getY();
+                prevX = e.getX();
+                prevY = e.getY();
+                isDrawing = true;
+                requestFocusInWindow();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                isDrawing = false;
+                // 마우스 릴리즈 시 tempLines를 영구 lines에 추가
+                synchronized (lines) {
+                    lines.addAll(tempLines);
+                    tempLines.clear();
+                }
+                revalidate();
+                repaint();
             }
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                endX = e.getX();
-                endY = e.getY();
+                if (!isDrawing) return;
 
-                Color drawColor = isErasing ? Color.WHITE : currentColor;
+                int currentX = e.getX();
+                int currentY = e.getY();
 
-                // 선 추가 (로컬 및 서버)
-                addLine(startX, startY, endX, endY, drawColor);
-                clientManager.sendDrawingData(startX, startY, endX, endY, drawColor); // 서버 전송
+                Color drawColor = currentColor;
+
+                // 임시 선 추가
+                DrawingLine tempLine = new DrawingLine(prevX, prevY, currentX, currentY, currentColor);
+                tempLines.add(tempLine);
+
+                // 실시간으로 선 그리기와 데이터 전송
+                SwingUtilities.invokeLater(() -> {
+                    drawLine(prevX, prevY, currentX, currentY, currentColor);
+                    clientManager.sendDrawingData(prevX, prevY, currentX, currentY, currentColor);
+                });
+//                // 선 추가 (로컬 및 서버)
+//                addLine(startX, startY, endX, endY, drawColor);
+//                clientManager.sendDrawingData(startX, startY, endX, endY, drawColor); // 서버 전송
 
                 // 갱신
+                revalidate();
                 repaint();
 
-                startX = endX;
-                startY = endY;
+//                startX = endX;
+//                startY = endY;
+                prevX = currentX;
+                prevY = currentY;
             }
         });
+    }
+
+    public void drawLine(int startX, int startY, int endX, int endY, Color color) {
+//        addLine(startX, startY, endX, endY, color);
+//        repaint();
+        // 모든 클라이언트에서 동일한 리스트에 선 추가
+        synchronized (lines) {
+            lines.add(new DrawingLine(startX, startY, endX, endY, color));
+        }
+        System.out.println("Drawing line: (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ") with color " + color);
+        // UI 스레드에서 repaint 호출
+        revalidate();
+        repaint();
     }
 
     @Override
@@ -55,21 +100,32 @@ public class GamePanel extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setStroke(new BasicStroke(3));
 
-        for (Line line : lines) {
+        // 영구 선들 그리기
+        synchronized (lines) {
+            for (DrawingLine line : lines) {
+                g2d.setColor(line.getColor());
+                g2d.drawLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
+            }
+        }
+
+        // 임시 선들 그리기
+        for (DrawingLine line : tempLines) {
             g2d.setColor(line.getColor());
             g2d.drawLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
         }
     }
 
-    public void drawLine(int startX, int startY, int endX, int endY, Color color) {
-        addLine(startX, startY, endX, endY, color);
+    private void addLine(int startX, int startY, int endX, int endY, Color color) {
+        lines.add(new DrawingLine(startX, startY, endX, endY, color));
+    }
+
+    // 방 입장 시 기존 선들 초기화하는 메서드 추가
+    public void clearLines() {
+        synchronized (lines) {
+            lines.clear();
+        }
         repaint();
     }
-
-    private void addLine(int startX, int startY, int endX, int endY, Color color) {
-        lines.add(new Line(startX, startY, endX, endY, color));
-    }
-
     // 현재 색상을 설정하는 메서드
     public void setCurrentColor(Color color) {
         this.currentColor = color;
@@ -80,11 +136,11 @@ public class GamePanel extends JPanel {
         this.isErasing = erasing;
     }
 
-    private static class Line {
+    private static class DrawingLine {
         private final int startX, startY, endX, endY;
         private final Color color;
 
-        public Line(int startX, int startY, int endX, int endY, Color color) {
+        public DrawingLine(int startX, int startY, int endX, int endY, Color color) {
             this.startX = startX;
             this.startY = startY;
             this.endX = endX;
