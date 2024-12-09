@@ -4,94 +4,121 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class GamePanel extends JPanel {
-    private int startX, startY, endX, endY;
+    //public String createCenterPanel;
     private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
     private ClientManager clientManager;
     private static List<DrawingLine> lines = new ArrayList<>();
     private List<DrawingLine> tempLines = new ArrayList<>();
+    private ObjectOutputStream out;
 
     private int prevX, prevY;
+
     private boolean isDrawing = false;
 
     public GamePanel(ClientManager clientManager) {
         this.clientManager = clientManager;
+        setPreferredSize(new Dimension(500, 500));
+        setupDrawingListeners();
+
+
+    }
+
+    private void setupDrawingListeners() {
         setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(550, 490));
+        setPreferredSize(new Dimension(500, 500));
 
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                prevX = e.getX();
-                prevY = e.getY();
-                isDrawing = true;
-                requestFocusInWindow();
+                startDrawing(e);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                isDrawing = false;
-                // 마우스 릴리즈 시 tempLines를 영구 lines에 추가
-                synchronized (lines) {
-                    lines.addAll(tempLines);
-                    tempLines.clear();
-                }
-                revalidate();
-                repaint();
+                stopDrawing();
             }
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (!isDrawing) return;
-
-                int currentX = e.getX();
-                int currentY = e.getY();
-
-                Color drawColor = currentColor;
-
-                // 임시 선 추가
-                DrawingLine tempLine = new DrawingLine(prevX, prevY, currentX, currentY, currentColor);
-                tempLines.add(tempLine);
-
-                // 실시간으로 선 그리기와 데이터 전송
-                SwingUtilities.invokeLater(() -> {
-                    drawLine(prevX, prevY, currentX, currentY, currentColor);
-                    clientManager.sendDrawingData(prevX, prevY, currentX, currentY, currentColor);
-                });
-//                // 선 추가 (로컬 및 서버)
-//                addLine(startX, startY, endX, endY, drawColor);
-//                clientManager.sendDrawingData(startX, startY, endX, endY, drawColor); // 서버 전송
-
-                // 갱신
-                revalidate();
-                repaint();
-
-//                startX = endX;
-//                startY = endY;
-                prevX = currentX;
-                prevY = currentY;
+                continueDrawing(e);
             }
         });
     }
 
-    public void drawLine(int startX, int startY, int endX, int endY, Color color) {
-//        addLine(startX, startY, endX, endY, color);
-//        repaint();
-        // 모든 클라이언트에서 동일한 리스트에 선 추가
+    private void startDrawing(MouseEvent e) {
+        prevX = e.getX();
+        prevY = e.getY();
+        isDrawing = true;
+        requestFocusInWindow();
+    }
+
+    private void continueDrawing(MouseEvent e) {
+        if (!isDrawing) return;
+
+        int currentX = e.getX();
+        int currentY = e.getY();
+        // Paint 생성
+        Paint paintDTO = new Paint(prevX, prevY, currentX, currentY, currentColor, isErasing);
+
+        // 로컬 그리기
+//        DrawingLine tempLine = new DrawingLine(prevX, prevY, currentX, currentY, currentColor);
+//        synchronized (tempLines) {
+//            tempLines.add(tempLine);
+//        }
+
+        // 서버로 메시지 전송
+        clientManager.sendDrawingData(prevX, prevY, currentX, currentY, currentColor, isErasing);
+
+
+        // 즉시 화면 갱신
+        repaint();
+
+        prevX = currentX;
+        prevY = currentY;
+    }
+
+    private void stopDrawing() {
+        isDrawing = false;
+
+        // 임시 선들을 영구 선 목록에 추가
         synchronized (lines) {
-            lines.add(new DrawingLine(startX, startY, endX, endY, color));
+            lines.addAll(tempLines);
+            tempLines.clear();
         }
-        System.out.println("Drawing line: (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ") with color " + color);
-        // UI 스레드에서 repaint 호출
+
         revalidate();
         repaint();
+    }
+
+    // ClientManager에 추가할 메서드 제안
+    public void receiveRemoteDrawing(int startX, int startY, int endX, int endY, Color color) {
+        DrawingLine remoteLine = new DrawingLine(startX, startY, endX, endY, color);
+        synchronized (lines) {
+            lines.add(remoteLine);
+        }
+        repaint(); // UI 갱신
+    }
+
+
+
+    public void drawLine(int startX, int startY, int endX, int endY) {
+        synchronized (lines) {
+            // 현재 색상(검정)으로 선 추가
+            lines.add(new DrawingLine(startX, startY, endX, endY, currentColor));
+        }
+        System.out.println("Drawing line: (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ") with color " + currentColor);
+        revalidate();
+        SwingUtilities.invokeLater(this::repaint);
     }
 
     @Override
@@ -116,7 +143,7 @@ public class GamePanel extends JPanel {
     }
 
     private void addLine(int startX, int startY, int endX, int endY, Color color) {
-        lines.add(new DrawingLine(startX, startY, endX, endY, color));
+        lines.add(new DrawingLine(startX, startY, endX, endY, currentColor));
     }
 
     // 방 입장 시 기존 선들 초기화하는 메서드 추가
@@ -145,7 +172,7 @@ public class GamePanel extends JPanel {
             this.startY = startY;
             this.endX = endX;
             this.endY = endY;
-            this.color = color;
+            this.color = Color.BLACK;
         }
 
         public int getStartX() {
@@ -168,4 +195,51 @@ public class GamePanel extends JPanel {
             return color;
         }
     }
+
+    private JPanel createItemPanel(){
+        JPanel itemPanel = new JPanel();
+        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
+        itemPanel.setBackground(Color.LIGHT_GRAY);
+
+        JLabel title = new JLabel("도구 선택");
+        itemPanel.add(title);
+
+        JButton colorButton = new JButton("색상 선택");
+//        colorButton.addActionListener(e -> {
+//            Color selectedColor = JColorChooser.showDialog(null, "색상 선택", Color.BLACK);
+//            if (selectedColor != null) {
+//                // gamePanel 내부 메서드 호출
+//                gamePanel.setCurrentColor(selectedColor);
+//            }
+//        });
+//        itemPanel.add(colorButton);
+//
+//        JButton eraseButton = new JButton("지우개");
+//        eraseButton.addActionListener(e -> {
+//            gamePanel.setErasing(true);
+//        });
+//        itemPanel.add(eraseButton);
+//
+//        JButton drawButton = new JButton("그리기");
+//        drawButton.addActionListener(e -> {
+//            gamePanel.setErasing(false);
+//        });
+//        itemPanel.add(drawButton);
+
+        return itemPanel;
+    }
+
+    public JPanel createCenterPanel(){
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        JPanel gamepanel = new GamePanel(clientManager);
+        JPanel Itempanel = createItemPanel();
+
+        panel.add(gamepanel, BorderLayout.CENTER);
+        panel.add(Itempanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
 }

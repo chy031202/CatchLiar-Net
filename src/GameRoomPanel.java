@@ -17,6 +17,7 @@ public class GameRoomPanel extends JPanel {
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
         this.gameMsg = gameMsg;
+        gamePanel = new GamePanel(clientManager);
 
         buildGUI();
     }
@@ -37,7 +38,7 @@ public class GameRoomPanel extends JPanel {
 
         // 기존에 있던 다른 패널들은 그대로 두고 userSidePanel만 갱신하기
         JPanel userSidePanel = createUserSidePanel();
-        JPanel centerPanel = createCenterPanel();
+        JPanel centerPanel = gamePanel.createCenterPanel();
         JPanel rightPanel = createRightPanel();
 
         // 기존 패널을 모두 삭제하고 다시 추가하는 대신, 필요한 부분만 갱신
@@ -62,7 +63,7 @@ public class GameRoomPanel extends JPanel {
         JLabel title = new JLabel(gameMsg.user.name + "님의 " + gameMsg.message + "방", SwingConstants.CENTER);
         add(title, BorderLayout.NORTH);
         add(createUserSidePanel(), BorderLayout.WEST);
-        add(createCenterPanel(), BorderLayout.CENTER);
+        add(gamePanel.createCenterPanel(), BorderLayout.CENTER);
         add(createRightPanel(), BorderLayout.EAST);
     }
 
@@ -80,57 +81,6 @@ public class GameRoomPanel extends JPanel {
         return panel;
     }
 
-    private JPanel createCenterPanel(){
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        JPanel gamepanel = createGamePanel();
-        JPanel Itempanel = createItemPanel();
-
-        panel.add(gamepanel, BorderLayout.CENTER);
-        panel.add(Itempanel, BorderLayout.SOUTH);
-
-        return panel;
-    }
-
-    private JPanel createGamePanel() {
-        gamePanel = new GamePanel(clientManager); // GamePanel 클래스의 인스턴스 생성
-        return gamePanel; // JPanel로 반환 가능
-    }
-
-
-    private JPanel createItemPanel(){
-        JPanel itemPanel = new JPanel();
-        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
-        itemPanel.setBackground(Color.LIGHT_GRAY);
-
-        JLabel title = new JLabel("도구 선택");
-        itemPanel.add(title);
-
-        JButton colorButton = new JButton("색상 선택");
-        colorButton.addActionListener(e -> {
-            Color selectedColor = JColorChooser.showDialog(null, "색상 선택", Color.BLACK);
-            if (selectedColor != null) {
-                // gamePanel 내부 메서드 호출
-                gamePanel.setCurrentColor(selectedColor);
-            }
-        });
-        itemPanel.add(colorButton);
-
-        JButton eraseButton = new JButton("지우개");
-        eraseButton.addActionListener(e -> {
-            gamePanel.setErasing(true);
-        });
-        itemPanel.add(eraseButton);
-
-        JButton drawButton = new JButton("그리기");
-        drawButton.addActionListener(e -> {
-            gamePanel.setErasing(false);
-        });
-        itemPanel.add(drawButton);
-
-        return itemPanel;
-    }
 
     private JPanel createRightPanel() {
         JPanel panel = new JPanel();

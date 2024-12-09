@@ -95,9 +95,14 @@ public class ClientManager {
                         System.out.println("receiveMessage 서버로부터 메시지 수신: ");
                         break;
                     case GameMsg.DRAW_ACTION:
-//                        System.out.println("클라이언트 receiveMessage DRAW_ACTION: " + inMsg);
-                        client.getGamePanel().drawLine(inMsg.getStartX(), inMsg.getStartY(), inMsg.getEndX(), inMsg.getEndY(), inMsg.getColor());
-
+                        Paint paintData = inMsg.getPaintData();
+                        client.getGamePanel().receiveRemoteDrawing(
+                                paintData.getStartX(),
+                                paintData.getStartY(),
+                                paintData.getEndX(),
+                                paintData.getEndY(),
+                                paintData.getColor()
+                        );
 
                         break;
                     //이모티콘 전송 모드 등...
@@ -147,26 +152,23 @@ public class ClientManager {
         sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
     }
 
-    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color) {
+    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color,  boolean isErasing) {
         if (out == null) {
             System.err.println("출력 스트림이 초기화되지 않았습니다. 데이터를 전송할 수 없습니다.");
             return;
         }
         try {
+            Color defaultColor = Color.BLACK;
             // 현재 사용자의 정보와 방 정보를 포함하여 메시지 생성
-            GameMsg msg = new GameMsg(
-                    GameMsg.DRAW_ACTION, // 메시지 모드
-//                    userName,            // 현재 유저 이름
-//                    user != null && user.getCurrentRoom() != null ? user.getCurrentRoom().getRoomName() : null, // 현재 방 이름
-                    startX,              // 그림 시작 X좌표
-                    startY,              // 그림 시작 Y좌표
-                    endX,                // 그림 끝 X좌표
-                    endY,                // 그림 끝 Y좌표
-                    color);
+            Paint paintData = new Paint(startX, startY, endX, endY, color, isErasing);
+            GameMsg msg = new GameMsg(GameMsg.DRAW_ACTION, paintData);
+            sendGameMsg(msg);
+
             System.out.println(String.format(
                     "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d",
                     startX, startY, endX, endY,
-                    color.getRed(), color.getGreen(), color.getBlue()
+                    //color.getRed(), color.getGreen(), color.getBlue()
+                    defaultColor.getRed(), defaultColor.getGreen(), defaultColor.getBlue()
             ));
             out.writeObject(msg);
             out.flush();

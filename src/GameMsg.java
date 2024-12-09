@@ -21,6 +21,16 @@ public class GameMsg implements Serializable {
     User user;  //유저 정보
     String message; //방 이름 or 채팅 메시지
     int time; //남은 시간(해당 라운드)
+    private Paint paintData; // 그림 데이터용 필드 추가
+
+    public GameMsg(int mode, Paint paintData) {
+        this.mode = mode;
+        this.paintData = paintData;
+    }
+
+    public Paint getPaintData() {
+        return paintData;
+    }
 
     //그림 관련
     private int startX, startY, endX, endY;
@@ -66,16 +76,26 @@ public class GameMsg implements Serializable {
 
     }
 
-    // 그림 관련 생성자
     public GameMsg(int mode, int startX, int startY, int endX, int endY, Color color) {
         this.mode = mode;
-        this.user = user;
-
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
-        this.color = (color != null) ? color : Color.BLACK;
+        this.color =  new Color(color.getRed(), color.getGreen(), color.getBlue());
+    }
+
+    // 그림 관련 생성자 - 선
+    public GameMsg(int mode, int startX, int startY, int endX, int endY) {
+        this.mode = mode;
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+    }
+
+    public GameMsg(Color color) {
+        this.color = color;
     }
 
 

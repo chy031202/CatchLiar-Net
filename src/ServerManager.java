@@ -77,6 +77,14 @@ public class ServerManager {
             this.clientSocket = clientSocket;
         }
 
+        // 그림 데이터를 처리하는 메서드 추가
+        private void handleDrawAction(GameMsg inMsg) {
+            Paint paintData = inMsg.getPaintData();
+            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
+                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor());
+            broadcasting(new GameMsg(GameMsg.DRAW_ACTION, paintData)); // 그림 데이터를 다른 클라이언트들에게 전송
+        }
+
         private void receiveMessage(Socket cs) {
             try {
                 in = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
@@ -107,14 +115,7 @@ public class ServerManager {
                             break;
 
                         case GameMsg.DRAW_ACTION:
-                            Color color = inMsg.getColor() != null ? inMsg.getColor() : Color.BLACK;
-//                            server.printDisplay(String.format(
-//                                    "DRAW_ACTION 수신 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d",
-//                                    inMsg.getStartX(), inMsg.getStartY(),
-//                                    inMsg.getEndX(), inMsg.getEndY(),
-//                                    inMsg.getColor().getRed(), inMsg.getColor().getGreen(), inMsg.getColor().getBlue()
-//                            ));
-                            broadcasting(inMsg); // 그림 데이터를 다른 클라이언트들에게 전송
+                            handleDrawAction(inMsg);
                             break;
 
                         default:
@@ -149,7 +150,11 @@ public class ServerManager {
                     users.stream()
                             .filter(c -> c.userName.equals(memberName)) // 해당 이름의 클라이언트를 찾음
                             .forEach(c -> c.sendGameMsg(msg));
+
                 }
+            }
+            synchronized (users) {
+                users.forEach(c -> c.sendGameMsg(msg));
             }
         }
 
