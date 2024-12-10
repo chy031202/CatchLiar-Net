@@ -65,7 +65,7 @@ public class ServerManager {
         private ObjectInputStream in;
         private ObjectOutputStream out;
         private User user;
-        private String userName;
+        public String userName;
         private Room currentRoom = null;
 
         public ClientHandler(Socket clientSocket) {
@@ -102,6 +102,13 @@ public class ServerManager {
                             broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom
                             break;
 
+                        case GameMsg.CHAT_MESSAGE:
+                            user = inMsg.user;
+                            broadcasting(new GameMsg(GameMsg.CHAT_MESSAGE_OK, user, inMsg.getMsg()));
+                            server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님 채팅 : " + inMsg.getMsg());
+                            break;
+
+
                         case GameMsg.LOGOUT:
                             server.printDisplay(userName + "님이 로그아웃했습니다.");
                             disconnectClient();
@@ -128,11 +135,36 @@ public class ServerManager {
             }
         }
 
+//        private void broadcasting(GameMsg msg) {
+//            for (ClientHandler c : users) {
+//                c.sendGameMsg(msg);
+//            }
+//        }
+
         private void broadcasting(GameMsg msg) {
-            for (ClientHandler c : users) {
-                c.sendGameMsg(msg);
+//            if (currentRoom != null) { // 현재 방이 null이 아닌 경우만 실행
+                synchronized (currentRoom) {
+                    for (User member : currentRoom.getMembers()) { // 방의 모든 멤버를 대상으로 메시지 전송
+                        System.out.println("Broadcast 대상: " + member.name);
+                        ClientHandler handler = findHandlerByUser(member);
+                        if (handler != null) { // 핸들어 있을때
+                            handler.sendGameMsg(msg);
+                        }
+                    }
+//                }
             }
         }
+
+        private ClientHandler findHandlerByUser(User user) {
+            for (ClientHandler handler : users) {
+                if (handler.userName.equals(user.name)) {
+                    return handler;
+                }
+            }
+            return null;
+        }
+
+
 
         private void enterRoom(String roomName) {
             synchronized (rooms) {

@@ -99,9 +99,12 @@ public class ClientManager {
 //                      user = inMsg.getUser();
                         client.showDialog(inMsg);
                         break;
-                    //채팅 모드 등...
-                    case GameMsg.CHAT_MESSAGE:
-                        System.out.println("receiveMessage 서버로부터 메시지 수신: ");
+
+                    case GameMsg.CHAT_MESSAGE_OK:
+                        System.out.println("클라이언트 CHAT_MESSAGE_OK : " + inMsg.user.name + "의 " + inMsg.message);
+                        String chatUser = inMsg.user.name;
+                        String chatMsg = inMsg.message;
+                        client.getGameRoomPanel().showChat("[ " + chatUser + "] : " + chatMsg);
                         break;
                     //이모티콘 전송 모드 등...
 //                case GameMsg.MODE_TX_IMAGE :
@@ -148,6 +151,11 @@ public class ClientManager {
 
     public void sendRoomSelection(String roomName) {
         sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
+    }
+
+    public void sendChat(String message) {
+        System.out.println("clientManage의 sendChat : " + message );
+        sendGameMsg(new GameMsg(GameMsg.CHAT_MESSAGE, user, message));
     }
 
 }

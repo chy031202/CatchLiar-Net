@@ -6,13 +6,15 @@ public class GameMsg implements Serializable {
 
     public final static int LOGIN = 1;
     public final static int LOGIN_OK = 2;
-    public final static int CHAT_MESSAGE = 3;
-    public final static int LOGOUT = 4; // 로그아웃 모드
+    public final static int LOGOUT = 3; // 로그아웃 모드
 
     public final static int ROOM_SELECT = 11;//방 선택
     public final static int ROOM_SELECT_OK = 12;
     public final static int ROOM_NEW_MEMBER = 13;
     public final static int ROOM_SELECT_DENIED = 14;
+
+    public final static int CHAT_MESSAGE = 21;
+    public final static int CHAT_MESSAGE_OK = 22;
 
     public int mode;   // 모드 값
     User user;  //유저 정보
@@ -39,7 +41,7 @@ public class GameMsg implements Serializable {
         this.user = user;
     }
 
-    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER
+    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_MESSAGE_OK
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것
