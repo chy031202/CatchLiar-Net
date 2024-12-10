@@ -32,12 +32,6 @@ public class GameMsg implements Serializable {
         return paintData;
     }
 
-    //그림 관련
-    private int startX, startY, endX, endY;
-    private Color color; // 그림 색상
-
-
-
     public GameMsg(int mode, User user, String message, int time) {
         this.mode = mode;
         this.user = user;
@@ -76,27 +70,7 @@ public class GameMsg implements Serializable {
 
     }
 
-    public GameMsg(int mode, int startX, int startY, int endX, int endY, Color color) {
-        this.mode = mode;
-        this.startX = startX;
-        this.startY = startY;
-        this.endX = endX;
-        this.endY = endY;
-        this.color =  new Color(color.getRed(), color.getGreen(), color.getBlue());
-    }
 
-    // 그림 관련 생성자 - 선
-    public GameMsg(int mode, int startX, int startY, int endX, int endY) {
-        this.mode = mode;
-        this.startX = startX;
-        this.startY = startY;
-        this.endX = endX;
-        this.endY = endY;
-    }
-
-    public GameMsg(Color color) {
-        this.color = color;
-    }
 
 
     public int getMode() {
@@ -130,23 +104,6 @@ public class GameMsg implements Serializable {
     public void setUser(User user) {
         this.user = user;
     }
-
-    public int getStartX() { return startX; }
-
-    public int getStartY() { return startY; }
-
-    public int getEndX() {
-        return endX;
-    }
-
-    public int getEndY() {
-        return endY;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
 
     @Override
     public String toString() {

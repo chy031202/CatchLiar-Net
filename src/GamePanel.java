@@ -5,19 +5,18 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class GamePanel extends JPanel {
-    //public String createCenterPanel;
     private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
     private ClientManager clientManager;
     private static List<DrawingLine> lines = new ArrayList<>();
     private List<DrawingLine> tempLines = new ArrayList<>();
     private ObjectOutputStream out;
+    private static final Color ERASER_COLOR = Color.WHITE;
 
     private int prevX, prevY;
 
@@ -27,8 +26,6 @@ public class GamePanel extends JPanel {
         this.clientManager = clientManager;
         setPreferredSize(new Dimension(500, 500));
         setupDrawingListeners();
-
-
     }
 
     private void setupDrawingListeners() {
@@ -67,18 +64,18 @@ public class GamePanel extends JPanel {
 
         int currentX = e.getX();
         int currentY = e.getY();
-        // Paint 생성
-        Paint paintDTO = new Paint(prevX, prevY, currentX, currentY, currentColor, isErasing);
 
-        // 로컬 그리기
-//        DrawingLine tempLine = new DrawingLine(prevX, prevY, currentX, currentY, currentColor);
-//        synchronized (tempLines) {
-//            tempLines.add(tempLine);
-//        }
+        // 지우개 모드일 경우 하얀색으로, 아니면 현재 선택된 색상으로
+        //Color drawColor = isErasing ? ERASER_COLOR : currentColor;
+        Color drawColor = isErasing ? Color.WHITE : currentColor;
 
-        // 서버로 메시지 전송
-        clientManager.sendDrawingData(prevX, prevY, currentX, currentY, currentColor, isErasing);
 
+        // 서버로 메시지 전송 (지우개 모드 정보 포함)
+        clientManager.sendDrawingData(prevX, prevY, currentX, currentY, drawColor, isErasing);
+
+        synchronized (lines) {
+            lines.add(new DrawingLine(prevX, prevY, currentX, currentY, drawColor));
+        }
 
         // 즉시 화면 갱신
         repaint();
@@ -90,35 +87,19 @@ public class GamePanel extends JPanel {
     private void stopDrawing() {
         isDrawing = false;
 
-        // 임시 선들을 영구 선 목록에 추가
-        synchronized (lines) {
-            lines.addAll(tempLines);
-            tempLines.clear();
-        }
-
         revalidate();
         repaint();
     }
 
     // ClientManager에 추가할 메서드 제안
     public void receiveRemoteDrawing(int startX, int startY, int endX, int endY, Color color) {
-        DrawingLine remoteLine = new DrawingLine(startX, startY, endX, endY, color);
+        System.out.println("Drawing received: (" + startX + ", " + startY + ") -> (" + endX + ", " + endY + "), Color: " + color);
         synchronized (lines) {
-            lines.add(remoteLine);
+            lines.add(new DrawingLine(startX, startY, endX, endY, color));
         }
-        repaint(); // UI 갱신
-    }
-
-
-
-    public void drawLine(int startX, int startY, int endX, int endY) {
-        synchronized (lines) {
-            // 현재 색상(검정)으로 선 추가
-            lines.add(new DrawingLine(startX, startY, endX, endY, currentColor));
-        }
-        System.out.println("Drawing line: (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ") with color " + currentColor);
-        revalidate();
-        SwingUtilities.invokeLater(this::repaint);
+        SwingUtilities.invokeLater(() -> {
+            repaint();
+        });
     }
 
     @Override
@@ -130,16 +111,13 @@ public class GamePanel extends JPanel {
         // 영구 선들 그리기
         synchronized (lines) {
             for (DrawingLine line : lines) {
-                g2d.setColor(line.getColor());
-                g2d.drawLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
+                g2d.setColor(line.color());
+                g2d.drawLine(line.startX(), line.startY(), line.endX(), line.endY());
             }
         }
 
-        // 임시 선들 그리기
-        for (DrawingLine line : tempLines) {
-            g2d.setColor(line.getColor());
-            g2d.drawLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
-        }
+        revalidate();
+        SwingUtilities.invokeLater(this::repaint);
     }
 
     private void addLine(int startX, int startY, int endX, int endY, Color color) {
@@ -156,45 +134,23 @@ public class GamePanel extends JPanel {
     // 현재 색상을 설정하는 메서드
     public void setCurrentColor(Color color) {
         this.currentColor = color;
+        this.isErasing = false;
     }
 
     // 지우개 상태를 설정하는 메서드
-    public void setErasing(boolean erasing) {
-        this.isErasing = erasing;
+    public void toggleEraser() {
+        this.isErasing = !this.isErasing;
     }
 
-    private static class DrawingLine {
-        private final int startX, startY, endX, endY;
-        private final Color color;
-
-        public DrawingLine(int startX, int startY, int endX, int endY, Color color) {
-            this.startX = startX;
-            this.startY = startY;
-            this.endX = endX;
-            this.endY = endY;
-            this.color = Color.BLACK;
+    private record DrawingLine(int startX, int startY, int endX, int endY, Color color) {
+            private DrawingLine(int startX, int startY, int endX, int endY, Color color) {
+                this.startX = startX;
+                this.startY = startY;
+                this.endX = endX;
+                this.endY = endY;
+                this.color = color;
+            }
         }
-
-        public int getStartX() {
-            return startX;
-        }
-
-        public int getStartY() {
-            return startY;
-        }
-
-        public int getEndX() {
-            return endX;
-        }
-
-        public int getEndY() {
-            return endY;
-        }
-
-        public Color getColor() {
-            return color;
-        }
-    }
 
     private JPanel createItemPanel(){
         JPanel itemPanel = new JPanel();
@@ -204,27 +160,45 @@ public class GamePanel extends JPanel {
         JLabel title = new JLabel("도구 선택");
         itemPanel.add(title);
 
-        JButton colorButton = new JButton("색상 선택");
-//        colorButton.addActionListener(e -> {
-//            Color selectedColor = JColorChooser.showDialog(null, "색상 선택", Color.BLACK);
-//            if (selectedColor != null) {
-//                // gamePanel 내부 메서드 호출
-//                gamePanel.setCurrentColor(selectedColor);
-//            }
-//        });
-//        itemPanel.add(colorButton);
-//
-//        JButton eraseButton = new JButton("지우개");
-//        eraseButton.addActionListener(e -> {
-//            gamePanel.setErasing(true);
-//        });
-//        itemPanel.add(eraseButton);
-//
-//        JButton drawButton = new JButton("그리기");
+        // 색상 선택 버튼들
+        Color[] colors = {Color.BLACK, Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW};
+        for (Color color : colors) {
+            JButton colorButton = new JButton();
+            colorButton.setBackground(color);
+            colorButton.setPreferredSize(new Dimension(50, 30));
+            colorButton.addActionListener(e -> {
+                setCurrentColor(color);
+                // 색상 선택 시 지우개 모드 해제
+                isErasing = false;
+            });
+            itemPanel.add(colorButton);
+        }
+
+        // 색상 팔레트 버튼
+        JButton customColorButton = new JButton("색상 선택");
+        customColorButton.addActionListener(e -> {
+            Color selectedColor = JColorChooser.showDialog(this, "색상 선택", currentColor);
+            if (selectedColor != null) {
+                setCurrentColor(selectedColor);
+            }
+        });
+        itemPanel.add(customColorButton);
+
+        // 지우개 버튼
+        JToggleButton eraserButton = new JToggleButton("지우개");
+        eraserButton.addActionListener(e -> {
+            toggleEraser();
+            eraserButton.setSelected(isErasing);
+        });
+        itemPanel.add(eraserButton);
+
+        JButton drawButton = new JButton("그리기");
 //        drawButton.addActionListener(e -> {
-//            gamePanel.setErasing(false);
+//            setErasing(false);
 //        });
 //        itemPanel.add(drawButton);
+
+        repaint();
 
         return itemPanel;
     }

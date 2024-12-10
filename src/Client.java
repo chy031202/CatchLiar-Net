@@ -61,6 +61,9 @@ public class Client extends JFrame {
     }
 
     public GamePanel getGamePanel() {
+        if (gamePanel == null) {
+            System.out.println("GamePanel is null!");
+        }
         return gamePanel;
     }
 

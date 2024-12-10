@@ -152,27 +152,24 @@ public class ClientManager {
         sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
     }
 
-    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color,  boolean isErasing) {
+    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color, boolean isErasing) {
         if (out == null) {
             System.err.println("출력 스트림이 초기화되지 않았습니다. 데이터를 전송할 수 없습니다.");
             return;
         }
         try {
-            Color defaultColor = Color.BLACK;
-            // 현재 사용자의 정보와 방 정보를 포함하여 메시지 생성
+            // Paint 객체 생성 시 현재 색상과 지우개 상태 전달
             Paint paintData = new Paint(startX, startY, endX, endY, color, isErasing);
             GameMsg msg = new GameMsg(GameMsg.DRAW_ACTION, paintData);
             sendGameMsg(msg);
 
-            System.out.println(String.format(
-                    "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d",
-                    startX, startY, endX, endY,
-                    //color.getRed(), color.getGreen(), color.getBlue()
-                    defaultColor.getRed(), defaultColor.getGreen(), defaultColor.getBlue()
-            ));
-            out.writeObject(msg);
-            out.flush();
-        } catch (IOException e) {
+//            System.out.println(String.format(
+//                    "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d, 지우개: %b",
+//                    startX, startY, endX, endY,
+//                    color.getRed(), color.getGreen(), color.getBlue(),
+//                    isErasing
+//            ));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
