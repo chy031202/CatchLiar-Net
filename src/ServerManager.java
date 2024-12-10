@@ -73,6 +73,7 @@ public class ServerManager {
         private User user;
         public String userName;
         private Room currentRoom = null;
+        public boolean isLiar = false;
 
         public ClientHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
@@ -140,6 +141,16 @@ public class ServerManager {
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user, inMsg.user.currentRoom.getReadyUsers()));
                             break;
 
+                        case GameMsg.GAME_START:
+                            User liar = selectLiar(inMsg.readyUsers);
+                            if(userName.equals(liar.name)) {
+                                isLiar = true;
+                                sendGameMsg(new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
+                            } else {
+                                sendGameMsg(new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, "keyword"));
+                            }
+                            break;
+
                         case GameMsg.LOGOUT:
                             server.printDisplay(userName + "님이 로그아웃했습니다.");
                             disconnectClient();
@@ -190,9 +201,9 @@ public class ServerManager {
 //
 //                }
 //            }
-//            synchronized (users) {
-//                users.forEach(c -> c.sendGameMsg(msg));
-//            }
+////            synchronized (users) {
+////                users.forEach(c -> c.sendGameMsg(msg));
+////            }
 //        }
         private void broadcasting(GameMsg msg) {
             if (currentRoom == null) {
@@ -246,6 +257,15 @@ public class ServerManager {
 
                 server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
+        }
+
+        private User selectLiar(Vector<User> readyUsers) {
+            // 랜덤으로 라이어 선택
+            Random random = new Random();
+            int liarIndex = random.nextInt(readyUsers.size());
+            User liarUser = readyUsers.get(liarIndex);
+
+            return liarUser;
         }
 
         private void disconnectClient() {

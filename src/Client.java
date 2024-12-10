@@ -102,6 +102,24 @@ public class Client extends JFrame {
                 );
                 break;
 
+            case GameMsg.LIAR_NOTIFICATION:
+                JOptionPane.showMessageDialog(
+                        this,
+                        "당신은 라이어입니다!", // 메시지
+                        "알림",              // 제목
+                        JOptionPane.PLAIN_MESSAGE // 경고 아이콘
+                );
+                break;
+
+            case GameMsg.KEYWORD_NOTIFICATION:
+                JOptionPane.showMessageDialog(
+                        this,
+                        "키워드 : " + inMsg.message, // 메시지
+                        "알림",              // 제목
+                        JOptionPane.PLAIN_MESSAGE // 경고 아이콘
+                );
+                break;
+
             default:
                 System.out.println("showDialog default : " + inMsg);
                 break;

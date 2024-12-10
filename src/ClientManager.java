@@ -107,10 +107,6 @@ public class ClientManager {
                         client.showDialog(inMsg);
                         break;
 
-                    case GameMsg.CHAT_MESSAGE:
-                        System.out.println("receiveMessage 서버로부터 메시지 수신: ");
-                        break;
-
                     case GameMsg.GAME_READY_AVAILABLE:
                         client.showReadyButton();
                         break;
@@ -123,17 +119,25 @@ public class ClientManager {
                         client.updateReadyToRoom(readyUsers, null);
                         // readyUsers 4명되면 게임 시작
                         if(readyUsers.size() == 4) {
-                            client.showDialog(inMsg);
                             System.out.println("겜 시작");
-                            client.startGame();
+                            sendGameMsg(new GameMsg(GameMsg.GAME_START, userNames));
                         }
-
                         break;
 
                     case GameMsg.GAME_UN_READY_OK:
                         System.out.println("GAME_UN_READY 받음 클라이언트");
                         readyUsers.remove(inMsg.user);
                         client.updateReadyToRoom(readyUsers, inMsg.user);
+                        break;
+
+                    case GameMsg.LIAR_NOTIFICATION:
+                        client.showDialog(inMsg);
+                        client.startGame();
+                        break;
+
+                    case GameMsg.KEYWORD_NOTIFICATION:
+                        client.showDialog(inMsg);
+                        client.startGame();
                         break;
 
                     case GameMsg.DRAW_ACTION:

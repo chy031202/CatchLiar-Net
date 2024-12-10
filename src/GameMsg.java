@@ -25,6 +25,11 @@ public class GameMsg implements Serializable {
 
     public final static int DRAW_ACTION = 41;
 
+    public final static int GAME_START = 51;
+    public final static int LIAR_NOTIFICATION = 52;
+    public final static int KEYWORD_NOTIFICATION = 53;
+    public final static int GAME_END = 54;
+
     public int mode;   // 모드 값
     User user;  //유저 정보
     Vector<User> readyUsers;
@@ -55,13 +60,13 @@ public class GameMsg implements Serializable {
         System.out.println("로그인시 User 초기화되는지 확인 " + user.getName());
     }
 
-    // LOGIN_OK, ROOM_SELECT_DENIED, GAME_READY
+    // LOGIN_OK, ROOM_SELECT_DENIED, GAME_READY, LIAR_NOTIFICATION
     public GameMsg(int mode, User user) {
         this.mode = mode;
         this.user = user;
     }
 
-    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_MESSAGE_OK
+    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_MESSAGE_OK, KEYWORD_NOTIFICATION
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것
@@ -87,6 +92,12 @@ public class GameMsg implements Serializable {
         this.mode = mode;
         this.user = user;
         this.readyUsers = readyUsers;
+    }
+
+    // GAME_READY_OK
+    public GameMsg(int mode, Vector<User> userNames) {
+        this.mode = mode;
+        this.readyUsers = userNames;
     }
 
 
