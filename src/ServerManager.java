@@ -17,7 +17,6 @@ public class ServerManager {
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
 //    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
-    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
         this.port = port;
@@ -118,6 +117,11 @@ public class ServerManager {
                             server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장했습니다.");
                             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_OK, user, inMsg.getMsg()));
                             broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom
+
+                            // 4명 다 들어오면 준비 가능하도록
+                            if(user.currentRoom.getMemberCount() == 4) {
+                                broadcasting(new GameMsg(GameMsg.GAME_READY_AVAILABLE));
+                            }
                             break;
 
                         case GameMsg.CHAT_MESSAGE:
@@ -126,6 +130,10 @@ public class ServerManager {
                             server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님 채팅 : " + inMsg.getMsg());
                             break;
 
+                        case GameMsg.GAME_READY:
+                            inMsg.user.setReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user, inMsg.user.currentRoom.getReadyUsers()));
+                            break;
 
                         case GameMsg.LOGOUT:
                             server.printDisplay(userName + "님이 로그아웃했습니다.");

@@ -6,7 +6,7 @@ public class User implements Serializable {
 
     String name; //닉네임
     Room currentRoom;  //속한 방 정보
-//    boolean ready;  //준비 여부
+    boolean ready;  //준비 여부 // 0: 대기 중 // 1: 준비완료
 //    private boolean isLoggedIn = true;
 
     public User(String name){
@@ -29,15 +29,25 @@ public class User implements Serializable {
         }
     }
 
+    public void setReady() {
+        if (currentRoom != null) {
+            currentRoom.removeReadyUser(this);
+        }
+        ready = true;
+        currentRoom.addReadyUser(this);
+        System.out.println("User setReady : " + this.name + " , room : " + currentRoom.getRoomName());
+    }
+
     public String getName() {
         return name;
     }
-
     public void setName(String name) { this.name = name; }
 
     public Room getCurrentRoom() { return currentRoom; }
-
     public void setCurrentRoom(Room room) { this.currentRoom = room; }
+
+//    public boolean getReady() { return ready; }
+//    public void setReady(boolean ready) { this.ready = ready; }
 
 
 //    public boolean isLoggedIn() {

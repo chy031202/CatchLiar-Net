@@ -9,25 +9,39 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 public class GameRoomPanel extends JPanel {
     private ClientManager clientManager;
     private GameMsg gameMsg;
-    private Vector<User> userNames = new Vector<>();  // 방에 들어온 유저 이름 저장
+    private Vector<User> userNames = new Vector<>();  // 방에 들어온 유저 저장
+    private Vector<User> readyUsers = new Vector<>(); // 준비 완료한 유저 저장
 
     private JTextPane chat_display;
     private DefaultStyledDocument document;
 
     private JPanel userSidePanel; // 전역 변수로 저장
+    private HashMap<String, JPanel> userLeftBottomPanels = new HashMap<>();
+    private JPanel rightPannel;
+    private JPanel readyPanel;
+    private JPanel alarmPanel;
     private GamePanel gamePanel;
+
+    public boolean ready = false;
+    private boolean start = false;
 
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
         this.gameMsg = gameMsg;
+//        this.readyUsers = readyUsers;
+
         gamePanel = new GamePanel(clientManager);
 
         userSidePanel = createUserSidePanel();
+        readyPanel = createReadyPanel();
+        rightPannel = createRightPanel();
+        alarmPanel = createAlarmPanel();
         buildGUI();
     }
 
@@ -40,8 +54,7 @@ public class GameRoomPanel extends JPanel {
         refreshUserSidePanel();  // 유저 목록 UI 갱신
     }
 
-
-    // 유저 목록 User Side Panel UI 갱신
+    // 유저 새로 들어오면 UserSidePanel 갱신
     private void refreshUserSidePanel() {
         System.out.println("refreshUserSidePanel");
 
@@ -55,6 +68,54 @@ public class GameRoomPanel extends JPanel {
         repaint();  // 화면 갱신
     }
 
+    public void settingReady() {
+        ready = true;
+//        readyPanel.removeAll();
+        rightPannel.remove(readyPanel);
+        JPanel newReadyPanel = createReadyPanel();
+        readyPanel = newReadyPanel;
+        rightPannel.add(readyPanel, BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+    }
+
+    public void updateReadyUser(Vector<User> readyUsers) {
+        this.readyUsers = readyUsers;
+        refreshLeftBottomPanel();
+    }
+
+    private void refreshLeftBottomPanel() {
+        System.out.println("refreshLeftBottomPanel");
+        if(readyUsers != null) {
+            for (User readyUser : readyUsers) {
+                String readyUserName = readyUser.getName();
+                JPanel leftBottomPanel = userLeftBottomPanels.get(readyUserName); // 해당 유저의 패널 찾기
+
+                if (leftBottomPanel != null) {
+                    leftBottomPanel.removeAll();
+                    leftBottomPanel.add(new JLabel("준비 완료"));
+                    leftBottomPanel.revalidate();
+                    leftBottomPanel.repaint();
+                }
+            }
+        }
+    }
+
+    // 게임 시작하면 캔버스 초기화 & readyPanel 없애고 alarmPanel로 갱신
+    public void refreshStartGame() {
+        System.out.println("refreshStartGame");
+        start = true;
+        ready = false;
+
+        gamePanel.clearLines(); // 캔버스 초기화
+        rightPannel.remove(readyPanel);
+        rightPannel.add(alarmPanel, BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+    }
+
 
     private void buildGUI() {
         setBounds(50, 200, 800, 600);
@@ -63,7 +124,9 @@ public class GameRoomPanel extends JPanel {
         add(createTopPanel(), BorderLayout.NORTH);
         add(userSidePanel, BorderLayout.WEST);
         add(gamePanel.createCenterPanel(), BorderLayout.CENTER);
-        add(createRightPanel(), BorderLayout.EAST);
+        add(rightPannel, BorderLayout.EAST);
+
+//        refreshLeftBottomPanel();
     }
 
     private JPanel createTopPanel() {
@@ -107,10 +170,26 @@ public class GameRoomPanel extends JPanel {
         leftTopPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
         leftPanel.add(leftTopPanel);
 
-        JPanel leftBottomPanel = new JPanel();
-        leftBottomPanel.setBackground(new Color(242,242,242));
-        leftBottomPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
+        JPanel leftBottomPanel;
+        if (userLeftBottomPanels.containsKey(userName)) {
+            // 기존 패널 가져오기
+            System.out.println("기존 leftBottomPanel 패널 가져옴");
+            leftBottomPanel = userLeftBottomPanels.get(userName);
+        } else {
+            // 새 패널 생성
+            leftBottomPanel = new JPanel();
+            leftBottomPanel.setBackground(new Color(242, 242, 242));
+            leftBottomPanel.setBorder(BorderFactory.createLineBorder(new Color(64, 48, 47), 2)); // 테두리
+
+            userLeftBottomPanels.put(userName, leftBottomPanel); // userLeftBottomPanels에 저장해서 관리
+        }
+//        leftBottomPanel.setBackground(new Color(242,242,242));
+//        leftBottomPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
+
         leftPanel.add(leftBottomPanel);
+
+        // userLeftBottomPanels에 저장해서 관리
+//        userLeftBottomPanels.put(userName, leftBottomPanel);
 
         JPanel rightPanel = new JPanel();
         rightPanel.setBackground(new Color(242,242,242));
@@ -128,8 +207,8 @@ public class GameRoomPanel extends JPanel {
         panel.setLayout(new BorderLayout()); // 위아래로 나눔
         panel.setPreferredSize(new Dimension(180, 0));
 
-        JPanel alarmPanel = AlarmPanel();
-        panel.add(alarmPanel, BorderLayout.NORTH);
+
+        panel.add(readyPanel, BorderLayout.NORTH);
 
         // 가운데 채팅 패널
         JPanel chatPanel = ChatPanel();
@@ -142,7 +221,38 @@ public class GameRoomPanel extends JPanel {
         return panel;
     }
 
-    private JPanel AlarmPanel() {
+    private JPanel createReadyPanel() {
+        JPanel panel = new JPanel(new GridLayout(2,1));
+        panel.setPreferredSize(new Dimension(0, 80));
+
+        JPanel welcomePanel = new JPanel();
+        welcomePanel.add(new JLabel("환영합니다! " + gameMsg.user.name + " 님"));
+
+
+        if(ready == true) {
+            JPanel buttonPanel = new JPanel(new GridLayout(1,2));
+            JButton readyButton = new JButton("준비");
+            buttonPanel.add(new JLabel("gif 추가 예정"));
+            buttonPanel.add(readyButton);
+
+            readyButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    clientManager.sendReady(gameMsg.user);
+                }
+            });
+
+            panel.add(welcomePanel);
+            panel.add(buttonPanel);
+        } else {
+            panel.add(welcomePanel);
+        }
+
+
+        return panel;
+    }
+
+    private JPanel createAlarmPanel() {
         JPanel alarmPanel = new JPanel();
         alarmPanel.setPreferredSize(new Dimension(0, 80));
         alarmPanel.setBackground(Color.pink);
@@ -165,7 +275,7 @@ public class GameRoomPanel extends JPanel {
 
     private JPanel ChatDisplayPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setPreferredSize(new Dimension(0, 250));
+        panel.setPreferredSize(new Dimension(0, 270));
 
         document = new DefaultStyledDocument();
         chat_display = new JTextPane(document);
@@ -180,7 +290,7 @@ public class GameRoomPanel extends JPanel {
 
     private JPanel ChatInputPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setPreferredSize(new Dimension(0, 50));
+        panel.setPreferredSize(new Dimension(0, 30));
 
         JTextField chat_input = new JTextField();
 //        chat_input.setEnabled(false);

@@ -21,6 +21,7 @@ public class ClientManager {
     private User user;
     private String userName;
     private Vector<User> userNames = new Vector<>();
+    private Vector<User> readyUsers = new Vector<>();
 
     public ClientManager(String serverAddress, int serverPort, Client client) {
         this.serverAddress = serverAddress;
@@ -79,9 +80,11 @@ public class ClientManager {
                     case GameMsg.ROOM_SELECT_OK:
                         user = inMsg.getUser();
                         System.out.println("클라이언트 receiveMessage 방선택OK : " + inMsg.mode + "," + inMsg.user.name + "," + inMsg.message);
+//                        client.changeGameRoomPanel(inMsg, user.currentRoom.getReadyUsers());
                         client.changeGameRoomPanel(inMsg);
                         userNames = user.currentRoom.getMembers();
                         System.out.println("클라이언트 ROOM_SELECT_OK 이후 userNames 세팅 : " + userNames);
+//                        readyUsers = user.currentRoom.getReadyUsers();
                         client.getGamePanel().clearLines();
                         break;
                     case GameMsg.ROOM_NEW_MEMBER:
@@ -103,10 +106,30 @@ public class ClientManager {
 //                      user = inMsg.getUser();
                         client.showDialog(inMsg);
                         break;
-                    //채팅 모드 등...
+
                     case GameMsg.CHAT_MESSAGE:
                         System.out.println("receiveMessage 서버로부터 메시지 수신: ");
                         break;
+
+                    case GameMsg.GAME_READY_AVAILABLE:
+                        client.showReadyButton();
+                        break;
+
+                    case GameMsg.GAME_READY_OK:
+                        if(!readyUsers.contains(inMsg.user)) {
+                            readyUsers.add(inMsg.user);
+                        }
+//                        readyUsers = inMsg.readyUsers;
+                        client.updateReadyToRoom(readyUsers);
+                        // readyUsers 4명되면 게임 시작
+                        if(readyUsers.size() == 4) {
+                            client.showDialog(inMsg);
+                            System.out.println("겜 시작");
+                            client.startGame();
+                        }
+
+                        break;
+
                     case GameMsg.DRAW_ACTION:
                         Paint paintData = inMsg.getPaintData();
                         System.out.println("DRAW_ACTION 수신: " +
@@ -182,6 +205,11 @@ public class ClientManager {
     public void sendChat(String message) {
         System.out.println("clientManage의 sendChat : " + message );
         sendGameMsg(new GameMsg(GameMsg.CHAT_MESSAGE, user, message));
+    }
+
+    public void sendReady(User readyUser) {
+        System.out.println("clientManage의 sendReady");
+        sendGameMsg(new GameMsg(GameMsg.GAME_READY, readyUser));
     }
 
     public void sendDrawingData(int startX, int startY, int endX, int endY, Color color, boolean isErasing) {

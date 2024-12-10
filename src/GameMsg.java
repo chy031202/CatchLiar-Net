@@ -17,10 +17,15 @@ public class GameMsg implements Serializable {
     public final static int CHAT_MESSAGE = 21;
     public final static int CHAT_MESSAGE_OK = 22;
 
-    public final static int DRAW_ACTION = 31;
+    public final static int GAME_READY_AVAILABLE = 31;
+    public final static int GAME_READY = 32;
+    public final static int GAME_READY_OK = 33;
+
+    public final static int DRAW_ACTION = 41;
 
     public int mode;   // 모드 값
     User user;  //유저 정보
+    Vector<User> readyUsers;
     String message; //방 이름 or 채팅 메시지
     int time; //남은 시간(해당 라운드)
     private Paint paintData; // 그림 데이터용 필드 추가
@@ -48,7 +53,7 @@ public class GameMsg implements Serializable {
         System.out.println("로그인시 User 초기화되는지 확인 " + user.getName());
     }
 
-    // LOGIN_OK, ROOM_SELECT_DENIED
+    // LOGIN_OK, ROOM_SELECT_DENIED, GAME_READY
     public GameMsg(int mode, User user) {
         this.mode = mode;
         this.user = user;
@@ -68,6 +73,18 @@ public class GameMsg implements Serializable {
             System.out.println("방 선택 성공: " + user.getName() + " , 들어간 방 : " + message);
         }
 
+    }
+
+    // GAME_READY_AVAILABLE
+    public GameMsg(int mode) {
+        this.mode = mode;
+    }
+
+    // GAME_READY_OK
+    public GameMsg(int mode, User user, Vector<User> readyUsers) {
+        this.mode = mode;
+        this.user = user;
+        this.readyUsers = readyUsers;
     }
 
 

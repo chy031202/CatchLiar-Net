@@ -60,6 +60,28 @@ public class Client extends JFrame {
         }
     }
 
+    public void updateReadyToRoom(Vector<User> readyUsers) {
+        if(gameRoomPanel != null) {
+            System.out.println("updateReady");
+            gameRoomPanel.updateReadyUser(readyUsers);
+        }
+    }
+
+    public void showReadyButton() {
+        if(gameRoomPanel != null) {
+            System.out.println("showReadyButton");
+//            gameRoomPanel.ready = true;
+            gameRoomPanel.settingReady();
+        }
+    }
+
+    public void startGame() {
+        if(gameRoomPanel != null) {
+            System.out.println("startGame");
+            gameRoomPanel.refreshStartGame();
+        }
+    }
+
     public void showDialog(GameMsg inMsg) {
         switch (inMsg.mode) {
             case GameMsg.ROOM_SELECT_DENIED:
@@ -68,6 +90,15 @@ public class Client extends JFrame {
                         "방이 꽉 찼습니다. 다른 방으로 입장해주세요!", // 메시지
                         "알림",              // 제목
                         JOptionPane.WARNING_MESSAGE // 경고 아이콘
+                );
+                break;
+
+            case GameMsg.GAME_READY_OK:
+                JOptionPane.showMessageDialog(
+                        this,
+                        "게임이 시작됩니다! (개발용 => 추후 삭제)", // 메시지
+                        "알림",              // 제목
+                        JOptionPane.PLAIN_MESSAGE // 경고 아이콘
                 );
                 break;
 
