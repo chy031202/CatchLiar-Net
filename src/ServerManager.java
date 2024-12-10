@@ -82,6 +82,7 @@ public class ServerManager {
         // 그림 데이터를 처리하는 메서드 추가
         private void handleDrawAction(GameMsg inMsg) {
             Paint paintData = inMsg.getPaintData();
+            Color color = inMsg.getPaintData().getColor() != null ? inMsg.getPaintData().getColor() : Color.BLACK;
             server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
                     "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
                     ", 지우개 모드: " + paintData.isErasing());

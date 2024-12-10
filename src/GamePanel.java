@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public class GamePanel extends JPanel {
-    private Color currentColor = Color.BLACK;
+    private Color currentColor = Color.BLUE;
     private boolean isErasing = false;
     private ClientManager clientManager;
     private static List<DrawingLine> lines = new ArrayList<>();
@@ -32,6 +32,7 @@ public class GamePanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 startDrawing(e.getX(), e.getY(), isErasing ? ERASER_COLOR : currentColor, isErasing);
+
             }
 
             @Override
@@ -46,13 +47,15 @@ public class GamePanel extends JPanel {
                 continueDrawing(e);
             }
         });
+
+
     }
 
     private void startDrawing(int x, int y, Color color, boolean erasing) {
         prevX = x;
         prevY = y;
-        currentColor = color;  // 현재 그리기 색상 업데이트
-        isErasing = erasing;  // 지우개 상태 업데이트
+        this.currentColor = color;  // 현재 그리기 색상 업데이트
+        this.isErasing = erasing;  // 지우개 상태 업데이트
         isDrawing = true;
         requestFocusInWindow();
         System.out.println(String.format(
@@ -69,6 +72,7 @@ public class GamePanel extends JPanel {
 
         // 지우개 모드일 경우 하얀색으로, 아니면 현재 선택된 색상으로
         Color drawColor = isErasing ?ERASER_COLOR: currentColor;
+        //Color drawColor = currentColor;
 
 
         // 서버로 메시지 전송 (지우개 모드 정보 포함)
@@ -77,6 +81,8 @@ public class GamePanel extends JPanel {
         synchronized (lines) {
             lines.add(new DrawingLine(prevX, prevY, currentX, currentY, drawColor));
         }
+
+
 
         // 즉시 화면 갱신
         repaint();
@@ -87,8 +93,8 @@ public class GamePanel extends JPanel {
 
     private void stopDrawing() {
         isDrawing = false;
-//        revalidate();
-//        repaint();
+        revalidate();
+        repaint();
     }
 
     // ClientManager에 추가할 메서드 제안
@@ -109,8 +115,8 @@ public class GamePanel extends JPanel {
         // 영구 선들 그리기
         synchronized (lines) {
             for (DrawingLine line : lines) {
-                g2d.setColor(line.color());
-                g2d.drawLine(line.startX(), line.startY(), line.endX(), line.endY());
+                g2d.setColor(line.getColor());
+                g2d.drawLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
             }
         }
         revalidate();
@@ -128,6 +134,7 @@ public class GamePanel extends JPanel {
     public void setCurrentColor(Color color) {
         this.currentColor = color;
         this.isErasing = false;
+        System.out.println("색상 변경: " + color);
     }
 
     // 지우개 상태를 설정하는 메서드
@@ -143,15 +150,38 @@ public class GamePanel extends JPanel {
         }
     }
 
-    private record DrawingLine(int startX, int startY, int endX, int endY, Color color) {
-            private DrawingLine(int startX, int startY, int endX, int endY, Color color) {
-                this.startX = startX;
-                this.startY = startY;
-                this.endX = endX;
-                this.endY = endY;
-                this.color = color;
-            }
+    private static class DrawingLine {
+        private final int startX, startY, endX, endY;
+        private final Color color;
+
+        public DrawingLine(int startX, int startY, int endX, int endY, Color color) {
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = endX;
+            this.endY = endY;
+            this.color = color;
         }
+        public int getStartX() {
+            return startX;
+        }
+
+        public int getStartY() {
+            return startY;
+        }
+
+        public int getEndX() {
+            return endX;
+        }
+
+        public int getEndY() {
+            return endY;
+        }
+
+        public Color getColor() {
+            return color;
+        }
+    }
+
 
     private JPanel createItemPanel(){
         JPanel itemPanel = new JPanel();
@@ -192,7 +222,7 @@ public class GamePanel extends JPanel {
         itemPanel.add(eraserButton);
 
         revalidate();
-        repaint();
+        SwingUtilities.invokeLater(this::repaint);
 
         return itemPanel;
     }
@@ -201,11 +231,13 @@ public class GamePanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-        JPanel gamepanel = new GamePanel(clientManager);
-        JPanel Itempanel = createItemPanel();
+//        JPanel gamepanel = new GamePanel(clientManager);
+//        JPanel Itempanel = createItemPanel();
 
-        panel.add(gamepanel, BorderLayout.CENTER);
-        panel.add(Itempanel, BorderLayout.SOUTH);
+        // 기존 GamePanel 인스턴스 재사용
+        panel.add(this, BorderLayout.CENTER); // 현재 GamePanel 객체를 추가
+        panel.add(createItemPanel(), BorderLayout.SOUTH);
+
 
         return panel;
     }

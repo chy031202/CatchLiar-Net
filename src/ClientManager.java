@@ -191,9 +191,10 @@ public class ClientManager {
         }
         try {
             // Color를 RGB 값으로 변환
-            int colorRGB = color.getRGB();
+            //int colorRGB = color.getRGB();
             // Paint 객체 생성 시 현재 색상과 지우개 상태 전달
-            Paint paintData = new Paint(startX, startY, endX, endY, new Color(colorRGB), isErasing);
+            System.out.println("전송 데이터 디버깅: 색상 RGB - " + color.getRGB());
+            Paint paintData = new Paint(startX, startY, endX, endY, color, isErasing);
             GameMsg msg = new GameMsg(GameMsg.DRAW_ACTION, paintData);
 
 
