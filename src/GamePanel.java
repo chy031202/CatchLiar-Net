@@ -116,6 +116,12 @@ public class GamePanel extends JPanel {
         synchronized (lines) {
             for (DrawingLine line : lines) {
                 g2d.setColor(line.getColor());
+//                g2d.drawLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
+                if (line.getColor().equals(ERASER_COLOR)) {
+                    g2d.setStroke(new BasicStroke(6)); // 지우개 크기 적용
+                } else {
+                    g2d.setStroke(new BasicStroke(3)); // 기본 크기
+                }
                 g2d.drawLine(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
             }
         }
