@@ -1,6 +1,10 @@
 import javax.sound.sampled.Line;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -12,6 +16,10 @@ public class GameRoomPanel extends JPanel {
     private GameMsg gameMsg;
     private Vector<User> userNames = new Vector<>();  // 방에 들어온 유저 이름 저장
 
+    private JTextPane chat_display;
+    private DefaultStyledDocument document;
+
+    private JPanel userSidePanel; // 전역 변수로 저장
     private GamePanel gamePanel;
 
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
@@ -19,6 +27,7 @@ public class GameRoomPanel extends JPanel {
         this.gameMsg = gameMsg;
         gamePanel = new GamePanel(clientManager);
 
+        userSidePanel = createUserSidePanel();
         buildGUI();
     }
 
@@ -36,16 +45,11 @@ public class GameRoomPanel extends JPanel {
     private void refreshUserSidePanel() {
         System.out.println("refreshUserSidePanel");
 
-        // 기존에 있던 다른 패널들은 그대로 두고 userSidePanel만 갱신하기
-        JPanel userSidePanel = createUserSidePanel();
-        JPanel centerPanel = gamePanel.createCenterPanel();
-        JPanel rightPanel = createRightPanel();
-
-        // 기존 패널을 모두 삭제하고 다시 추가하는 대신, 필요한 부분만 갱신
-        removeAll();  // 기존 UI를 삭제
-
-        // userSidePanel만 갱신
-        buildGUI();
+        remove(userSidePanel); // 기존 userSidePanel 제거
+        // 새로운 userSidePanel 붙이기
+        JPanel newUserSidePanel = createUserSidePanel();
+        userSidePanel = newUserSidePanel; // 새로운 참조 유지
+        add(userSidePanel, BorderLayout.WEST);
 
         revalidate();  // 레이아웃 갱신
         repaint();  // 화면 갱신
@@ -57,7 +61,7 @@ public class GameRoomPanel extends JPanel {
         setLayout(new BorderLayout());
 
         add(createTopPanel(), BorderLayout.NORTH);
-        add(createUserSidePanel(), BorderLayout.WEST);
+        add(userSidePanel, BorderLayout.WEST);
         add(gamePanel.createCenterPanel(), BorderLayout.CENTER);
         add(createRightPanel(), BorderLayout.EAST);
     }
@@ -79,7 +83,6 @@ public class GameRoomPanel extends JPanel {
         panel.setPreferredSize(new Dimension(180, 0));
         panel.setBackground(new Color(64,48,47));
 
-        // 현재 유저 목록을 JLabel로 표시
         for (User userName : userNames) {
             JPanel userPanel = createIndividualUserPanel(userName.getName());
             userPanel.setMaximumSize(new Dimension(160, 110)); // 크기 고정
@@ -151,12 +154,76 @@ public class GameRoomPanel extends JPanel {
 
     private JPanel ChatPanel(){
         JPanel chatPanel = new JPanel();
-        JLabel user = new JLabel("채팅 패널");
-        chatPanel.setBackground(Color.white);
+        chatPanel.setLayout(new BorderLayout());
+        chatPanel.setPreferredSize(new Dimension(0, 300));
 
-        chatPanel.add(user);
+        chatPanel.add(ChatDisplayPanel(), BorderLayout.CENTER);
+        chatPanel.add(ChatInputPanel(), BorderLayout.SOUTH);
+
         return chatPanel;
     }
+
+    private JPanel ChatDisplayPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setPreferredSize(new Dimension(0, 250));
+
+        document = new DefaultStyledDocument();
+        chat_display = new JTextPane(document);
+        chat_display.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(chat_display);
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel ChatInputPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setPreferredSize(new Dimension(0, 50));
+
+        JTextField chat_input = new JTextField();
+//        chat_input.setEnabled(false);
+        chat_input.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String msg = chat_input.getText();
+//                clientManager.sendChat(msg, userNames);
+                clientManager.sendChat(msg);
+                chat_input.setText("");
+            }
+        });
+
+        JButton b_send = new JButton("전송");
+//        b_send.setEnabled(false);
+        b_send.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String msg = chat_input.getText();
+                clientManager.sendChat(msg);
+                chat_input.setText("");
+            }
+        });
+
+        panel.add(chat_input, BorderLayout.CENTER);
+        panel.add(b_send, BorderLayout.EAST);
+
+        return panel;
+    }
+
+    public void showChat(String msg) {
+        System.out.println("showChat에 " + msg);
+//        SwingUtilities.invokeLater(() -> {
+            int len = chat_display.getDocument().getLength();
+            try {
+                document.insertString(len, msg + "\n", null);
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+            chat_display.setCaretPosition(len);
+//        });
+    }
+
 
     private JPanel ImgPanel(){
         JPanel imgPanel = new JPanel();

@@ -24,7 +24,7 @@ public class Client extends JFrame {
     }
 
     private void buildGUI() {
-        setBounds(50, 200, 600, 400);
+        setBounds(50, 200, 800, 600);
         // JPanel을 생성하고 BoxLayout을 설정
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -75,6 +75,10 @@ public class Client extends JFrame {
                 System.out.println("showDialog default : " + inMsg);
                 break;
         }
+    }
+
+    public GameRoomPanel getGameRoomPanel() {
+        return gameRoomPanel;
     }
 
     public GamePanel getGamePanel() {
