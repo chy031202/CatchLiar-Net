@@ -12,7 +12,7 @@ public class ServerManager {
     private Thread acceptThread = null;
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
-    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
+//    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
         this.port = port;
@@ -157,6 +157,24 @@ public class ServerManager {
 //            }
 //        }
 
+//        private void broadcasting(GameMsg msg) {
+//            if (currentRoom == null) {
+//                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
+//                return;
+//            }
+//            // 같은 방에 있는 멤버들에게만 메시지를 전송
+//            synchronized (currentRoom) {
+//                for (User memberName : currentRoom.getMembers()) {
+//                    users.stream()
+//                            .filter(c -> c.userName.equals(memberName)) // 해당 이름의 클라이언트를 찾음
+//                            .forEach(c -> c.sendGameMsg(msg));
+//
+//                }
+//            }
+//            synchronized (users) {
+//                users.forEach(c -> c.sendGameMsg(msg));
+//            }
+//        }
         private void broadcasting(GameMsg msg) {
             if (currentRoom == null) {
                 server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
@@ -164,39 +182,24 @@ public class ServerManager {
             }
             // 같은 방에 있는 멤버들에게만 메시지를 전송
             synchronized (currentRoom) {
-                for (User memberName : currentRoom.getMembers()) {
-                    users.stream()
-                            .filter(c -> c.userName.equals(memberName)) // 해당 이름의 클라이언트를 찾음
-                            .forEach(c -> c.sendGameMsg(msg));
-
+                for (User member : currentRoom.getMembers()) {
+                    System.out.println("Broadcast 대상: " + member.name);
+                    ClientHandler handler = findHandlerByUser(member);
+                    if (handler != null) { // 핸들어 있을때
+                        handler.sendGameMsg(msg);
+                    }
                 }
             }
-            synchronized (users) {
-                users.forEach(c -> c.sendGameMsg(msg));
-            }
         }
-//        private void broadcasting(GameMsg msg) {
-//        //            if (currentRoom != null) { // 현재 방이 null이 아닌 경우만 실행
-//            synchronized (currentRoom) {
-//                for (User member : currentRoom.getMembers()) { // 방의 모든 멤버를 대상으로 메시지 전송
-//                    System.out.println("Broadcast 대상: " + member.name);
-//                    ClientHandler handler = findHandlerByUser(member);
-//                    if (handler != null) { // 핸들어 있을때
-//                        handler.sendGameMsg(msg);
-//                    }
-//                }
-//        //                }
-//            }
-//        }
-//
-//        private ClientHandler findHandlerByUser(User user) {
-//            for (ClientHandler handler : users) {
-//                if (handler.userName.equals(user.name)) {
-//                    return handler;
-//                }
-//            }
-//            return null;
-//        }
+
+        private ClientHandler findHandlerByUser(User user) {
+            for (ClientHandler handler : users) {
+                if (handler.userName.equals(user.name)) {
+                    return handler;
+                }
+            }
+            return null;
+        }
 
 
 
