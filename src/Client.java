@@ -53,10 +53,27 @@ public class Client extends JFrame {
         repaint();
     }
 
-    public void updateUserToRoom(Vector<String> userNames) {
+    public void updateUserToRoom(Vector<User> userNames) {
         if(gameRoomPanel != null) {
             System.out.println("updateUserToRoom : " + userNames);
             gameRoomPanel.updateUser(userNames);
+        }
+    }
+
+    public void showDialog(GameMsg inMsg) {
+        switch (inMsg.mode) {
+            case GameMsg.ROOM_SELECT_DENIED:
+                JOptionPane.showMessageDialog(
+                        this,
+                        "방이 꽉 찼습니다. 다른 방으로 입장해주세요!", // 메시지
+                        "알림",              // 제목
+                        JOptionPane.WARNING_MESSAGE // 경고 아이콘
+                );
+                break;
+
+            default:
+                System.out.println("showDialog default : " + inMsg);
+                break;
         }
     }
 

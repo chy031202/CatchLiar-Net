@@ -20,7 +20,7 @@ public class ClientManager {
 
     private User user;
     private String userName;
-    private Vector<String> userNames = new Vector<>();
+    private Vector<User> userNames = new Vector<>();
 
     public ClientManager(String serverAddress, int serverPort, Client client) {
         this.serverAddress = serverAddress;
@@ -61,7 +61,7 @@ public class ClientManager {
             if (user == null) {
                 System.err.println("클라이언트에서 받은 User 객체가 null입니다.");
             } else {
-                System.out.println("User currentRoom: " +user.getName() + ", 현재 방 : " + user.getCurrentRoom()); // currentRoom 확인
+//                System.out.println("User currentRoom: " +user.getName() + ", 현재 방 : " + user.getCurrentRoom().getRoomName()); // currentRoom 확인
             }
 
             if (inMsg == null) {
@@ -74,21 +74,34 @@ public class ClientManager {
                     case GameMsg.LOGIN_OK:
                         user = inMsg.getUser(); // user 여기에서 저장해야 유지됨
                         client.changeSelectRoomPanel();
+                        System.out.println("클라이언트 receiveMessage 로그인OK: " + inMsg.mode + "," + inMsg.user.name);
                         break;
                     case GameMsg.ROOM_SELECT_OK:
-                        System.out.println("클라이언트 receiveMessage : " + inMsg.mode + "," + inMsg.user.name + "," + inMsg.message);
+                        user = inMsg.getUser();
+                        System.out.println("클라이언트 receiveMessage 방선택OK : " + inMsg.mode + "," + inMsg.user.name + "," + inMsg.message);
                         client.changeGameRoomPanel(inMsg);
+                        userNames = user.currentRoom.getMembers();
+                        System.out.println("클라이언트 ROOM_SELECT_OK 이후 userNames 세팅 : " + userNames);
                         client.getGamePanel().clearLines();
                         break;
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
                         System.out.println("추가되기 전 userNames : " + userNames);
+//                        userNames = inMsg.getUser().currentRoom.getMembers();
+//                        System.out.println("추가된 후 userNames : " + userNames);
+//                        client.updateUserToRoom(userNames);
                         // 새로들어온 유저의 user.getCurrentRoom.getMembers를 userNames에 넣어. 그러고 client.업데이트함수 불러서 그걸로 userData 업데이트하게해
-                        if (!userNames.contains(inMsg.user.name)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
-                            userNames.add(inMsg.user.name);
+                        if (!userNames.contains(inMsg.user)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
+                            userNames.add(inMsg.user);
+                            inMsg.user.currentRoom.setMembers(userNames);
                             System.out.println("추가된 후 userNames : " + userNames);
-                            client.updateUserToRoom(userNames);
                         }
+                        client.updateUserToRoom(userNames);
+                        break;
+
+                    case GameMsg.ROOM_SELECT_DENIED:
+//                      user = inMsg.getUser();
+                        client.showDialog(inMsg);
                         break;
                     //채팅 모드 등...
                     case GameMsg.CHAT_MESSAGE:

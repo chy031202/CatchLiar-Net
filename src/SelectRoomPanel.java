@@ -23,6 +23,7 @@ public class SelectRoomPanel extends JPanel {
 
     private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(new Color(60, 30, 30)); // 배경색 설정
 
         ImageIcon roomLogoIcon = new ImageIcon(SelectRoomPanel.class.getResource("/images/roomLogo.png"));
         Image originalImage = roomLogoIcon.getImage(); // 원본 이미지 가져오기
@@ -43,7 +44,7 @@ public class SelectRoomPanel extends JPanel {
     private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(2, 2, 20, 20)); // 2x2 배열, 간격 20px
-        buttonPanel.setBackground(new Color(60, 30, 30)); // 배경색 설정
+        buttonPanel.setBackground(new Color(64,48,47)); // 배경색 설정
 
         foodRoomButton = createRoomButton("키워드: 음식\n1번방");
         placeRoomButton = createRoomButton("키워드: 명소\n2번방");

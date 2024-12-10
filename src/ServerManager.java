@@ -104,9 +104,15 @@ public class ServerManager {
                         case GameMsg.ROOM_SELECT:
                             user = inMsg.user;
                             enterRoom(inMsg.getMsg());
+                            if(user.currentRoom.getMemberCount() > 4) {
+                                user.leaveRoom();
+                                sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_DENIED, user));
+                                server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장하지 못했습니다.");
+                                break;
+                            }
                             server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장했습니다.");
                             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_OK, user, inMsg.getMsg()));
-                            broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg()));
+                            broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom
                             break;
 
                         case GameMsg.LOGOUT:
@@ -159,7 +165,7 @@ public class ServerManager {
         }
 
         private void enterRoom(String roomName) {
-                synchronized (rooms) {
+            synchronized (rooms) {
                 // 방 검색
                 Room room = rooms.stream()
                         .filter(r -> r.getRoomName().equals(roomName)) // 이름이 같은 방 필터링
@@ -172,7 +178,7 @@ public class ServerManager {
                         });
                 // 현재 클라이언트가 방에 속해있다면 제거
                 if (currentRoom != null) {
-                    currentRoom.removeMember(userName);
+                    currentRoom.removeMember(user);
                 }
 
                 // 유저의 방 정보 업데이트
@@ -180,7 +186,7 @@ public class ServerManager {
                 user.setCurrentRoom(room);
                 currentRoom = room; // 현재 클라이언트의 방 업데이트
 
-                server.printDisplay(userName + "님이 방 [" + room.getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
+                server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
         }
 
