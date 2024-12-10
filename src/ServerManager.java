@@ -152,7 +152,7 @@ public class ServerManager {
             }
             // 같은 방에 있는 멤버들에게만 메시지를 전송
             synchronized (currentRoom) {
-                for (String memberName : currentRoom.getMembers()) {
+                for (User memberName : currentRoom.getMembers()) {
                     users.stream()
                             .filter(c -> c.userName.equals(memberName)) // 해당 이름의 클라이언트를 찾음
                             .forEach(c -> c.sendGameMsg(msg));
