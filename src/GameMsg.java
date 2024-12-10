@@ -12,6 +12,7 @@ public class GameMsg implements Serializable {
     public final static int ROOM_SELECT = 11;//방 선택
     public final static int ROOM_SELECT_OK = 12;
     public final static int ROOM_NEW_MEMBER = 13;
+    public final static int ROOM_SELECT_DENIED = 14;
 
     public int mode;   // 모드 값
     User user;  //유저 정보
@@ -32,7 +33,7 @@ public class GameMsg implements Serializable {
         System.out.println("로그인시 User 초기화되는지 확인 " + user.getName());
     }
 
-    // LOGIN_OK
+    // LOGIN_OK, ROOM_SELECT_DENIED
     public GameMsg(int mode, User user) {
         this.mode = mode;
         this.user = user;

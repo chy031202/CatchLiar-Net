@@ -91,6 +91,12 @@ public class ServerManager {
                         case GameMsg.ROOM_SELECT:
                             user = inMsg.user;
                             enterRoom(inMsg.getMsg());
+                            if(user.currentRoom.getMemberCount() > 4) {
+                                user.leaveRoom();
+                                sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_DENIED, user));
+                                server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장하지 못했습니다.");
+                                break;
+                            }
                             server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장했습니다.");
                             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_OK, user, inMsg.getMsg()));
                             broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom

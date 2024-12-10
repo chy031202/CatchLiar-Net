@@ -94,6 +94,11 @@ public class ClientManager {
                         }
                         client.updateUserToRoom(userNames);
                         break;
+
+                    case GameMsg.ROOM_SELECT_DENIED:
+//                      user = inMsg.getUser();
+                        client.showDialog(inMsg);
+                        break;
                     //채팅 모드 등...
                     case GameMsg.CHAT_MESSAGE:
                         System.out.println("receiveMessage 서버로부터 메시지 수신: ");
