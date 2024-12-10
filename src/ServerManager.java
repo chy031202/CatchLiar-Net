@@ -81,7 +81,9 @@ public class ServerManager {
         private void handleDrawAction(GameMsg inMsg) {
             Paint paintData = inMsg.getPaintData();
             server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
-                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor());
+                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
+                    ", 지우개 모드: " + paintData.isErasing());
+
             broadcasting(new GameMsg(GameMsg.DRAW_ACTION, paintData)); // 그림 데이터를 다른 클라이언트들에게 전송
         }
 

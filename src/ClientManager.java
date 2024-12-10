@@ -109,6 +109,11 @@ public class ClientManager {
                         break;
                     case GameMsg.DRAW_ACTION:
                         Paint paintData = inMsg.getPaintData();
+                        System.out.println("DRAW_ACTION 수신: " +
+                                "시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
+                                "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() +
+                                "), 색상: " + paintData.getColor() +
+                                ", 지우개 모드: " + paintData.isErasing());
                         client.getGamePanel().receiveRemoteDrawing(
                                 paintData.getStartX(),
                                 paintData.getStartY(),
@@ -171,17 +176,20 @@ public class ClientManager {
             return;
         }
         try {
+            // Color를 RGB 값으로 변환
+            int colorRGB = color.getRGB();
             // Paint 객체 생성 시 현재 색상과 지우개 상태 전달
-            Paint paintData = new Paint(startX, startY, endX, endY, color, isErasing);
+            Paint paintData = new Paint(startX, startY, endX, endY, new Color(colorRGB), isErasing);
             GameMsg msg = new GameMsg(GameMsg.DRAW_ACTION, paintData);
-            sendGameMsg(msg);
 
-//            System.out.println(String.format(
-//                    "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d, 지우개: %b",
-//                    startX, startY, endX, endY,
-//                    color.getRed(), color.getGreen(), color.getBlue(),
-//                    isErasing
-//            ));
+
+            System.out.println(String.format(
+                    "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d, 지우개: %b",
+                    startX, startY, endX, endY,
+                    color.getRed(), color.getGreen(), color.getBlue(),
+                    isErasing
+            ));
+            sendGameMsg(msg);
         } catch (Exception e) {
             e.printStackTrace();
         }

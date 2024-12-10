@@ -14,28 +14,24 @@ public class GamePanel extends JPanel {
     private boolean isErasing = false;
     private ClientManager clientManager;
     private static List<DrawingLine> lines = new ArrayList<>();
-    private List<DrawingLine> tempLines = new ArrayList<>();
-    private ObjectOutputStream out;
-    private static final Color ERASER_COLOR = Color.WHITE;
 
     private int prevX, prevY;
-
     private boolean isDrawing = false;
+
+    private static final Color ERASER_COLOR = Color.WHITE;
 
     public GamePanel(ClientManager clientManager) {
         this.clientManager = clientManager;
         setPreferredSize(new Dimension(500, 500));
         setupDrawingListeners();
+        setBackground(Color.WHITE);
     }
 
     private void setupDrawingListeners() {
-        setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(500, 500));
-
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                startDrawing(e);
+                startDrawing(e.getX(), e.getY(), isErasing ? ERASER_COLOR : currentColor, isErasing);
             }
 
             @Override
@@ -52,11 +48,17 @@ public class GamePanel extends JPanel {
         });
     }
 
-    private void startDrawing(MouseEvent e) {
-        prevX = e.getX();
-        prevY = e.getY();
+    private void startDrawing(int x, int y, Color color, boolean erasing) {
+        prevX = x;
+        prevY = y;
+        currentColor = color;  // 현재 그리기 색상 업데이트
+        isErasing = erasing;  // 지우개 상태 업데이트
         isDrawing = true;
         requestFocusInWindow();
+        System.out.println(String.format(
+                "그리기 시작: (%d, %d), 색상: %s, 지우개 모드: %b",
+                x, y, color.toString(), erasing
+        ));
     }
 
     private void continueDrawing(MouseEvent e) {
@@ -66,8 +68,7 @@ public class GamePanel extends JPanel {
         int currentY = e.getY();
 
         // 지우개 모드일 경우 하얀색으로, 아니면 현재 선택된 색상으로
-        //Color drawColor = isErasing ? ERASER_COLOR : currentColor;
-        Color drawColor = isErasing ? Color.WHITE : currentColor;
+        Color drawColor = isErasing ?ERASER_COLOR: currentColor;
 
 
         // 서버로 메시지 전송 (지우개 모드 정보 포함)
@@ -86,9 +87,8 @@ public class GamePanel extends JPanel {
 
     private void stopDrawing() {
         isDrawing = false;
-
-        revalidate();
-        repaint();
+//        revalidate();
+//        repaint();
     }
 
     // ClientManager에 추가할 메서드 제안
@@ -97,9 +97,7 @@ public class GamePanel extends JPanel {
         synchronized (lines) {
             lines.add(new DrawingLine(startX, startY, endX, endY, color));
         }
-        SwingUtilities.invokeLater(() -> {
-            repaint();
-        });
+        SwingUtilities.invokeLater(this::repaint);
     }
 
     @Override
@@ -115,13 +113,8 @@ public class GamePanel extends JPanel {
                 g2d.drawLine(line.startX(), line.startY(), line.endX(), line.endY());
             }
         }
-
         revalidate();
         SwingUtilities.invokeLater(this::repaint);
-    }
-
-    private void addLine(int startX, int startY, int endX, int endY, Color color) {
-        lines.add(new DrawingLine(startX, startY, endX, endY, currentColor));
     }
 
     // 방 입장 시 기존 선들 초기화하는 메서드 추가
@@ -140,6 +133,14 @@ public class GamePanel extends JPanel {
     // 지우개 상태를 설정하는 메서드
     public void toggleEraser() {
         this.isErasing = !this.isErasing;
+        System.out.println("지우개 모드 전환: " + (isErasing ? "활성화" : "비활성화"));
+
+        // 지우개 모드 활성화 시 색상은 변경하지 않고 동작만 설정
+        if (isErasing) {
+            System.out.println("지우개 사용 - 색상: 흰색");
+        } else {
+            System.out.println("그리기 모드 사용 - 현재 색상: " + currentColor.toString());
+        }
     }
 
     private record DrawingLine(int startX, int startY, int endX, int endY, Color color) {
@@ -168,8 +169,6 @@ public class GamePanel extends JPanel {
             colorButton.setPreferredSize(new Dimension(50, 30));
             colorButton.addActionListener(e -> {
                 setCurrentColor(color);
-                // 색상 선택 시 지우개 모드 해제
-                isErasing = false;
             });
             itemPanel.add(colorButton);
         }
@@ -192,12 +191,7 @@ public class GamePanel extends JPanel {
         });
         itemPanel.add(eraserButton);
 
-        JButton drawButton = new JButton("그리기");
-//        drawButton.addActionListener(e -> {
-//            setErasing(false);
-//        });
-//        itemPanel.add(drawButton);
-
+        revalidate();
         repaint();
 
         return itemPanel;
