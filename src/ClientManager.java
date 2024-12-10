@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -79,6 +80,7 @@ public class ClientManager {
                         client.changeGameRoomPanel(inMsg);
                         userNames = user.currentRoom.getMembers();
                         System.out.println("클라이언트 ROOM_SELECT_OK 이후 userNames 세팅 : " + userNames);
+                        client.getGamePanel().clearLines();
                         break;
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
@@ -99,13 +101,35 @@ public class ClientManager {
 //                      user = inMsg.getUser();
                         client.showDialog(inMsg);
                         break;
-
+                    //채팅 모드 등...
+                    case GameMsg.CHAT_MESSAGE:
+                        System.out.println("receiveMessage 서버로부터 메시지 수신: ");
+                        break;
                     case GameMsg.CHAT_MESSAGE_OK:
                         System.out.println("클라이언트 CHAT_MESSAGE_OK : " + inMsg.user.name + "의 " + inMsg.message);
                         String chatUser = inMsg.user.name;
                         String chatMsg = inMsg.message;
                         client.getGameRoomPanel().showChat("[ " + chatUser + "] : " + chatMsg);
                         break;
+
+                    case GameMsg.DRAW_ACTION:
+                        Paint paintData = inMsg.getPaintData();
+                        System.out.println("DRAW_ACTION 수신: " +
+                                "시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
+                                "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() +
+                                "), 색상: " + paintData.getColor() +
+                                ", 지우개 모드: " + paintData.isErasing());
+                        client.getGamePanel().receiveRemoteDrawing(
+                                paintData.getStartX(),
+                                paintData.getStartY(),
+                                paintData.getEndX(),
+                                paintData.getEndY(),
+                                paintData.getColor()
+                        );
+                        break;
+
+
+
                     //이모티콘 전송 모드 등...
 //                case GameMsg.MODE_TX_IMAGE :
 //                    printDisplay(inMsg.userID + ": " + inMsg.message);
@@ -158,4 +182,28 @@ public class ClientManager {
         sendGameMsg(new GameMsg(GameMsg.CHAT_MESSAGE, user, message));
     }
 
+    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color, boolean isErasing) {
+        if (out == null) {
+            System.err.println("출력 스트림이 초기화되지 않았습니다. 데이터를 전송할 수 없습니다.");
+            return;
+        }
+        try {
+            // Color를 RGB 값으로 변환
+            int colorRGB = color.getRGB();
+            // Paint 객체 생성 시 현재 색상과 지우개 상태 전달
+            Paint paintData = new Paint(startX, startY, endX, endY, new Color(colorRGB), isErasing);
+            GameMsg msg = new GameMsg(GameMsg.DRAW_ACTION, paintData);
+
+
+            System.out.println(String.format(
+                    "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d, 지우개: %b",
+                    startX, startY, endX, endY,
+                    color.getRed(), color.getGreen(), color.getBlue(),
+                    isErasing
+            ));
+            sendGameMsg(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

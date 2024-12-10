@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="CatchLiar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/out/artifacts/CatchLiar_Server/CatchLiar.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

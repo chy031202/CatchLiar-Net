@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -6,7 +7,7 @@ public class GameMsg implements Serializable {
 
     public final static int LOGIN = 1;
     public final static int LOGIN_OK = 2;
-    public final static int LOGOUT = 3; // 로그아웃 모드
+    public final static int LOGOUT = 4; // 로그아웃 모드
 
     public final static int ROOM_SELECT = 11;//방 선택
     public final static int ROOM_SELECT_OK = 12;
@@ -16,10 +17,22 @@ public class GameMsg implements Serializable {
     public final static int CHAT_MESSAGE = 21;
     public final static int CHAT_MESSAGE_OK = 22;
 
+    public final static int DRAW_ACTION = 31;
+
     public int mode;   // 모드 값
     User user;  //유저 정보
     String message; //방 이름 or 채팅 메시지
     int time; //남은 시간(해당 라운드)
+    private Paint paintData; // 그림 데이터용 필드 추가
+
+    public GameMsg(int mode, Paint paintData) {
+        this.mode = mode;
+        this.paintData = paintData;
+    }
+
+    public Paint getPaintData() {
+        return paintData;
+    }
 
     public GameMsg(int mode, User user, String message, int time) {
         this.mode = mode;
@@ -56,13 +69,6 @@ public class GameMsg implements Serializable {
         }
 
     }
-//    // NEW_MEMBER
-//    public GameMsg(int mode, User user, Room room) {
-//        this.mode = mode;
-//        this.user = user;
-//        this.user.currentRoom = room;
-//        this.user.currentRoom.addMember();
-//    }
 
 
     public int getMode() {

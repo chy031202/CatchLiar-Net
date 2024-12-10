@@ -7,6 +7,7 @@ public class Client extends JFrame {
     private StartPanel startPanel;
     private SelectRoomPanel selectRoomPanel;
     private GameRoomPanel gameRoomPanel;
+    private GamePanel gamePanel;
 
     public Client(String serverAddress, int serverPort){
         super("캐치 라이어");
@@ -14,6 +15,7 @@ public class Client extends JFrame {
 
         startPanel = new StartPanel(clientManager);
         selectRoomPanel = new SelectRoomPanel(clientManager);
+        gamePanel = new GamePanel(clientManager);
 
         buildGUI();
 
@@ -77,6 +79,13 @@ public class Client extends JFrame {
 
     public GameRoomPanel getGameRoomPanel() {
         return gameRoomPanel;
+    }
+
+    public GamePanel getGamePanel() {
+        if (gamePanel == null) {
+            System.out.println("GamePanel is null!");
+        }
+        return gamePanel;
     }
 
     public static void main(String[] args) {

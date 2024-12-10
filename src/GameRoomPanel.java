@@ -1,8 +1,10 @@
+import javax.sound.sampled.Line;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class GameRoomPanel extends JPanel {
@@ -14,10 +16,12 @@ public class GameRoomPanel extends JPanel {
     private DefaultStyledDocument document;
 
     private JPanel userSidePanel; // 전역 변수로 저장
+    private GamePanel gamePanel;
 
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
         this.gameMsg = gameMsg;
+        gamePanel = new GamePanel(clientManager);
 
         userSidePanel = createUserSidePanel();
         buildGUI();
@@ -54,7 +58,7 @@ public class GameRoomPanel extends JPanel {
 
         add(createTopPanel(), BorderLayout.NORTH);
         add(userSidePanel, BorderLayout.WEST);
-        add(createCenterPanel(), BorderLayout.CENTER);
+        add(gamePanel.createCenterPanel(), BorderLayout.CENTER);
         add(createRightPanel(), BorderLayout.EAST);
     }
 
@@ -74,7 +78,6 @@ public class GameRoomPanel extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // 세로 방향 정렬
         panel.setPreferredSize(new Dimension(180, 0));
         panel.setBackground(new Color(64,48,47));
-
 
         for (User userName : userNames) {
             JPanel userPanel = createIndividualUserPanel(userName.getName());
@@ -115,39 +118,6 @@ public class GameRoomPanel extends JPanel {
         return panel;
     }
 
-    private JPanel createCenterPanel(){
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        JPanel gamepanel = GamePanel();
-        JPanel Itempanel = ItemPanel();
-
-        panel.add(gamepanel, BorderLayout.CENTER);
-        panel.add(Itempanel, BorderLayout.SOUTH);
-
-        return panel;
-    }
-
-    private JPanel GamePanel(){
-        JPanel gamePanel = new JPanel();
-        gamePanel.setBackground(Color.BLACK);
-        JLabel text = new JLabel("메인 패널");
-        text.setForeground(Color.WHITE);
-
-        gamePanel.add(text);
-        return gamePanel;
-    }
-
-    private JPanel ItemPanel(){
-        JPanel itemPanel = new JPanel();
-        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
-        itemPanel.setPreferredSize(new Dimension(0, 120));
-        itemPanel.setBackground(Color.lightGray);
-        JLabel user = new JLabel("색깔 선택");
-
-        itemPanel.add(user);
-        return itemPanel;
-    }
 
     private JPanel createRightPanel() {
         JPanel panel = new JPanel();
