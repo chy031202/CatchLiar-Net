@@ -120,7 +120,7 @@ public class ClientManager {
                             readyUsers.add(inMsg.user);
                         }
 //                        readyUsers = inMsg.readyUsers;
-                        client.updateReadyToRoom(readyUsers);
+                        client.updateReadyToRoom(readyUsers, null);
                         // readyUsers 4명되면 게임 시작
                         if(readyUsers.size() == 4) {
                             client.showDialog(inMsg);
@@ -128,6 +128,12 @@ public class ClientManager {
                             client.startGame();
                         }
 
+                        break;
+
+                    case GameMsg.GAME_UN_READY_OK:
+                        System.out.println("GAME_UN_READY 받음 클라이언트");
+                        readyUsers.remove(inMsg.user);
+                        client.updateReadyToRoom(readyUsers, inMsg.user);
                         break;
 
                     case GameMsg.DRAW_ACTION:
@@ -210,6 +216,11 @@ public class ClientManager {
     public void sendReady(User readyUser) {
         System.out.println("clientManage의 sendReady");
         sendGameMsg(new GameMsg(GameMsg.GAME_READY, readyUser));
+    }
+
+    public void sendUnReady(User readyUser) {
+        System.out.println("clientManage의 sendUnReady");
+        sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY, readyUser));
     }
 
     public void sendDrawingData(int startX, int startY, int endX, int endY, Color color, boolean isErasing) {

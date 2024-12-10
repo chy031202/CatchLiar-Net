@@ -19,7 +19,9 @@ public class GameMsg implements Serializable {
 
     public final static int GAME_READY_AVAILABLE = 31;
     public final static int GAME_READY = 32;
-    public final static int GAME_READY_OK = 33;
+    public final static int GAME_UN_READY = 33;
+    public final static int GAME_READY_OK = 34;
+    public final static int GAME_UN_READY_OK = 35;
 
     public final static int DRAW_ACTION = 41;
 

@@ -60,10 +60,10 @@ public class Client extends JFrame {
         }
     }
 
-    public void updateReadyToRoom(Vector<User> readyUsers) {
+    public void updateReadyToRoom(Vector<User> readyUsers, User user) {
         if(gameRoomPanel != null) {
             System.out.println("updateReady");
-            gameRoomPanel.updateReadyUser(readyUsers);
+            gameRoomPanel.updateReadyUser(readyUsers, user);
         }
     }
 

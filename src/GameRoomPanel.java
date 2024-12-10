@@ -80,26 +80,38 @@ public class GameRoomPanel extends JPanel {
         repaint();
     }
 
-    public void updateReadyUser(Vector<User> readyUsers) {
+    public void updateReadyUser(Vector<User> readyUsers, User user) {
         this.readyUsers = readyUsers;
-        refreshLeftBottomPanel();
+        System.out.println("updateReadyUser : " + readyUsers);
+        refreshLeftBottomPanel(user);
     }
 
-    private void refreshLeftBottomPanel() {
+    private void refreshLeftBottomPanel(User user) {
         System.out.println("refreshLeftBottomPanel");
-        if(readyUsers != null) {
-            for (User readyUser : readyUsers) {
-                String readyUserName = readyUser.getName();
-                JPanel leftBottomPanel = userLeftBottomPanels.get(readyUserName); // 해당 유저의 패널 찾기
+        if(user != null) { // 준비해제
+            JPanel leftBottomPanel = userLeftBottomPanels.get(user.getName());
+            if(leftBottomPanel != null) {
+                leftBottomPanel.removeAll();
+                leftBottomPanel.revalidate();
+                leftBottomPanel.repaint();
+            }
+        } else {
+            if(readyUsers != null) {
+                for (User readyUser : readyUsers) {
+                    String readyUserName = readyUser.getName();
+                    JPanel leftBottomPanel = userLeftBottomPanels.get(readyUserName); // 해당 유저의 패널 찾기
 
-                if (leftBottomPanel != null) {
-                    leftBottomPanel.removeAll();
-                    leftBottomPanel.add(new JLabel("준비 완료"));
-                    leftBottomPanel.revalidate();
-                    leftBottomPanel.repaint();
+                    if (leftBottomPanel != null) {
+                        leftBottomPanel.removeAll();
+                        leftBottomPanel.add(new JLabel("준비 완료"));
+                        leftBottomPanel.revalidate();
+                        leftBottomPanel.repaint();
+                    }
                 }
             }
         }
+
+
     }
 
     // 게임 시작하면 캔버스 초기화 & readyPanel 없애고 alarmPanel로 갱신
@@ -232,13 +244,26 @@ public class GameRoomPanel extends JPanel {
         if(ready == true) {
             JPanel buttonPanel = new JPanel(new GridLayout(1,2));
             JButton readyButton = new JButton("준비");
-            buttonPanel.add(new JLabel("gif 추가 예정"));
+            JButton unReadyButton = new JButton("준비 해제");
+            unReadyButton.setEnabled(false);
+//            buttonPanel.add(new JLabel("gif 추가 예정"));
             buttonPanel.add(readyButton);
+            buttonPanel.add(unReadyButton);
 
             readyButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    readyButton.setEnabled(false);
+                    unReadyButton.setEnabled(true);
                     clientManager.sendReady(gameMsg.user);
+                }
+            });
+            unReadyButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    readyButton.setEnabled(true);
+                    unReadyButton.setEnabled(false);
+                    clientManager.sendUnReady(gameMsg.user);
                 }
             });
 

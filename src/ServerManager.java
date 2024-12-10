@@ -135,6 +135,11 @@ public class ServerManager {
                             broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user, inMsg.user.currentRoom.getReadyUsers()));
                             break;
 
+                        case GameMsg.GAME_UN_READY:
+                            inMsg.user.setUnReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user, inMsg.user.currentRoom.getReadyUsers()));
+                            break;
+
                         case GameMsg.LOGOUT:
                             server.printDisplay(userName + "님이 로그아웃했습니다.");
                             disconnectClient();

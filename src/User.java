@@ -38,6 +38,15 @@ public class User implements Serializable {
         System.out.println("User setReady : " + this.name + " , room : " + currentRoom.getRoomName());
     }
 
+    public void setUnReady() {
+        if (currentRoom != null) {
+            currentRoom.removeReadyUser(this);
+        }
+        ready = false;
+        currentRoom.removeReadyUser(this);
+        System.out.println("User setNotReady : " + this.name + " , room : " + currentRoom.getRoomName());
+    }
+
     public String getName() {
         return name;
     }
