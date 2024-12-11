@@ -29,6 +29,7 @@ public class GameMsg implements Serializable {
     public final static int LIAR_NOTIFICATION = 52;
     public final static int KEYWORD_NOTIFICATION = 53;
     public final static int GAME_END = 54;
+    public final static int TIME = 55;
 
     public int mode;   // 모드 값
     User user;  //유저 정보

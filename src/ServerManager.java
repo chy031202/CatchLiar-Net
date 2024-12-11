@@ -149,6 +149,10 @@ public class ServerManager {
                             } else {
                                 sendGameMsg(new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, "keyword"));
                             }
+
+                            // 타이머 시작
+                            startRoomTimer(currentRoom, 40); // 60초 타이머 예시
+
                             break;
 
                         case GameMsg.LOGOUT:
@@ -179,6 +183,7 @@ public class ServerManager {
                 System.out.println("서버 sendGameMsg 전송 오류>" + e.getMessage());
                 e.printStackTrace();
             }
+
         }
 
 //        private void broadcasting(GameMsg msg) {
@@ -205,6 +210,33 @@ public class ServerManager {
 ////                users.forEach(c -> c.sendGameMsg(msg));
 ////            }
 //        }
+
+        private void startRoomTimer(Room room, int startTime) {
+            new Thread(() -> {
+                int remainingTime = startTime;
+                try {
+                    while (remainingTime > 0) {
+                        Thread.sleep(1000); // 1초 간격으로 실행
+                        remainingTime--;
+
+                        // TIME 메시지를 생성하여 브로드캐스트
+                        GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime);
+                        broadcasting(timeMsg);
+
+                        System.out.println("타이머 - 방 [" + room.getRoomName() + "] 남은 시간: " + remainingTime + "초");
+                    }
+
+                    // 시간이 종료되면 게임 종료 메시지를 브로드캐스트
+                    GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
+                    broadcasting(endMsg);
+                    System.out.println("타이머 종료 - 방 [" + room.getRoomName() + "]");
+                } catch (InterruptedException e) {
+                    System.err.println("타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
+                }
+            }).start();
+        }
+
+
         private void broadcasting(GameMsg msg) {
             if (currentRoom == null) {
                 server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");

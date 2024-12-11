@@ -137,6 +137,12 @@ public class Client extends JFrame {
         return gamePanel;
     }
 
+    public void updateAlarmLabel(int remainingTime) {
+        if (gameRoomPanel != null) {
+            gameRoomPanel.updateAlarmLabel(remainingTime);
+        }
+    }
+
     public static void main(String[] args) {
         String serverAddress = "localhost";
         int serverPort = 54321;

@@ -1,16 +1,15 @@
 import javax.sound.sampled.Line;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Vector;
 
 public class GameRoomPanel extends JPanel {
     private ClientManager clientManager;
@@ -30,6 +29,12 @@ public class GameRoomPanel extends JPanel {
 
     public boolean ready = false;
     private boolean start = false;
+
+    //시계 관련
+    int count= 10;
+    Timer timer;
+    TimerTask timerTask;
+    private JLabel alarmLabel;
 
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
@@ -281,9 +286,14 @@ public class GameRoomPanel extends JPanel {
         JPanel alarmPanel = new JPanel();
         alarmPanel.setPreferredSize(new Dimension(0, 80));
         alarmPanel.setBackground(Color.pink);
-        JLabel alarm = new JLabel("시계");
-        alarmPanel.add(alarm);
+        //JLabel alarm = new JLabel("시계");
 
+        JLabel alarmLabel = new JLabel("남은 시간: 준비 중...");
+        alarmLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        alarmPanel.add(alarmLabel);
+
+        // GameRoomPanel에 JLabel 참조 저장 (UI 갱신에 필요)
+        this.alarmLabel = alarmLabel;
         return alarmPanel;
     }
 
@@ -370,4 +380,14 @@ public class GameRoomPanel extends JPanel {
         return imgPanel;
     }
 
+    public void updateAlarmLabel(int remainingTime) {
+        if (alarmLabel != null) {
+            alarmLabel.setText("Time: " + remainingTime);
+            //System.out.println("알람 업데이트: 남은 시간 -> " + remainingTime + "초");
+        }
+    }
+
+    public JLabel getAlarmLabel() {
+        return alarmLabel;
+    }
 }

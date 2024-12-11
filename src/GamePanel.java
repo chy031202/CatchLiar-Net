@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public class GamePanel extends JPanel {
-    private Color currentColor = Color.BLUE;
+    private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
     private ClientManager clientManager;
     private static List<DrawingLine> lines = new ArrayList<>();
@@ -81,8 +81,6 @@ public class GamePanel extends JPanel {
         synchronized (lines) {
             lines.add(new DrawingLine(prevX, prevY, currentX, currentY, drawColor));
         }
-
-
 
         // 즉시 화면 갱신
         repaint();

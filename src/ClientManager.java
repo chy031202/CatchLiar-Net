@@ -140,6 +140,14 @@ public class ClientManager {
                         client.startGame();
                         break;
 
+                    case GameMsg.TIME:
+                        int remainingTime = inMsg.getTime(); // 서버에서 받은 남은 시간
+                        //client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
+                        //client.startGame(); // 게임 시작 신호 (패널 전환 포함)
+                        client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
+                        System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
+                        break;
+
                     case GameMsg.DRAW_ACTION:
                         Paint paintData = inMsg.getPaintData();
                         System.out.println("DRAW_ACTION 수신: " +
