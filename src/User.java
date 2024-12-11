@@ -7,6 +7,7 @@ public class User implements Serializable {
     String name; //닉네임
     Room currentRoom;  //속한 방 정보
     boolean ready;  //준비 여부 // 0: 대기 중 // 1: 준비완료
+    boolean isLiar = false;
 //    private boolean isLoggedIn = true;
 
     public User(String name){

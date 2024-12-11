@@ -24,7 +24,7 @@ public class Client extends JFrame {
     }
 
     private void buildGUI() {
-        setBounds(50, 200, 800, 600);
+        setBounds(50, 200, 700, 500);
         // JPanel을 생성하고 BoxLayout을 설정
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -109,6 +109,7 @@ public class Client extends JFrame {
                         "알림",              // 제목
                         JOptionPane.PLAIN_MESSAGE // 경고 아이콘
                 );
+                gameRoomPanel.changeGameMsg(inMsg);
                 break;
 
             case GameMsg.KEYWORD_NOTIFICATION:

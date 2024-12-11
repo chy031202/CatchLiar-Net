@@ -27,6 +27,7 @@ public class GameRoomPanel extends JPanel {
     private JPanel readyPanel;
     private JPanel alarmPanel;
     private GamePanel gamePanel;
+    private JPanel centerPanel;
 
     public boolean ready = false;
     private boolean start = false;
@@ -37,12 +38,17 @@ public class GameRoomPanel extends JPanel {
 //        this.readyUsers = readyUsers;
 
         gamePanel = new GamePanel(clientManager);
+        centerPanel = gamePanel.createCenterPanel();
 
         userSidePanel = createUserSidePanel();
         readyPanel = createReadyPanel();
         rightPannel = createRightPanel();
         alarmPanel = createAlarmPanel();
         buildGUI();
+    }
+
+    public void changeGameMsg(GameMsg gameMsg) {
+        this.gameMsg = gameMsg;
     }
 
     public void updateUser(Vector<User> userNames) {
@@ -86,6 +92,7 @@ public class GameRoomPanel extends JPanel {
         refreshLeftBottomPanel(user);
     }
 
+    // 준비 완료 화면 갱신
     private void refreshLeftBottomPanel(User user) {
         System.out.println("refreshLeftBottomPanel");
         if(user != null) { // 준비해제
@@ -110,17 +117,35 @@ public class GameRoomPanel extends JPanel {
                 }
             }
         }
-
-
     }
 
-    // 게임 시작하면 캔버스 초기화 & readyPanel 없애고 alarmPanel로 갱신
+    public void clearAllLeftBottomPanels() {
+        if (userLeftBottomPanels != null) {
+            for (JPanel leftBottomPanel : userLeftBottomPanels.values()) {
+                if (leftBottomPanel != null) {
+                    leftBottomPanel.removeAll();
+                    leftBottomPanel.revalidate();
+                    leftBottomPanel.repaint();
+                }
+            }
+        }
+    }
+
+
+    // 게임 시작하면 캔버스 초기화 & readyPanel 없애고 alarmPanel로 갱신 & 키워드 패널 띄움
     public void refreshStartGame() {
         System.out.println("refreshStartGame");
         start = true;
         ready = false;
 
+        // 유저 하단 패널 초기화
+        clearAllLeftBottomPanels();
+
         gamePanel.clearLines(); // 캔버스 초기화
+        // 라이어 빼고 화면에 키워드 추가
+        if(!gameMsg.user.isLiar) {
+            gamePanel.addKeyword(gameMsg.user.currentRoom.getKeyword());
+        }
         rightPannel.remove(readyPanel);
         rightPannel.add(alarmPanel, BorderLayout.NORTH);
 
@@ -135,7 +160,7 @@ public class GameRoomPanel extends JPanel {
 
         add(createTopPanel(), BorderLayout.NORTH);
         add(userSidePanel, BorderLayout.WEST);
-        add(gamePanel.createCenterPanel(), BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
         add(rightPannel, BorderLayout.EAST);
 
 //        refreshLeftBottomPanel();
@@ -153,17 +178,16 @@ public class GameRoomPanel extends JPanel {
 
     private JPanel createUserSidePanel(){
         JPanel panel = new JPanel();
-//        panel.setLayout(new GridLayout(0, 1));  // 1열 4행으로 세로로 나열
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // 세로 방향 정렬
-        panel.setPreferredSize(new Dimension(180, 0));
+        panel.setPreferredSize(new Dimension(170, 0));
         panel.setBackground(new Color(64,48,47));
 
         for (User userName : userNames) {
             JPanel userPanel = createIndividualUserPanel(userName.getName());
-            userPanel.setMaximumSize(new Dimension(160, 110)); // 크기 고정
+            userPanel.setMaximumSize(new Dimension(150, 90)); // 크기 고정
 
             panel.add(userPanel);
-            panel.add(Box.createRigidArea(new Dimension(0, 20))); // 간격 추가
+            panel.add(Box.createRigidArea(new Dimension(0, 17))); // 간격 추가
 //            panel.add(createIndividualUserPanel(userName));
         }
 
@@ -217,7 +241,7 @@ public class GameRoomPanel extends JPanel {
     private JPanel createRightPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout()); // 위아래로 나눔
-        panel.setPreferredSize(new Dimension(180, 0));
+        panel.setPreferredSize(new Dimension(170, 0));
 
 
         panel.add(readyPanel, BorderLayout.NORTH);

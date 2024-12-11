@@ -147,6 +147,7 @@ public class ServerManager {
                         case GameMsg.GAME_START:
                             readyUsers = inMsg.readyUsers;
                             liar = selectLiar(inMsg.readyUsers);
+                            liar.isLiar = true;
                             if(liar == null) {
                                 System.out.println("라이어가 뽑히지 않았습니다.");
                             } else {
