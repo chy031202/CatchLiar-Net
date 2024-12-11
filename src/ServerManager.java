@@ -74,6 +74,8 @@ public class ServerManager {
         public String userName;
         private Room currentRoom = null;
         public boolean isLiar = false;
+        private Vector<User> readyUsers = new Vector<>();
+        public User liar;
 
         public ClientHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
@@ -133,22 +135,24 @@ public class ServerManager {
 
                         case GameMsg.GAME_READY:
                             inMsg.user.setReady();
-                            broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user, inMsg.user.currentRoom.getReadyUsers()));
+                            broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user));
                             break;
 
                         case GameMsg.GAME_UN_READY:
                             inMsg.user.setUnReady();
-                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user, inMsg.user.currentRoom.getReadyUsers()));
+                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user));
                             break;
 
                         case GameMsg.GAME_START:
-                            User liar = selectLiar(inMsg.readyUsers);
-                            if(userName.equals(liar.name)) {
-                                isLiar = true;
-                                sendGameMsg(new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
+                            readyUsers = inMsg.readyUsers;
+                            liar = selectLiar(inMsg.readyUsers);
+                            if(liar == null) {
+                                System.out.println("라이어가 뽑히지 않았습니다.");
                             } else {
-                                sendGameMsg(new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, "keyword"));
+                                System.out.println("뽑힌 라이어 이름 : " + liar.name);
                             }
+                            broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
+                            broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, "keyword"));
                             break;
 
                         case GameMsg.LOGOUT:
@@ -181,30 +185,6 @@ public class ServerManager {
             }
         }
 
-//        private void broadcasting(GameMsg msg) {
-//            for (ClientHandler c : users) {
-//                c.sendGameMsg(msg);
-//            }
-//        }
-
-//        private void broadcasting(GameMsg msg) {
-//            if (currentRoom == null) {
-//                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
-//                return;
-//            }
-//            // 같은 방에 있는 멤버들에게만 메시지를 전송
-//            synchronized (currentRoom) {
-//                for (User memberName : currentRoom.getMembers()) {
-//                    users.stream()
-//                            .filter(c -> c.userName.equals(memberName)) // 해당 이름의 클라이언트를 찾음
-//                            .forEach(c -> c.sendGameMsg(msg));
-//
-//                }
-//            }
-////            synchronized (users) {
-////                users.forEach(c -> c.sendGameMsg(msg));
-////            }
-//        }
         private void broadcasting(GameMsg msg) {
             if (currentRoom == null) {
                 server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
@@ -229,6 +209,41 @@ public class ServerManager {
                 }
             }
             return null;
+        }
+
+        private void broadcastIndividualUser(User liar, GameMsg msg) {
+            if (currentRoom == null) {
+                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
+                return;
+            }
+            // 같은 방에 있는 멤버들에게만 메시지를 전송
+            synchronized (currentRoom) {
+                for (User member : currentRoom.getMembers()) {
+                    System.out.println("Broadcast 대상: " + member.name);
+                    ClientHandler handler = findHandlerByUser(member);
+                    if (handler.userName.equals(liar.name)) { // 라이어만
+                        handler.isLiar = true;
+                        handler.sendGameMsg(msg);
+                    }
+                }
+            }
+        }
+
+        private void broadcastExceptUser(User liar, GameMsg msg) {
+            if (currentRoom == null) {
+                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
+                return;
+            }
+            // 같은 방에 있는 멤버들에게만 메시지를 전송
+            synchronized (currentRoom) {
+                for (User member : currentRoom.getMembers()) {
+                    System.out.println("Broadcast 대상: " + member.name);
+                    ClientHandler handler = findHandlerByUser(member);
+                    if (!handler.userName.equals(liar.name)) { // 라이어 빼고
+                        handler.sendGameMsg(msg);
+                    }
+                }
+            }
         }
 
 

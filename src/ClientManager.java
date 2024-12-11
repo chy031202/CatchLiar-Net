@@ -120,7 +120,13 @@ public class ClientManager {
                         // readyUsers 4명되면 게임 시작
                         if(readyUsers.size() == 4) {
                             System.out.println("겜 시작");
-                            sendGameMsg(new GameMsg(GameMsg.GAME_START, userNames));
+                            // 첫 번째 사용자만 sendGameMsg 보내도록
+                            User firstUser = readyUsers.get(0);
+                            if (userName.equals(firstUser.name)) {
+                                sendGameMsg(new GameMsg(GameMsg.GAME_START, readyUsers)); // 첫 번째 사용자만 실행
+                            } else {
+                                System.out.println("첫 번째 사용자가 아님, 메시지 전송 안 함");
+                            }
                         }
                         break;
 
