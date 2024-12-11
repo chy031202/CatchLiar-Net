@@ -118,6 +118,7 @@ public class ServerManager {
                                 break;
                             }
                             server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장했습니다.");
+                            // user.currentRoom. 키워드 세팅
                             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_OK, user, inMsg.getMsg()));
                             broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom
 
@@ -152,7 +153,7 @@ public class ServerManager {
                                 System.out.println("뽑힌 라이어 이름 : " + liar.name);
                             }
                             broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
-                            broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, "keyword"));
+                            broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
                             break;
 
                         case GameMsg.LOGOUT:
@@ -237,7 +238,7 @@ public class ServerManager {
             // 같은 방에 있는 멤버들에게만 메시지를 전송
             synchronized (currentRoom) {
                 for (User member : currentRoom.getMembers()) {
-                    System.out.println("Broadcast 대상: " + member.name);
+                    System.out.println("broadcastExceptUser 대상: " + member.name);
                     ClientHandler handler = findHandlerByUser(member);
                     if (!handler.userName.equals(liar.name)) { // 라이어 빼고
                         handler.sendGameMsg(msg);
@@ -269,6 +270,24 @@ public class ServerManager {
                 user.joinRoom(room);
                 user.setCurrentRoom(room);
                 currentRoom = room; // 현재 클라이언트의 방 업데이트
+
+                // 방 이름에 따라 키워드 설정
+                switch (currentRoom.getRoomName()) {
+                    case "food":
+                        currentRoom.setKeyword("햄버거");
+                        break;
+                    case "place":
+                        currentRoom.setKeyword("에펠탑");
+                        break;
+                    case "animal":
+                        currentRoom.setKeyword("사자");
+                        break;
+                    case "character":
+                        currentRoom.setKeyword("뽀로로");
+                        break;
+                    default:
+                        currentRoom.setKeyword("마카롱");
+                }
 
                 server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
