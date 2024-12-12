@@ -1,5 +1,6 @@
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -10,6 +11,8 @@ import java.util.List;
 
 
 public class GamePanel extends JPanel {
+    private JPanel keywordPanel;
+    private JPanel southPanel;
     private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
     private ClientManager clientManager;
@@ -221,18 +224,21 @@ public class GamePanel extends JPanel {
 
     private JPanel createItemPanel(){
         JPanel itemPanel = new JPanel();
-        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
-        itemPanel.setBackground(Color.LIGHT_GRAY);
+        itemPanel.setPreferredSize(new Dimension(0, 105));
+        itemPanel.setLayout(new GridLayout(2,3,10,10));
+        itemPanel.setBorder(new EmptyBorder(15, 5, 15, 15));
+//        itemPanel.setBackground(Color.LIGHT_GRAY);
+        itemPanel.setBackground(new Color(64,48,47));
 
-        JLabel title = new JLabel("도구 선택");
-        itemPanel.add(title);
+//        JLabel title = new JLabel("도구 선택");
+//        itemPanel.add(title);
 
         // 색상 선택 버튼들
         Color[] colors = {Color.BLACK, Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW};
         for (Color color : colors) {
             JButton colorButton = new JButton();
             colorButton.setBackground(color);
-            colorButton.setPreferredSize(new Dimension(50, 30));
+            colorButton.setPreferredSize(new Dimension(20, 20));
             colorButton.addActionListener(e -> {
                 setCurrentColor(color);
             });
@@ -247,7 +253,7 @@ public class GamePanel extends JPanel {
                 setCurrentColor(selectedColor);
             }
         });
-        itemPanel.add(customColorButton);
+//        itemPanel.add(customColorButton);
 
         // 지우개 버튼
         JToggleButton eraserButton = new JToggleButton("지우개");
@@ -263,6 +269,42 @@ public class GamePanel extends JPanel {
         return itemPanel;
     }
 
+    private JPanel createKeywordPanel(String word) {
+        keywordPanel = new JPanel(new BorderLayout());
+        keywordPanel.setBackground(new Color(64,48,47));
+        keywordPanel.setBorder(new EmptyBorder(20, 15, 20, 10));
+
+
+        if(word != null) {
+            JPanel keyword = new JPanel(new BorderLayout());
+            keyword.setBackground(new Color(201,208,191));
+
+            JLabel label = new JLabel(word, SwingConstants.CENTER); // 텍스트 가운데 정렬
+            label.setForeground(Color.WHITE);
+            label.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
+            keyword.add(label, BorderLayout.CENTER);
+
+            keywordPanel.add(keyword, BorderLayout.CENTER);
+        }
+
+        return keywordPanel;
+    }
+
+    private JPanel createSouthPanel() {
+        southPanel = new JPanel(new GridLayout(1,2));
+        southPanel.add(createItemPanel());
+        southPanel.add(createKeywordPanel(null));
+
+
+        return southPanel;
+    }
+
+    public void addKeyword(String word) {
+        southPanel.remove(keywordPanel);
+        keywordPanel = createKeywordPanel(word);
+        southPanel.add(keywordPanel);
+    }
+
     public JPanel createCenterPanel(){
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -272,7 +314,7 @@ public class GamePanel extends JPanel {
 
         // 기존 GamePanel 인스턴스 재사용
         panel.add(this, BorderLayout.CENTER); // 현재 GamePanel 객체를 추가
-        panel.add(createItemPanel(), BorderLayout.SOUTH);
+        panel.add(createSouthPanel(), BorderLayout.SOUTH);
 
 
         return panel;
