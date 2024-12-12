@@ -5,6 +5,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URL;
 import java.util.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -38,6 +39,9 @@ public class GameRoomPanel extends JPanel {
     TimerTask timerTask;
     private JLabel alarmLabel;
 
+    //펜 아이콘
+    private ImageIcon penIcon;
+
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
         this.gameMsg = gameMsg;
@@ -61,13 +65,15 @@ public class GameRoomPanel extends JPanel {
     public void updateTurnUser(String userName) {
         currentTurnUserName = userName;
 
-        if (userName.equals(clientManager.getUser().getName())) {
-            gamePanel.enableDrawing(); // 자신의 턴일 때 그림 그리기 활성화
-        } else {
-            gamePanel.disableDrawing(); // 자신의 턴이 아닐 때 그림 그리기 비활성화
-        }
+//        if (userName.equals(clientManager.getUser().getName())) {
+//            gamePanel.enableDrawing(); // 자신의 턴일 때 그림 그리기 활성화
+//        } else {
+//            gamePanel.disableDrawing(); // 자신의 턴이 아닐 때 그림 그리기 비활성화
+//        }
         
         System.out.println("턴 변경::현재 턴: " + userName);
+        nowDrawingUser(userName);
+
         // UI에 턴 사용자 표시
 //        JLabel turnLabel = new JLabel("현재 턴: " + userName);
 //        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
@@ -117,6 +123,48 @@ public class GameRoomPanel extends JPanel {
         this.readyUsers = readyUsers;
         System.out.println("updateReadyUser : " + readyUsers);
         refreshLeftBottomPanel(user);
+    }
+
+    private ImageIcon getPenIcon() {
+        //getClass().getResource()?
+        if (penIcon == null) {
+            URL iconURL = getClass().getResource("/images/drawingpen.png");
+            if (iconURL != null) {
+                ImageIcon originalIcon = new ImageIcon(iconURL);
+                Image scaledImage = originalIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+                penIcon = new ImageIcon(scaledImage);
+            } else {
+                System.out.println("이미지 파일을 찾을 수 없습니다.");
+                penIcon = null; // 로드 실패 시 null 처리
+            }
+        }
+        return penIcon;
+    }
+
+    // 현재 그리고 있는 클라이언트 표시
+    private void nowDrawingUser(String currentDrawingUserName){
+        for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
+            JPanel leftBottomPanel = entry.getValue();
+            leftBottomPanel.removeAll(); // 기존 내용을 제거
+
+            if (entry.getKey().equals(currentDrawingUserName)) {
+                // 현재 그림을 그리는 사용자 강조
+                ImageIcon penIcon = getPenIcon();
+                if (penIcon != null) {
+                    JLabel drawingLabel = new JLabel(penIcon, JLabel.CENTER);
+                    leftBottomPanel.add(drawingLabel);
+                }
+                //leftBottomPanel.add(drawingLabel);
+                leftBottomPanel.setBackground(new Color(255, 230, 204)); // 강조 배경색
+            } else {
+                // 기본 상태 유지
+                leftBottomPanel.add(new JLabel("대기 중"));
+                leftBottomPanel.setBackground(new Color(242, 242, 242)); // 기본 배경색
+            }
+
+            leftBottomPanel.revalidate();
+            leftBottomPanel.repaint();
+        }
     }
 
     // 준비 완료 화면 갱신
@@ -437,17 +485,5 @@ public class GameRoomPanel extends JPanel {
     public JLabel getAlarmLabel() {
         return alarmLabel;
     }
-
-//    public void updateTurnUser(String userName) {
-//        JLabel turnLabel = new JLabel(); // 현재 턴 사용자 레이블
-//        turnLabel.setText("현재 턴: " + userName);
-//        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
-//        turnLabel.setHorizontalAlignment(SwingConstants.CENTER);
-//
-//        // 알람 패널에 추가
-//        alarmPanel.add(turnLabel, BorderLayout.NORTH);
-//        alarmPanel.revalidate();
-//        alarmPanel.repaint();
-//    }
 
 }
