@@ -26,7 +26,7 @@ public class SelectRoomPanel extends JPanel {
 
         ImageIcon roomLogoIcon = new ImageIcon(SelectRoomPanel.class.getResource("/images/roomLogo.png"));
         Image originalImage = roomLogoIcon.getImage(); // 원본 이미지 가져오기
-        Image resizedImage = originalImage.getScaledInstance(400, 130, Image.SCALE_SMOOTH); // 새 크기로 조정
+        Image resizedImage = originalImage.getScaledInstance(400, 95, Image.SCALE_SMOOTH); // 새 크기로 조정
         ImageIcon resizedIcon = new ImageIcon(resizedImage); // 크기 조정된 이미지를 새로운 ImageIcon으로 설정
         JLabel title = new JLabel(resizedIcon); // JLabel에 설정
         title.setOpaque(true);

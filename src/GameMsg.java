@@ -61,7 +61,7 @@ public class GameMsg implements Serializable {
         System.out.println("로그인시 User 초기화되는지 확인 " + user.getName());
     }
 
-    // LOGIN_OK, ROOM_SELECT_DENIED, GAME_READY, LIAR_NOTIFICATION
+    // LOGIN_OK, ROOM_SELECT_DENIED, GAME_READY, LIAR_NOTIFICATION, GAME_READY_OK
     public GameMsg(int mode, User user) {
         this.mode = mode;
         this.user = user;
@@ -88,14 +88,14 @@ public class GameMsg implements Serializable {
         this.mode = mode;
     }
 
-    // GAME_READY_OK
+    // GAME_READY, GAME_UN_READY
     public GameMsg(int mode, User user, Vector<User> readyUsers) {
         this.mode = mode;
         this.user = user;
         this.readyUsers = readyUsers;
     }
 
-    // GAME_READY_OK
+    // GAME_START
     public GameMsg(int mode, Vector<User> userNames) {
         this.mode = mode;
         this.readyUsers = userNames;

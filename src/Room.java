@@ -6,6 +6,7 @@ public class Room implements Serializable {
     private String roomName; // 방 이름
     private Vector<User> members; // 방에 있는 클라이언트 닉네임 목록
     private Vector<User> readyUsers;
+    public String Keywords;
 
     private int currentTurnIndex = 0; // 현재 그림을 그릴 사용자 인덱스
 
@@ -50,6 +51,9 @@ public class Room implements Serializable {
 
     public Vector<User> getReadyUsers() { return readyUsers; }
     public void setReadyUsers(Vector<User> readyUsers) { this.readyUsers = readyUsers; }
+
+    public String getKeyword() { return Keywords; }
+    public void setKeyword(String keywords) { Keywords = keywords; }
 
     public boolean isEmpty() {
         return members.isEmpty();
