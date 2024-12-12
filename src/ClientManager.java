@@ -137,13 +137,13 @@ public class ClientManager {
                         break;
 
                     case GameMsg.LIAR_NOTIFICATION:
-                        client.showDialog(inMsg);
                         client.startGame();
+                        client.showDialog(inMsg);
                         break;
 
                     case GameMsg.KEYWORD_NOTIFICATION:
-                        client.showDialog(inMsg);
                         client.startGame();
+                        client.showDialog(inMsg);
                         break;
 
                     case GameMsg.TIME:
@@ -171,7 +171,7 @@ public class ClientManager {
 
                     case GameMsg.DRAW_ACTION:
                         Paint paintData = inMsg.getPaintData();
-                        
+
                         //드로잉 확인 콘솔
 //                        System.out.println("DRAW_ACTION 수신: " +
 //                                "시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
