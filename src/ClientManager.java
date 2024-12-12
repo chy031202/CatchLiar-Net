@@ -142,10 +142,25 @@ public class ClientManager {
 
                     case GameMsg.TIME:
                         int remainingTime = inMsg.getTime(); // 서버에서 받은 남은 시간
-                        //client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
-                        //client.startGame(); // 게임 시작 신호 (패널 전환 포함)
+                        User currentTurnUser = inMsg.getUser();
+
                         client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
-                        System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
+
+                        // 자신의 턴 여부 확인
+//                        if (currentTurnUser != null && currentTurnUser.getName().equals(client.getUserName())) {
+//                            client.getGamePanel().setDrawingEnabled(true); // 그림 그리기 활성화
+//                        } else {
+//                            client.getGamePanel().setDrawingEnabled(false); // 그림 그리기 비활성화
+//                        }
+//                        System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
+
+                        if (currentTurnUser != null) {
+                            client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
+                        }
+
+                        // 알람 UI 업데이트
+                        client.updateAlarmLabel(remainingTime);
+
                         break;
 
                     case GameMsg.DRAW_ACTION:
@@ -233,6 +248,10 @@ public class ClientManager {
     public void sendUnReady(User readyUser) {
         System.out.println("clientManage의 sendUnReady");
         sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY, readyUser));
+    }
+
+    public User getUser() {
+        return this.user; // 현재 사용자 객체 반환
     }
 
     public void sendDrawingData(int startX, int startY, int endX, int endY, Color color, boolean isErasing) {

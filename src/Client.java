@@ -148,4 +148,11 @@ public class Client extends JFrame {
         int serverPort = 54321;
         Client client = new Client(serverAddress, serverPort);
     }
+
+    public String getUserName() {
+        if (clientManager != null && clientManager.getUser() != null) {
+            return clientManager.getUser().getName(); // ClientManager의 User 객체에서 이름 반환
+        }
+        return null; // 사용자 정보가 없을 경우
+    }
 }

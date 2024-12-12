@@ -219,6 +219,18 @@ public class ServerManager {
                         Thread.sleep(1000); // 1초 간격으로 실행
                         remainingTime--;
 
+                        // 현재 턴 사용자 확인
+                        if (remainingTime % 10 == 0) { // 10초마다 턴 전환
+                            room.nextTurn(); // 다음 사용자로 턴 전환
+                            User currentUser = room.getCurrentTurnUser();
+
+                            // 현재 턴 사용자 정보 브로드캐스트
+                            GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime);
+                            broadcasting(turnMsg);
+
+                            System.out.println("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
+                        }
+
                         // TIME 메시지를 생성하여 브로드캐스트
                         GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime);
                         broadcasting(timeMsg);

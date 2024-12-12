@@ -26,6 +26,7 @@ public class GameRoomPanel extends JPanel {
     private JPanel readyPanel;
     private JPanel alarmPanel;
     private GamePanel gamePanel;
+    private String currentTurnUserName; // 현재 턴 사용자 이름
 
     public boolean ready = false;
     private boolean start = false;
@@ -48,6 +49,27 @@ public class GameRoomPanel extends JPanel {
         rightPannel = createRightPanel();
         alarmPanel = createAlarmPanel();
         buildGUI();
+    }
+
+    // 턴 사용자 업데이트 및 그림 그리기 활성화/비활성화 제어
+    public void updateTurnUser(String userName) {
+        currentTurnUserName = userName;
+
+        if (userName.equals(clientManager.getUser().getName())) {
+            gamePanel.enableDrawing(); // 자신의 턴일 때 그림 그리기 활성화
+        } else {
+            gamePanel.disableDrawing(); // 자신의 턴이 아닐 때 그림 그리기 비활성화
+        }
+
+
+
+        // UI에 턴 사용자 표시
+        JLabel turnLabel = new JLabel("현재 턴: " + userName);
+        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
+        add(turnLabel, BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
     }
 
     public void updateUser(Vector<User> userNames) {
@@ -80,6 +102,7 @@ public class GameRoomPanel extends JPanel {
         JPanel newReadyPanel = createReadyPanel();
         readyPanel = newReadyPanel;
         rightPannel.add(readyPanel, BorderLayout.NORTH);
+        //updateTurnUser();
 
         revalidate();
         repaint();
@@ -142,6 +165,7 @@ public class GameRoomPanel extends JPanel {
         add(userSidePanel, BorderLayout.WEST);
         add(gamePanel.createCenterPanel(), BorderLayout.CENTER);
         add(rightPannel, BorderLayout.EAST);
+        //add(updateTurnUser());
 
 //        refreshLeftBottomPanel();
     }
@@ -390,4 +414,17 @@ public class GameRoomPanel extends JPanel {
     public JLabel getAlarmLabel() {
         return alarmLabel;
     }
+
+//    public void updateTurnUser(String userName) {
+//        JLabel turnLabel = new JLabel(); // 현재 턴 사용자 레이블
+//        turnLabel.setText("현재 턴: " + userName);
+//        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
+//        turnLabel.setHorizontalAlignment(SwingConstants.CENTER);
+//
+//        // 알람 패널에 추가
+//        alarmPanel.add(turnLabel, BorderLayout.NORTH);
+//        alarmPanel.revalidate();
+//        alarmPanel.repaint();
+//    }
+
 }

@@ -17,6 +17,8 @@ public class GamePanel extends JPanel {
 
     private int prevX, prevY;
     private boolean isDrawing = false;
+    private MouseAdapter mouseAdapter;
+    private MouseMotionAdapter mouseMotionAdapter;
 
     private static final Color ERASER_COLOR = Color.WHITE;
 
@@ -28,25 +30,31 @@ public class GamePanel extends JPanel {
     }
 
     private void setupDrawingListeners() {
-        addMouseListener(new MouseAdapter() {
+        mouseAdapter = new MouseAdapter() {
+        //addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                startDrawing(e.getX(), e.getY(), isErasing ? ERASER_COLOR : currentColor, isErasing);
+                //startDrawing(e.getX(), e.getY(), isErasing ? ERASER_COLOR : currentColor, isErasing);
+                if (isDrawing) {
+                    startDrawing(e.getX(), e.getY(), isErasing ? ERASER_COLOR : currentColor, isErasing);
+                }
 
             }
-
             @Override
             public void mouseReleased(MouseEvent e) {
                 stopDrawing();
             }
-        });
+        //});
+        };
 
-        addMouseMotionListener(new MouseMotionAdapter() {
+        mouseMotionAdapter = new MouseMotionAdapter() {
+            //addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
                 continueDrawing(e);
             }
-        });
+            //});
+        };
 
 
     }
@@ -153,6 +161,30 @@ public class GamePanel extends JPanel {
             System.out.println("그리기 모드 사용 - 현재 색상: " + currentColor.toString());
         }
     }
+
+    public void setDrawingEnabled(boolean b) {
+        this.isDrawing = b;
+
+    }
+
+    public void enableDrawing() {
+        if (!isDrawing) {
+            isDrawing = true;
+            addMouseListener(mouseAdapter);
+            addMouseMotionListener(mouseMotionAdapter);
+            System.out.println("Drawing enabled.");
+        }
+    }
+
+    public void disableDrawing() {
+        if (!isDrawing) {
+            isDrawing = false;
+            addMouseListener(mouseAdapter);
+            addMouseMotionListener(mouseMotionAdapter);
+            System.out.println("Drawing enabled.");
+        }
+    }
+
 
     private static class DrawingLine {
         private final int startX, startY, endX, endY;

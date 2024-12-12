@@ -7,6 +7,8 @@ public class Room implements Serializable {
     private Vector<User> members; // 방에 있는 클라이언트 닉네임 목록
     private Vector<User> readyUsers;
 
+    private int currentTurnIndex = 0; // 현재 그림을 그릴 사용자 인덱스
+
     public Room(String name) {
         this.roomName = name;
         this.members = new Vector<>();
@@ -51,6 +53,17 @@ public class Room implements Serializable {
 
     public boolean isEmpty() {
         return members.isEmpty();
+    }
+
+    public User getCurrentTurnUser() {
+        if (members.isEmpty()) return null;
+        return members.get(currentTurnIndex); // 현재 그림 그릴 사용자 반환
+    }
+
+    public void nextTurn() {
+        if (!members.isEmpty()) {
+            currentTurnIndex = (currentTurnIndex + 1) % members.size(); // 순환 인덱스
+        }
     }
 
 }
