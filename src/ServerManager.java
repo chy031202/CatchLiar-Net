@@ -85,7 +85,7 @@ public class ServerManager {
         private void handleDrawAction(GameMsg inMsg) {
             Paint paintData = inMsg.getPaintData();
             Color color = inMsg.getPaintData().getColor() != null ? inMsg.getPaintData().getColor() : Color.BLACK;
-            
+
             //드로잉 확인 패널
 //            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
 //                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
@@ -194,31 +194,6 @@ public class ServerManager {
 
         }
 
-//        private void broadcasting(GameMsg msg) {
-//            for (ClientHandler c : users) {
-//                c.sendGameMsg(msg);
-//            }
-//        }
-
-//        private void broadcasting(GameMsg msg) {
-//            if (currentRoom == null) {
-//                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
-//                return;
-//            }
-//            // 같은 방에 있는 멤버들에게만 메시지를 전송
-//            synchronized (currentRoom) {
-//                for (User memberName : currentRoom.getMembers()) {
-//                    users.stream()
-//                            .filter(c -> c.userName.equals(memberName)) // 해당 이름의 클라이언트를 찾음
-//                            .forEach(c -> c.sendGameMsg(msg));
-//
-//                }
-//            }
-////            synchronized (users) {
-////                users.forEach(c -> c.sendGameMsg(msg));
-////            }
-//        }
-
         private void startRoomTimer(Room room, int startTime) {
             // 첫 턴 사용자 브로드캐스트
             //User currentUser = room.getCurrentTurnUser();
@@ -267,7 +242,6 @@ public class ServerManager {
                 }
             }).start();
         }
-
 
         private void broadcasting(GameMsg msg) {
             if (currentRoom == null) {
@@ -353,7 +327,6 @@ public class ServerManager {
                 user.joinRoom(room);
                 user.setCurrentRoom(room);
                 currentRoom = room; // 현재 클라이언트의 방 업데이트
-                //room.addMember(user);
 
                 // 방 이름에 따라 키워드 설정
                 switch (currentRoom.getRoomName()) {
