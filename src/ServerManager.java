@@ -85,9 +85,11 @@ public class ServerManager {
         private void handleDrawAction(GameMsg inMsg) {
             Paint paintData = inMsg.getPaintData();
             Color color = inMsg.getPaintData().getColor() != null ? inMsg.getPaintData().getColor() : Color.BLACK;
-            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
-                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
-                    ", 지우개 모드: " + paintData.isErasing());
+
+            //드로잉 확인 패널
+//            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
+//                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
+//                    ", 지우개 모드: " + paintData.isErasing());
 
             broadcasting(new GameMsg(GameMsg.DRAW_ACTION, paintData)); // 그림 데이터를 다른 클라이언트들에게 전송
         }
@@ -193,6 +195,15 @@ public class ServerManager {
         }
 
         private void startRoomTimer(Room room, int startTime) {
+            // 첫 턴 사용자 브로드캐스트
+            //User currentUser = room.getCurrentTurnUser();
+            if (room.getCurrentTurnUser() != null) {
+                GameMsg initialTurnMsg = new GameMsg(GameMsg.TIME, room.getCurrentTurnUser(), "Your turn!", startTime);
+                broadcasting(initialTurnMsg);
+                server.printDisplay("첫 턴 사용자: " + room.getCurrentTurnUser().getName());
+            }
+
+
             new Thread(() -> {
                 int remainingTime = startTime;
                 try {
@@ -209,6 +220,8 @@ public class ServerManager {
                             GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime);
                             broadcasting(turnMsg);
 
+
+                            server.printDisplay("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
                             System.out.println("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
                         }
 
@@ -216,12 +229,13 @@ public class ServerManager {
                         GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime);
                         broadcasting(timeMsg);
 
-                        System.out.println("타이머 - 방 [" + room.getRoomName() + "] 남은 시간: " + remainingTime + "초");
+                        //System.out.println("타이머 - 방 [" + room.getRoomName() + "] 남은 시간: " + remainingTime + "초");
                     }
 
                     // 시간이 종료되면 게임 종료 메시지를 브로드캐스트
                     GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
                     broadcasting(endMsg);
+                    server.printDisplay("시간 종료!!");
                     System.out.println("타이머 종료 - 방 [" + room.getRoomName() + "]");
                 } catch (InterruptedException e) {
                     System.err.println("타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());

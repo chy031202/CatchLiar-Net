@@ -18,6 +18,10 @@ public class Room implements Serializable {
 
     public void addMember(User user) {
         members.add(user);
+        if (members.size() == 1) {
+            // 첫 번째 사용자가 방에 들어오면 첫 턴으로 설정
+            currentTurnIndex = 0;
+        }
         System.out.println("Room 에서 addMember : " + roomName + "에서 " + user.getName() + "님이 입장");
         System.out.println("현재 방에 있는 멤버들 : " + members);
     }

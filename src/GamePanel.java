@@ -102,13 +102,16 @@ public class GamePanel extends JPanel {
 
     private void stopDrawing() {
         isDrawing = false;
-        revalidate();
-        repaint();
+        //다음 그리기 준비
+        prevX = -1;
+        prevY = -1; // 이전 좌표 초기화
+//        revalidate();
+//        repaint();
     }
 
     // ClientManager에 추가할 메서드 제안
     public void receiveRemoteDrawing(int startX, int startY, int endX, int endY, Color color) {
-        System.out.println("Drawing received: (" + startX + ", " + startY + ") -> (" + endX + ", " + endY + "), Color: " + color);
+        //System.out.println("Drawing received: (" + startX + ", " + startY + ") -> (" + endX + ", " + endY + "), Color: " + color);
         synchronized (lines) {
             lines.add(new DrawingLine(startX, startY, endX, endY, color));
         }
@@ -165,10 +168,15 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void setDrawingEnabled(boolean b) {
-        this.isDrawing = b;
-
+    public void setDrawingEnabled(boolean enabled) {
+        this.isDrawing = enabled;
+        if (enabled) {
+            enableDrawing(); // 리스너 등록
+        } else {
+            disableDrawing(); // 리스너 해제
+        }
     }
+
 
     public void enableDrawing() {
         if (!isDrawing) {
@@ -182,8 +190,8 @@ public class GamePanel extends JPanel {
     public void disableDrawing() {
         if (!isDrawing) {
             isDrawing = false;
-            addMouseListener(mouseAdapter);
-            addMouseMotionListener(mouseMotionAdapter);
+            removeMouseListener(mouseAdapter);
+            removeMouseMotionListener(mouseMotionAdapter);
             System.out.println("Drawing enabled.");
         }
     }
