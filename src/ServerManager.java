@@ -220,6 +220,15 @@ public class ServerManager {
 //        }
 
         private void startRoomTimer(Room room, int startTime) {
+            // 첫 턴 사용자 브로드캐스트
+            //User currentUser = room.getCurrentTurnUser();
+            if (room.getCurrentTurnUser() != null) {
+                GameMsg initialTurnMsg = new GameMsg(GameMsg.TIME, room.getCurrentTurnUser(), "Your turn!", startTime);
+                broadcasting(initialTurnMsg);
+                server.printDisplay("첫 턴 사용자: " + room.getCurrentTurnUser().getName());
+            }
+
+
             new Thread(() -> {
                 int remainingTime = startTime;
                 try {
@@ -251,6 +260,7 @@ public class ServerManager {
                     // 시간이 종료되면 게임 종료 메시지를 브로드캐스트
                     GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
                     broadcasting(endMsg);
+                    server.printDisplay("시간 종료!!");
                     System.out.println("타이머 종료 - 방 [" + room.getRoomName() + "]");
                 } catch (InterruptedException e) {
                     System.err.println("타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
@@ -343,6 +353,7 @@ public class ServerManager {
                 user.joinRoom(room);
                 user.setCurrentRoom(room);
                 currentRoom = room; // 현재 클라이언트의 방 업데이트
+                //room.addMember(user);
 
                 // 방 이름에 따라 키워드 설정
                 switch (currentRoom.getRoomName()) {

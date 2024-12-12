@@ -152,20 +152,20 @@ public class ClientManager {
 
                         client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
 
-                        // 자신의 턴 여부 확인
-//                        if (currentTurnUser != null && currentTurnUser.getName().equals(client.getUserName())) {
-//                            client.getGamePanel().setDrawingEnabled(true); // 그림 그리기 활성화
-//                        } else {
-//                            client.getGamePanel().setDrawingEnabled(false); // 그림 그리기 비활성화
-//                        }
-//                        System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
+                         //자신의 턴 여부 확인
+                        if (currentTurnUser != null && currentTurnUser.getName().equals(client.getUserName())) {
+                            client.getGamePanel().setDrawingEnabled(true); // 그림 그리기 활성화
+                        } else {
+                            client.getGamePanel().setDrawingEnabled(false); // 그림 그리기 비활성화
+                        }
+                        System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
 
                         if (currentTurnUser != null) {
                             client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
                         }
 
                         // 알람 UI 업데이트
-                        client.updateAlarmLabel(remainingTime);
+                        //client.updateAlarmLabel(remainingTime);
 
                         break;
 

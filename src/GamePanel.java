@@ -102,8 +102,11 @@ public class GamePanel extends JPanel {
 
     private void stopDrawing() {
         isDrawing = false;
-        revalidate();
-        repaint();
+        //다음 그리기 준비
+        prevX = -1;
+        prevY = -1; // 이전 좌표 초기화
+//        revalidate();
+//        repaint();
     }
 
     // ClientManager에 추가할 메서드 제안
@@ -165,10 +168,15 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void setDrawingEnabled(boolean b) {
-        this.isDrawing = b;
-
+    public void setDrawingEnabled(boolean enabled) {
+        this.isDrawing = enabled;
+        if (enabled) {
+            enableDrawing(); // 리스너 등록
+        } else {
+            disableDrawing(); // 리스너 해제
+        }
     }
+
 
     public void enableDrawing() {
         if (!isDrawing) {
@@ -182,8 +190,8 @@ public class GamePanel extends JPanel {
     public void disableDrawing() {
         if (!isDrawing) {
             isDrawing = false;
-            addMouseListener(mouseAdapter);
-            addMouseMotionListener(mouseMotionAdapter);
+            removeMouseListener(mouseAdapter);
+            removeMouseMotionListener(mouseMotionAdapter);
             System.out.println("Drawing enabled.");
         }
     }
@@ -224,11 +232,14 @@ public class GamePanel extends JPanel {
 
     private JPanel createItemPanel(){
         JPanel itemPanel = new JPanel();
-        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
-        itemPanel.setBackground(Color.LIGHT_GRAY);
+        itemPanel.setPreferredSize(new Dimension(0, 105));
+        itemPanel.setLayout(new GridLayout(2,3,10,10));
+        itemPanel.setBorder(new EmptyBorder(15, 5, 15, 15));
+//        itemPanel.setBackground(Color.LIGHT_GRAY);
+        itemPanel.setBackground(new Color(64,48,47));
 
-        JLabel title = new JLabel("도구 선택");
-        itemPanel.add(title);
+//        JLabel title = new JLabel("도구 선택");
+//        itemPanel.add(title);
 
         // 색상 선택 버튼들
         Color[] colors = {Color.BLACK, Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW};
