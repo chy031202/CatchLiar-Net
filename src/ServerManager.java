@@ -85,9 +85,11 @@ public class ServerManager {
         private void handleDrawAction(GameMsg inMsg) {
             Paint paintData = inMsg.getPaintData();
             Color color = inMsg.getPaintData().getColor() != null ? inMsg.getPaintData().getColor() : Color.BLACK;
-            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
-                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
-                    ", 지우개 모드: " + paintData.isErasing());
+            
+            //드로잉 확인 패널
+//            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
+//                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
+//                    ", 지우개 모드: " + paintData.isErasing());
 
             broadcasting(new GameMsg(GameMsg.DRAW_ACTION, paintData)); // 그림 데이터를 다른 클라이언트들에게 전송
         }
@@ -234,6 +236,8 @@ public class ServerManager {
                             GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime);
                             broadcasting(turnMsg);
 
+
+                            server.printDisplay("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
                             System.out.println("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
                         }
 
@@ -241,7 +245,7 @@ public class ServerManager {
                         GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime);
                         broadcasting(timeMsg);
 
-                        System.out.println("타이머 - 방 [" + room.getRoomName() + "] 남은 시간: " + remainingTime + "초");
+                        //System.out.println("타이머 - 방 [" + room.getRoomName() + "] 남은 시간: " + remainingTime + "초");
                     }
 
                     // 시간이 종료되면 게임 종료 메시지를 브로드캐스트

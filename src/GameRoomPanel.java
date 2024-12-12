@@ -66,13 +66,12 @@ public class GameRoomPanel extends JPanel {
         } else {
             gamePanel.disableDrawing(); // 자신의 턴이 아닐 때 그림 그리기 비활성화
         }
-
-
-
+        
+        System.out.println("턴 변경::현재 턴: " + userName);
         // UI에 턴 사용자 표시
-        JLabel turnLabel = new JLabel("현재 턴: " + userName);
-        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
-        add(turnLabel, BorderLayout.NORTH);
+//        JLabel turnLabel = new JLabel("현재 턴: " + userName);
+//        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
+//        add(turnLabel, BorderLayout.NORTH);
 
         revalidate();
         repaint();

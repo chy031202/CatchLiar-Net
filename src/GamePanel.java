@@ -108,7 +108,7 @@ public class GamePanel extends JPanel {
 
     // ClientManager에 추가할 메서드 제안
     public void receiveRemoteDrawing(int startX, int startY, int endX, int endY, Color color) {
-        System.out.println("Drawing received: (" + startX + ", " + startY + ") -> (" + endX + ", " + endY + "), Color: " + color);
+        //System.out.println("Drawing received: (" + startX + ", " + startY + ") -> (" + endX + ", " + endY + "), Color: " + color);
         synchronized (lines) {
             lines.add(new DrawingLine(startX, startY, endX, endY, color));
         }
