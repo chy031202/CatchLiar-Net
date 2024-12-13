@@ -33,8 +33,8 @@ public class GamePanel extends JPanel {
     }
 
     private void setupDrawingListeners() {
-        mouseAdapter = new MouseAdapter() {
-        //addMouseListener(new MouseAdapter() {
+        //mouseAdapter = new MouseAdapter() {
+        addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 //startDrawing(e.getX(), e.getY(), isErasing ? ERASER_COLOR : currentColor, isErasing);
@@ -47,17 +47,17 @@ public class GamePanel extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 stopDrawing();
             }
-        //});
-        };
+        });
+        //};
 
-        mouseMotionAdapter = new MouseMotionAdapter() {
-            //addMouseMotionListener(new MouseMotionAdapter() {
+        //mouseMotionAdapter = new MouseMotionAdapter() {
+            addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
                 continueDrawing(e);
             }
-            //});
-        };
+            });
+        //};
 
 
     }
@@ -175,6 +175,9 @@ public class GamePanel extends JPanel {
         } else {
             disableDrawing(); // 리스너 해제
         }
+
+        revalidate();
+        SwingUtilities.invokeLater(this::repaint);
     }
 
 
@@ -185,6 +188,9 @@ public class GamePanel extends JPanel {
             addMouseMotionListener(mouseMotionAdapter);
             System.out.println("Drawing enabled.");
         }
+
+        revalidate();
+        SwingUtilities.invokeLater(this::repaint);
     }
 
     public void disableDrawing() {
@@ -194,6 +200,9 @@ public class GamePanel extends JPanel {
             removeMouseMotionListener(mouseMotionAdapter);
             System.out.println("Drawing enabled.");
         }
+
+        revalidate();
+        SwingUtilities.invokeLater(this::repaint);
     }
 
 
