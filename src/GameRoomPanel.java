@@ -47,6 +47,10 @@ public class GameRoomPanel extends JPanel {
         return userLeftBottomPanels;
     }
 
+    //펜 아이콘
+    private ImageIcon penIcon;
+    private ImageIcon voteIcon;
+
 //    // Getter 메서드
 //    public boolean isVotingActive() {
 //        return isVotingActive;
@@ -67,8 +71,7 @@ public class GameRoomPanel extends JPanel {
 //        });
 //    }
 
-    //펜 아이콘
-    private ImageIcon penIcon;
+
 
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
@@ -167,6 +170,21 @@ public class GameRoomPanel extends JPanel {
             }
         }
         return penIcon;
+    }
+
+    private ImageIcon getVoteICon(){
+        if (voteIcon == null) {
+            URL iconURL = getClass().getResource("/images/Vote.png");
+            if (iconURL != null) {
+                ImageIcon originalIcon = new ImageIcon(iconURL);
+                Image scaledImage = originalIcon.getImage().getScaledInstance(17, 17, Image.SCALE_SMOOTH);
+                voteIcon = new ImageIcon(scaledImage);
+            } else {
+                System.out.println("이미지 파일을 찾을 수 없습니다.");
+                voteIcon = null; // 로드 실패 시 null 처리
+            }
+        }
+        return voteIcon;
     }
 
     // 현재 그리고 있는 클라이언트 표시
@@ -349,8 +367,6 @@ public class GameRoomPanel extends JPanel {
             panel.add(Box.createRigidArea(new Dimension(0, 17))); // 간격 추가
 //            panel.add(createIndividualUserPanel(userName));
 
-            // 클릭 이벤트는 외부 메서드에서 처리
-            setupClickEventForPanel(userPanel, userName.getName());
         }
 
         return panel;
@@ -358,6 +374,7 @@ public class GameRoomPanel extends JPanel {
 
     private void setupClickEventForPanel(JPanel userPanel, String userName) {
         // 클릭 이벤트 추가
+
         //System.out.println("VOTE ::mouseClicked"+isVotingActive());
         // 클릭한 유저 패널 처리
         userPanel.addMouseListener(new MouseAdapter() {
@@ -396,6 +413,9 @@ public class GameRoomPanel extends JPanel {
         }
         leftPanel.add(leftBottomPanel);
 
+        // setupClickEventForPanel을 leftBottomPanel에 적용
+        setupClickEventForPanel(leftBottomPanel, userName);
+
 //        JPanel rightPanel = new JPanel();
 //        rightPanel.setBackground(new Color(242,242,242));
 //        rightPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
@@ -428,7 +448,22 @@ public class GameRoomPanel extends JPanel {
         }
 
         // UI 갱신
-        leftBottomPanel.setBackground(new Color(255, 0, 0)); // 투표한 대상 강조
+        // 이미지를 JLabel에 추가
+        try {
+            // getVoteIcon 메서드를 통해 아이콘 가져오기
+            ImageIcon voteIcon = getVoteICon(); // 클래스의 getVoteICon 메서드 사용
+            if (voteIcon != null) {
+                JLabel voteLabel = new JLabel(voteIcon, JLabel.CENTER); // 아이콘으로 JLabel 생성
+                //leftBottomPanel.removeAll(); // 기존 내용을 제거
+                leftBottomPanel.add(voteLabel); // 아이콘 추가
+            }
+            else {
+                System.err.println("Vote 아이콘을 가져올 수 없습니다.");
+            }
+        } catch (Exception e) {
+            System.err.println("이미지 로드 실패: " + e.getMessage());
+        }
+        //leftBottomPanel.setBackground(new Color(255, 0, 0)); // 투표한 대상 강조
         leftBottomPanel.setEnabled(false); // 중복 클릭 방지
 
         // 투표 요청 서버로 전송

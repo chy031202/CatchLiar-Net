@@ -136,6 +136,7 @@ public class Client extends JFrame {
                         "투표 시작 알림",              // 제목
                         JOptionPane.PLAIN_MESSAGE // 경고 아이콘
                 );
+                gameRoomPanel.clearAllLeftBottomPanels();
                 break;
 
             default:
@@ -184,7 +185,7 @@ public class Client extends JFrame {
 //        gameRoomPanel.isVotingActive = true;
 //        gameRoomPanel.updateUI(); // UI 강제 갱신
 //        SwingUtilities.invokeLater(() -> {
-//        gameRoomPanel.clearAllLeftBottomPanels();
+//
 //        gameRoomPanel.setVotingActive(true); // Setter 사용
 //        gameRoomPanel.updateUI(); // UI 강제 갱신
 //        });

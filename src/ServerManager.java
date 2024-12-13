@@ -17,7 +17,7 @@ public class ServerManager {
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
 
-    private static final int DRAWING_TIME=12;
+    private static final int DRAWING_TIME=8;
     private static final int DRAWING_PERTIME=DRAWING_TIME/4;
     private static final int VOTE_TIME=6;
 //    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());

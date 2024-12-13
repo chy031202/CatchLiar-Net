@@ -192,7 +192,7 @@ public class ClientManager {
 
                         if (inMsg.isVoteStart()) {
                             System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
-                            client.startVote();
+                            //client.startVote();
                             client.showDialog(inMsg); // 투표 시작 다이얼로그
                             //client.showVoteDialog(); // 투표 UI 표시
                         } else {
