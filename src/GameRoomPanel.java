@@ -41,6 +41,8 @@ public class GameRoomPanel extends JPanel {
     private JLabel alarmLabel;
 
     // 투표 상태 플래그
+    private boolean hasVoted = false; // 이미 투표했는지 여부를 추적
+
     public boolean isVotingActive; // 플래그는 private로 설정
     //확인용
     public Map<String, JPanel> getUserLeftBottomPanels() {
@@ -374,9 +376,6 @@ public class GameRoomPanel extends JPanel {
 
     private void setupClickEventForPanel(JPanel userPanel, String userName) {
         // 클릭 이벤트 추가
-
-        //System.out.println("VOTE ::mouseClicked"+isVotingActive());
-        // 클릭한 유저 패널 처리
         userPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -388,6 +387,7 @@ public class GameRoomPanel extends JPanel {
 
 
     private JPanel createIndividualUserPanel(String userName) {
+
         JPanel panel = new JPanel(new GridLayout(1, 2));
 
         JPanel leftPanel = new JPanel(new GridLayout(2, 1));
@@ -441,11 +441,20 @@ public class GameRoomPanel extends JPanel {
     }
 
     private void handleVote(String votedUserName, JPanel leftBottomPanel) {
+        // 이미 투표를 한 경우
+        if (hasVoted) {
+            //JOptionPane.showMessageDialog(this, "이미 투표했습니다!", "투표 불가", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         // 이미 투표한 경우 투표 불가능 처리
         if (!leftBottomPanel.isEnabled()) {
             //JOptionPane.showMessageDialog(this, "이미 투표했습니다!", "투표 불가", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
+        // 투표 상태 업데이트
+        hasVoted = true;
 
         // UI 갱신
         // 이미지를 JLabel에 추가
@@ -697,5 +706,18 @@ public class GameRoomPanel extends JPanel {
     public JLabel getAlarmLabel() {
         return alarmLabel;
     }
+
+    public void resetVoteState() {
+        hasVoted = false; // 투표 상태 초기화
+        for (JPanel panel : userLeftBottomPanels.values()) {
+            panel.setEnabled(true); // 모든 패널을 활성화
+            panel.removeAll(); // 기존 컴포넌트 제거
+            panel.setBackground(new Color(242, 242, 242)); // 초기 배경색 설정
+            panel.revalidate();
+            panel.repaint();
+        }
+        System.out.println("투표 상태 초기화 완료");
+    }
+
 
 }
