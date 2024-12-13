@@ -188,13 +188,19 @@ public class ClientManager {
                         break;
 
                     case GameMsg.VOTE:
+
                         if (inMsg.isVoteStart()) {
-                            client.showDialog(inMsg); // 투표 시작 다이얼로그
+                            System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
                             client.startVote();
+                            client.showDialog(inMsg); // 투표 시작 다이얼로그
                             //client.showVoteDialog(); // 투표 UI 표시
                         } else {
                             client.updateAlarmLabel(inMsg.getTime()); // 투표 타이머 업데이트
                         }
+
+                    case GameMsg.VOTE_RESULT:
+                        //client.endVote(); // 투표 종료 처리
+                        break;
 
 
                     case GameMsg.CHAT_MESSAGE_OK:
@@ -218,11 +224,6 @@ public class ClientManager {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    //투표 다이얼로그
-    private void showVoteDialog() {
-
     }
 
     private void disconnect() {

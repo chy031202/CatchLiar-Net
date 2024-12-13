@@ -19,7 +19,7 @@ public class ServerManager {
 
     private static final int DRAWING_TIME=12;
     private static final int DRAWING_PERTIME=DRAWING_TIME/4;
-    private static final int VOTE_TIME=20;
+    private static final int VOTE_TIME=6;
 //    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
@@ -168,8 +168,12 @@ public class ServerManager {
 
                         case GameMsg.VOTE:
                             String votedUser = inMsg.getVotedUser();
-                            server.printDisplay(userName + "님이" + votedUser + "에게 투표");
-                            currentRoom.addVote(votedUser);
+                            if (votedUser != null) {
+                                server.printDisplay(userName + "님이 " + votedUser + "에게 투표했습니다.");
+                                currentRoom.addVote(votedUser);
+                            } else {
+                                server.printDisplay("투표 값이 null입니다.");
+                            }
                             break;
 
                         case GameMsg.LOGOUT:

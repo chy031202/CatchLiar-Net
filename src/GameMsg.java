@@ -42,6 +42,7 @@ public class GameMsg implements Serializable {
     private Paint paintData; // 그림 데이터용 필드 추가
     private String votedUser; //투표된 사용자 이름
 
+
     //투표 관련 플래그
     private boolean isVoteStart; // 투표 시작 여부
 
@@ -86,16 +87,21 @@ public class GameMsg implements Serializable {
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것
-        this.message = message; // 방 이름
+        this.message = message;
 
         if (mode == ROOM_SELECT) {
+            this.message = message;
             // 방 선택 요청 처리
             System.out.println("방 선택 요청: " + user.getName() + message);
         } else if (mode == ROOM_SELECT_OK) {
+            this.message = message;
             // 방 선택 성공 메시지 처리
             System.out.println("방 선택 성공: " + user.getName() + " , 들어간 방 : " + message);
         }
-
+        else if (mode == VOTE){
+            this.votedUser = message;
+            System.out.println("투표 값" + message);
+        }
     }
 
     // GAME_READY_AVAILABLE
@@ -124,6 +130,8 @@ public class GameMsg implements Serializable {
     public void setVotedUser(String votedUser) {
         this.votedUser = votedUser;
     }
+
+
 
 
 
@@ -168,4 +176,16 @@ public class GameMsg implements Serializable {
                 ", user=" + user +
                 '}';
     }
+
+    public static class Builder {
+        private int mode;
+        private User user;
+        private String votedUser;
+        private String message;
+        private int time;
+        private boolean isVoteStart;
+
+
+    }
+
 }

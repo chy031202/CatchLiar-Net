@@ -39,6 +39,33 @@ public class GameRoomPanel extends JPanel {
     TimerTask timerTask;
     private JLabel alarmLabel;
 
+    // 투표 상태 플래그
+    public boolean isVotingActive; // 플래그는 private로 설정
+    //확인용
+    public Map<String, JPanel> getUserLeftBottomPanels() {
+        return userLeftBottomPanels;
+    }
+
+//    // Getter 메서드
+//    public boolean isVotingActive() {
+//        return isVotingActive;
+//    }
+//
+//    // Setter 메서드 (필요한 경우 추가)
+//    public void setVotingActive(boolean votingActive) {
+//        isVotingActive = votingActive;
+//    }
+
+//    public void setVotingEnabled(boolean enabled) {
+//        SwingUtilities.invokeLater(() -> {
+//            for (JPanel userPanel : userLeftBottomPanels.values()) {
+//                userPanel.setEnabled(enabled); // 패널 활성화/비활성화
+//                //userPanel.setBackground(enabled ? Color.WHITE : Color.GRAY); // 시각적 변화
+//            }
+//            updateUI();
+//        });
+//    }
+
     //펜 아이콘
     private ImageIcon penIcon;
 
@@ -258,17 +285,37 @@ public class GameRoomPanel extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // 세로 방향 정렬
         panel.setPreferredSize(new Dimension(170, 0));
         panel.setBackground(new Color(64,48,47));
+        System.out.println("userPanel isEnabled: " + panel.isEnabled());
 
         for (User userName : userNames) {
             JPanel userPanel = createIndividualUserPanel(userName.getName());
             userPanel.setMaximumSize(new Dimension(150, 90)); // 크기 고정
 
+            // 초기에는 투표 비활성화 상태
+            //userPanel.setEnabled(isEnabled());
+
             panel.add(userPanel);
             panel.add(Box.createRigidArea(new Dimension(0, 17))); // 간격 추가
 //            panel.add(createIndividualUserPanel(userName));
+
+            // 클릭 이벤트는 외부 메서드에서 처리
+            setupClickEventForPanel(userPanel, userName.getName());
         }
 
         return panel;
+    }
+
+    private void setupClickEventForPanel(JPanel userPanel, String userName) {
+        // 클릭 이벤트 추가
+        //System.out.println("VOTE ::mouseClicked"+isVotingActive());
+        // 클릭한 유저 패널 처리
+        userPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                handleVote(userName, userPanel);
+            }
+        });
+
     }
 
 
@@ -312,6 +359,28 @@ public class GameRoomPanel extends JPanel {
         panel.add(rightPanel);
 
         return panel;
+    }
+
+    private void handleVote(String votedUserName, JPanel leftBottomPanel) {
+        // 이미 투표한 경우 투표 불가능 처리
+        if (!leftBottomPanel.isEnabled()) {
+            //JOptionPane.showMessageDialog(this, "이미 투표했습니다!", "투표 불가", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // UI 갱신
+        leftBottomPanel.setBackground(new Color(255, 0, 0)); // 투표한 대상 강조
+        leftBottomPanel.setEnabled(false); // 중복 클릭 방지
+
+        // 투표 요청 서버로 전송
+        clientManager.sendGameMsg(new GameMsg(GameMsg.VOTE, clientManager.getUser(), votedUserName));
+        System.out.println("투표 요청 전송: " + votedUserName);
+
+        revalidate();
+        repaint();
+
+        // 투표 성공 알림
+        JOptionPane.showMessageDialog(this, votedUserName + " 님에게 투표했습니다!", "투표 완료", JOptionPane.INFORMATION_MESSAGE);
     }
 
 
