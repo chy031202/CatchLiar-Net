@@ -241,7 +241,7 @@ public class GamePanel extends JPanel {
 
     private JPanel createItemPanel(){
         JPanel itemPanel = new JPanel();
-        itemPanel.setPreferredSize(new Dimension(0, 105));
+        itemPanel.setPreferredSize(new Dimension(0, 120));
         itemPanel.setLayout(new GridLayout(2,3,10,10));
         itemPanel.setBorder(new EmptyBorder(15, 5, 15, 15));
 //        itemPanel.setBackground(Color.LIGHT_GRAY);
