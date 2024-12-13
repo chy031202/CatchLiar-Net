@@ -137,8 +137,9 @@ public class ClientManager {
                         break;
 
                     case GameMsg.LIAR_NOTIFICATION:
-                        client.showDialog(inMsg);
+                        client.getGameRoomPanel().changeGameMsg(inMsg);
                         client.startGame();
+                        client.showDialog(inMsg);
                         break;
 
                     case GameMsg.KEYWORD_NOTIFICATION:
@@ -210,6 +211,11 @@ public class ClientManager {
                         client.getGameRoomPanel().showChat("[ " + chatUser + "] : " + chatMsg);
                         break;
 
+                    case GameMsg.CHAT_EMOTICON:
+                        System.out.println("클라이언트 CHAT_EMOTICON 받음 : " + inMsg.user.name + "의 " + inMsg.message);
+                        client.updateEmoticonPanel(inMsg.user, inMsg.message);
+                        break;
+
 
 
                     //이모티콘 전송 모드 등...
@@ -272,6 +278,11 @@ public class ClientManager {
     public void sendUnReady(User readyUser) {
         System.out.println("clientManage의 sendUnReady");
         sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY, readyUser));
+    }
+
+    public void sendEmoticon(User user, String emoticonName) {
+        System.out.println("clientManage의 sendEmoticon");
+        sendGameMsg(new GameMsg(GameMsg.CHAT_EMOTICON, user, emoticonName));
     }
 
     public User getUser() {

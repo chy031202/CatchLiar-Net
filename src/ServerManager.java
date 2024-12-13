@@ -140,6 +140,12 @@ public class ServerManager {
                             server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님 채팅 : " + inMsg.getMsg());
                             break;
 
+                        case GameMsg.CHAT_EMOTICON:
+                            user = inMsg.user;
+                            broadcasting(new GameMsg(GameMsg.CHAT_EMOTICON, user, inMsg.getMsg()));
+                            server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님이 " + inMsg.getMsg() + "이모티콘 전송");
+                            break;
+
                         case GameMsg.GAME_READY:
                             inMsg.user.setReady();
                             broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user));
@@ -311,7 +317,7 @@ public class ServerManager {
             // 같은 방에 있는 멤버들에게만 메시지를 전송
             synchronized (currentRoom) {
                 for (User member : currentRoom.getMembers()) {
-                    System.out.println("Broadcast 대상: " + member.name);
+//                    System.out.println("Broadcast 대상: " + member.name);
                     ClientHandler handler = findHandlerByUser(member);
                     if (handler != null) { // 핸들어 있을때
                         handler.sendGameMsg(msg);

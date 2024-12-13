@@ -68,6 +68,13 @@ public class Client extends JFrame {
         }
     }
 
+    public void updateEmoticonPanel(User user, String emoticon) {
+        if(gameRoomPanel != null) {
+            System.out.println("updateEmoticon");
+            gameRoomPanel.refreshUserRightPanel(user, emoticon);
+        }
+    }
+
     public void showReadyButton() {
         if(gameRoomPanel != null) {
             System.out.println("showReadyButton");
@@ -110,7 +117,7 @@ public class Client extends JFrame {
                         "알림",              // 제목
                         JOptionPane.PLAIN_MESSAGE // 경고 아이콘
                 );
-                gameRoomPanel.changeGameMsg(inMsg);
+//                gameRoomPanel.changeGameMsg(inMsg);
                 break;
 
             case GameMsg.KEYWORD_NOTIFICATION:

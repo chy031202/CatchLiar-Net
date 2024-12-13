@@ -23,6 +23,7 @@ public class GameRoomPanel extends JPanel {
 
     private JPanel userSidePanel; // 전역 변수로 저장
     private HashMap<String, JPanel> userLeftBottomPanels = new HashMap<>();
+    private HashMap<String, JPanel> userRightPanels = new HashMap<>();
     private JPanel rightPannel;
     private JPanel readyPanel;
     private JPanel alarmPanel;
@@ -182,7 +183,7 @@ public class GameRoomPanel extends JPanel {
                     leftBottomPanel.add(drawingLabel);
                 }
                 //leftBottomPanel.add(drawingLabel);
-                leftBottomPanel.setBackground(new Color(255, 230, 204)); // 강조 배경색
+                leftBottomPanel.setBackground(new Color(201,208,191)); // 강조 배경색
             } else {
                 // 기본 상태 유지
                 leftBottomPanel.add(new JLabel("대기 중"));
@@ -194,7 +195,7 @@ public class GameRoomPanel extends JPanel {
         }
     }
 
-    // 준비 완료 화면 갱신
+    // 유저왼쪽하단 준비 완료 화면 갱신
     private void refreshLeftBottomPanel(User user) {
         System.out.println("refreshLeftBottomPanel");
         if(user != null) { // 준비해제
@@ -231,6 +232,56 @@ public class GameRoomPanel extends JPanel {
                     leftBottomPanel.repaint();
                 }
             }
+        }
+    }
+
+    // 유저왼쪽하단 준비 완료 화면 갱신
+    public void refreshUserRightPanel(User user, String emoticonName) {
+        System.out.println("refreshUserRightPanel");
+        if(user != null) { // 준비해제
+            JPanel userRightPanel = userRightPanels.get(user.getName());
+            if(userRightPanel != null) {
+                userRightPanel.removeAll();
+                String resourcePath = getEmoticonPath(emoticonName);
+                if (resourcePath != null) {
+                    ImageIcon emoticonIcon = new ImageIcon(getClass().getResource(resourcePath));
+                    JLabel emoticonLabel = new JLabel(emoticonIcon);
+                    userRightPanel.add(emoticonLabel); // 이모티콘 추가
+
+                    // 6초 후에 이모티콘 제거
+                    Timer timer = new Timer(6000, e -> {
+                        userRightPanel.remove(emoticonLabel);
+                        userRightPanel.revalidate();
+                        userRightPanel.repaint();
+                    });
+                    timer.setRepeats(false); // 반복하지 않도록 설정
+                    timer.start(); // 타이머 시작
+
+                } else {
+                    userRightPanel.add(new JLabel("Emoticon")); // 경로가 없을 때 대체 텍스트
+                }
+                userRightPanel.revalidate();
+                userRightPanel.repaint();
+            }
+        }
+    }
+
+    private String getEmoticonPath(String emoticonName) {
+        switch (emoticonName) {
+            case "like":
+                return "/images/like-70.gif";
+            case "smile":
+                return "/images/smile-70.gif";
+            case "sleepy":
+                return "/images/sleepy-70.gif";
+            case "doubt":
+                return "/images/doupt-70.gif";
+            case "frustrated":
+                return "/images/frustrated-70.gif";
+            case "angry":
+                return "/images/angry-70.gif";
+            default:
+                return null; // 알 수 없는 이모티콘
         }
     }
 
@@ -343,17 +394,25 @@ public class GameRoomPanel extends JPanel {
 
             userLeftBottomPanels.put(userName, leftBottomPanel); // userLeftBottomPanels에 저장해서 관리
         }
-//        leftBottomPanel.setBackground(new Color(242,242,242));
-//        leftBottomPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
-
         leftPanel.add(leftBottomPanel);
 
-        // userLeftBottomPanels에 저장해서 관리
-//        userLeftBottomPanels.put(userName, leftBottomPanel);
+//        JPanel rightPanel = new JPanel();
+//        rightPanel.setBackground(new Color(242,242,242));
+//        rightPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
 
-        JPanel rightPanel = new JPanel();
-        rightPanel.setBackground(new Color(242,242,242));
-        rightPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
+        JPanel rightPanel;
+        if (userRightPanels.containsKey(userName)) {
+            // 기존 패널 가져오기
+            System.out.println("기존 userRightPanel 패널 가져옴");
+            rightPanel = userRightPanels.get(userName);
+        } else {
+            // 새 패널 생성
+            rightPanel = new JPanel();
+            rightPanel.setBackground(new Color(242, 242, 242));
+            rightPanel.setBorder(BorderFactory.createLineBorder(new Color(64, 48, 47), 2)); // 테두리
+
+            userRightPanels.put(userName, rightPanel); // userRightPanels에 저장해서 관리
+        }
 
         panel.add(leftPanel);
         panel.add(rightPanel);
@@ -453,14 +512,22 @@ public class GameRoomPanel extends JPanel {
     }
 
     private JPanel createAlarmPanel() {
-        JPanel alarmPanel = new JPanel(new BorderLayout());
+        JPanel alarmPanel = new JPanel(new BorderLayout()) {
+            private Image backgroundImage = new ImageIcon(getClass().getResource("/images/alarm.png")).getImage();
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                // 이미지 그리기
+                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
         alarmPanel.setPreferredSize(new Dimension(0, 80));
         alarmPanel.setBackground(new Color(64,48,47));
-        //JLabel alarm = new JLabel("시계");
 
         JLabel alarmLabel = new JLabel("남은 시간: 준비 중...");
         alarmLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        alarmLabel.setForeground(Color.white);
+        alarmLabel.setForeground(Color.black);
         alarmLabel.setHorizontalAlignment(SwingConstants.CENTER);
         alarmPanel.add(alarmLabel, BorderLayout.CENTER);
 
@@ -541,21 +608,52 @@ public class GameRoomPanel extends JPanel {
 //        });
     }
 
-
-    private JPanel ImgPanel(){
-        JPanel imgPanel = new JPanel();
+    private JPanel ImgPanel() {
+        JPanel imgPanel = new JPanel(new GridLayout(2, 3));
         imgPanel.setPreferredSize(new Dimension(0, 120));
-        JLabel user = new JLabel("이모티콘 패널");
-        imgPanel.setBackground(Color.pink);
+        imgPanel.setBackground(new Color(64, 48, 47));
 
-        imgPanel.add(user);
+        // 각각의 GIF를 생성
+        JLabel likeLabel = createClickableLabel("/images/like-resize-50.gif", "like");
+        JLabel smileLabel = createClickableLabel("/images/smile.gif", "smile");
+        JLabel sleepyLabel = createClickableLabel("/images/sleepy.gif", "sleepy");
+        JLabel douptLabel = createClickableLabel("/images/doupt.gif", "doubt");
+        JLabel frustratedLabel = createClickableLabel("/images/frustrated.gif", "frustrated");
+        JLabel angryLabel = createClickableLabel("/images/angry.gif", "angry");
+
+        // 패널에 추가
+        imgPanel.add(likeLabel);
+        imgPanel.add(smileLabel);
+        imgPanel.add(sleepyLabel);
+        imgPanel.add(douptLabel);
+        imgPanel.add(frustratedLabel);
+        imgPanel.add(angryLabel);
+
         return imgPanel;
     }
 
+    private JLabel createClickableLabel(String resourcePath, String emoticonName) {
+        // 이미지 로드
+        ImageIcon icon = new ImageIcon(getClass().getResource(resourcePath));
+        JLabel label = new JLabel(icon);
+
+        // MouseListener 추가
+        label.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                System.out.println(emoticonName + " GIF clicked!");
+                clientManager.sendEmoticon(gameMsg.user, emoticonName);
+            }
+        });
+
+        return label;
+    }
+
+
     public void updateAlarmLabel(int remainingTime) {
         if (alarmLabel != null) {
-            alarmLabel.setText("Time: " + remainingTime);
-            alarmLabel.setForeground(Color.white);
+            alarmLabel.setText(" " + remainingTime);
+            alarmLabel.setForeground(Color.black);
             alarmLabel.setHorizontalAlignment(SwingConstants.CENTER);
             //System.out.println("알람 업데이트: 남은 시간 -> " + remainingTime + "초");
         }

@@ -16,6 +16,7 @@ public class GameMsg implements Serializable {
 
     public final static int CHAT_MESSAGE = 21;
     public final static int CHAT_MESSAGE_OK = 22;
+    public final static int CHAT_EMOTICON = 23;
 
     public final static int GAME_READY_AVAILABLE = 31;
     public final static int GAME_READY = 32;
@@ -83,7 +84,7 @@ public class GameMsg implements Serializable {
         this.user = user;
     }
 
-    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_MESSAGE_OK, KEYWORD_NOTIFICATION
+    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_MESSAGE_OK, KEYWORD_NOTIFICATION, CHAT_EMOTICON
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것
