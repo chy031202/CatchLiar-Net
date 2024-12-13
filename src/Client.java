@@ -48,6 +48,9 @@ public class Client extends JFrame {
     public void changeGameRoomPanel(GameMsg inMsg) {
         getContentPane().removeAll();
         gameRoomPanel = new GameRoomPanel(clientManager, inMsg);
+
+        clientManager.setGameRoomPanel(gameRoomPanel);
+
         getContentPane().add(gameRoomPanel);
 
         revalidate();
@@ -175,39 +178,39 @@ public class Client extends JFrame {
         return null; // 사용자 정보가 없을 경우
     }
 
-    public void startVote() {
-        if (gameRoomPanel == null) {
-            System.out.println("[Error] gameRoomPanel is null!");
-            return;
-        }
-
-//        gameRoomPanel.clearAllLeftBottomPanels();
-//        gameRoomPanel.isVotingActive = true;
-//        gameRoomPanel.updateUI(); // UI 강제 갱신
-//        SwingUtilities.invokeLater(() -> {
+//    public void startVote() {
+//        if (gameRoomPanel == null) {
+//            System.out.println("[Error] gameRoomPanel is null!");
+//            return;
+//        }
 //
-//        gameRoomPanel.setVotingActive(true); // Setter 사용
-//        gameRoomPanel.updateUI(); // UI 강제 갱신
+////        gameRoomPanel.clearAllLeftBottomPanels();
+////        gameRoomPanel.isVotingActive = true;
+////        gameRoomPanel.updateUI(); // UI 강제 갱신
+////        SwingUtilities.invokeLater(() -> {
+////
+////        gameRoomPanel.setVotingActive(true); // Setter 사용
+////        gameRoomPanel.updateUI(); // UI 강제 갱신
+////        });
+//        SwingUtilities.invokeLater(() -> {
+//            //gameRoomPanel.setVotingEnabled(true); // 투표 활성화
+//            // 모든 userPanel의 enable 상태를 출력
+//            for (Map.Entry<String, JPanel> entry : gameRoomPanel.getUserLeftBottomPanels().entrySet()) {
+//                String userName = entry.getKey();
+//                JPanel userPanel = entry.getValue();
+//                System.out.println("UserPanel for " + userName + " is enabled: " + userPanel.isEnabled());
+//            }
 //        });
-        SwingUtilities.invokeLater(() -> {
-            //gameRoomPanel.setVotingEnabled(true); // 투표 활성화
-            // 모든 userPanel의 enable 상태를 출력
-            for (Map.Entry<String, JPanel> entry : gameRoomPanel.getUserLeftBottomPanels().entrySet()) {
-                String userName = entry.getKey();
-                JPanel userPanel = entry.getValue();
-                System.out.println("UserPanel for " + userName + " is enabled: " + userPanel.isEnabled());
-            }
-        });
-        System.out.println("isVotingActive 상태 변경_startVote: ");
-    }
-
-    public void endVote() {
-        //gameRoomPanel.setVotingActive(false); // Setter 사용
-        //gameRoomPanel.updateUI(); // UI 강제 갱신
-        SwingUtilities.invokeLater(() -> {
-            //gameRoomPanel.setVotingEnabled(false); // 투표 비활성화
-            System.out.println("Voting disabled.");
-        });
-        System.out.println("isVotingActive 상태 변경_endVote: " );
-    }
+//        System.out.println("isVotingActive 상태 변경_startVote: ");
+//    }
+//
+//    public void endVote() {
+//        //gameRoomPanel.setVotingActive(false); // Setter 사용
+//        //gameRoomPanel.updateUI(); // UI 강제 갱신
+//        SwingUtilities.invokeLater(() -> {
+//            //gameRoomPanel.setVotingEnabled(false); // 투표 비활성화
+//            System.out.println("Voting disabled.");
+//        });
+//        System.out.println("isVotingActive 상태 변경_endVote: " );
+//    }
 }

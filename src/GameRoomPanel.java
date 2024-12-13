@@ -43,7 +43,7 @@ public class GameRoomPanel extends JPanel {
     // 투표 상태 플래그
     private boolean hasVoted = false; // 이미 투표했는지 여부를 추적
 
-    public boolean isVotingActive; // 플래그는 private로 설정
+    private boolean isVotingActive; // 플래그는 private로 설정
     //확인용
     public Map<String, JPanel> getUserLeftBottomPanels() {
         return userLeftBottomPanels;
@@ -72,6 +72,39 @@ public class GameRoomPanel extends JPanel {
 //            updateUI();
 //        });
 //    }
+
+    public void setVotingActive(boolean active) {
+        isVotingActive = active;
+        System.out.println("setVotingActive 확인  :: "+isVotingActive);
+
+        if (active) {
+            // 투표 모드 활성화 시 모든 패널에 클릭 이벤트 추가
+            for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
+                setupClickEventForPanel(entry.getValue(), entry.getKey());
+            }
+        } else {
+            // 투표 모드 비활성화 시 기존 이벤트 제거
+            for (JPanel panel : userLeftBottomPanels.values()) {
+                for (MouseListener listener : panel.getMouseListeners()) {
+                    panel.removeMouseListener(listener);
+                }
+            }
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    public void setGameMsg(GameMsg gameMsg) {
+        this.gameMsg = gameMsg;
+
+        // gameMsg에 따라 투표 상태를 설정
+        if (gameMsg != null && gameMsg.mode == GameMsg.VOTE) {
+            setVotingActive(true); // 투표 모드 활성화
+        } else {
+            setVotingActive(false); // 투표 모드 비활성화
+        }
+    }
 
 
 
@@ -376,13 +409,14 @@ public class GameRoomPanel extends JPanel {
 
     private void setupClickEventForPanel(JPanel userPanel, String userName) {
         // 클릭 이벤트 추가
-        userPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                handleVote(userName, userPanel);
-            }
-        });
-
+        if (isVotingActive) {
+            userPanel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    handleVote(userName, userPanel);
+                }
+            });
+        }
     }
 
 

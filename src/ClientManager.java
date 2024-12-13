@@ -17,6 +17,7 @@ public class ClientManager {
     private Thread receiveThread;
 
     private GamePanel gamePanel;
+    private GameRoomPanel gameRoomPanel;
 
     private User user;
     private String userName;
@@ -27,6 +28,16 @@ public class ClientManager {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.client = client;
+        //this.gameRoomPanel = gameRoomPanel; // gameRoomPanel 설정
+    }
+
+    public ClientManager(GameRoomPanel gameRoomPanel) {
+        this.gameRoomPanel = gameRoomPanel;
+    }
+
+    // Setter로 GameRoomPanel 설정
+    public void setGameRoomPanel(GameRoomPanel gameRoomPanel) {
+        this.gameRoomPanel = gameRoomPanel;
     }
 
     public void connectToServer() throws IOException {
@@ -189,15 +200,22 @@ public class ClientManager {
                         break;
 
                     case GameMsg.VOTE:
-
                         if (inMsg.isVoteStart()) {
                             System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
                             //client.startVote();
-                            client.showDialog(inMsg); // 투표 시작 다이얼로그
+                            // 투표 모드 활성화
+                            //gameRoomPanel.setVotingActive(true);
+                            if (gameRoomPanel != null) {
+                                gameRoomPanel.setGameMsg(inMsg); // gameMsg를 설정하고 투표 상태를 제어
+                                client.showDialog(inMsg); // 투표 시작 다이얼로그 표시
+                            }else {
+                                System.err.println("GameRoomPanel is null!");
+                            }
                             //client.showVoteDialog(); // 투표 UI 표시
                         } else {
                             client.updateAlarmLabel(inMsg.getTime()); // 투표 타이머 업데이트
                         }
+                        break;
 
                     case GameMsg.VOTE_RESULT:
                         //client.endVote(); // 투표 종료 처리
