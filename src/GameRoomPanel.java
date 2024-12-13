@@ -65,19 +65,19 @@ public class GameRoomPanel extends JPanel {
     public void updateTurnUser(String userName) {
         currentTurnUserName = userName;
 
-//        if (userName.equals(clientManager.getUser().getName())) {
-//            gamePanel.enableDrawing(); // 자신의 턴일 때 그림 그리기 활성화
-//        } else {
-//            gamePanel.disableDrawing(); // 자신의 턴이 아닐 때 그림 그리기 비활성화
-//        }
+        // 자신의 턴이 아닐 경우 GamePanel 비활성화
+        if (!userName.equals(clientManager.getUser().getName())) {
+            gamePanel.setEnabled(false); // 패널 비활성화
+            //gamePanel.setBackground(Color.LIGHT_GRAY); // 비활성화 시 시각적 표시
+            System.out.println("다른 사용자의 턴입니다. GamePanel 비활성화.");
+        } else {
+            gamePanel.setEnabled(true); // 패널 활성화
+            //gamePanel.setBackground(Color.WHITE); // 기본 상태로 복구
+            System.out.println("내 턴입니다. GamePanel 활성화.");
+        }
         
         System.out.println("턴 변경::현재 턴: " + userName);
         nowDrawingUser(userName);
-
-        // UI에 턴 사용자 표시
-//        JLabel turnLabel = new JLabel("현재 턴: " + userName);
-//        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
-//        add(turnLabel, BorderLayout.NORTH);
 
         revalidate();
         repaint();
