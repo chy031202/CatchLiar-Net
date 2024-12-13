@@ -199,6 +199,7 @@ public class GameRoomPanel extends JPanel {
             for (JPanel leftBottomPanel : userLeftBottomPanels.values()) {
                 if (leftBottomPanel != null) {
                     leftBottomPanel.removeAll();
+                    leftBottomPanel.setBackground(new Color(242, 242, 242));
                     leftBottomPanel.revalidate();
                     leftBottomPanel.repaint();
                 }

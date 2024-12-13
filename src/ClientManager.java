@@ -190,6 +190,7 @@ public class ClientManager {
                     case GameMsg.VOTE:
                         if (inMsg.isVoteStart()) {
                             client.showDialog(inMsg); // 투표 시작 다이얼로그
+                            client.startVote();
                             //client.showVoteDialog(); // 투표 UI 표시
                         } else {
                             client.updateAlarmLabel(inMsg.getTime()); // 투표 타이머 업데이트

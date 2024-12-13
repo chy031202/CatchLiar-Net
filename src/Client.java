@@ -165,4 +165,8 @@ public class Client extends JFrame {
         }
         return null; // 사용자 정보가 없을 경우
     }
+
+    public void startVote() {
+        gameRoomPanel.clearAllLeftBottomPanels();
+    }
 }
