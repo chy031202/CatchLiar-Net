@@ -336,9 +336,14 @@ public class GameRoomPanel extends JPanel {
     private JPanel createReadyPanel() {
         JPanel panel = new JPanel(new GridLayout(2,1));
         panel.setPreferredSize(new Dimension(0, 80));
+        panel.setBackground(new Color(64,48,47));
 
         JPanel welcomePanel = new JPanel();
-        welcomePanel.add(new JLabel("환영합니다! " + gameMsg.user.name + " 님"));
+        welcomePanel.setBackground(new Color(64,48,47));
+        JLabel welcomeLabel = new JLabel("환영합니다! " + gameMsg.user.name + " 님");
+        welcomeLabel.setForeground(Color.WHITE); // 텍스트 색상을 흰색으로 설정
+        welcomePanel.add(welcomeLabel);
+        //welcomePanel.add(new JLabel("환영합니다! " + gameMsg.user.name + " 님"));
 
 
         if(ready == true) {
@@ -378,14 +383,16 @@ public class GameRoomPanel extends JPanel {
     }
 
     private JPanel createAlarmPanel() {
-        JPanel alarmPanel = new JPanel();
+        JPanel alarmPanel = new JPanel(new BorderLayout());
         alarmPanel.setPreferredSize(new Dimension(0, 80));
-        alarmPanel.setBackground(Color.pink);
+        alarmPanel.setBackground(new Color(64,48,47));
         //JLabel alarm = new JLabel("시계");
 
         JLabel alarmLabel = new JLabel("남은 시간: 준비 중...");
         alarmLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        alarmPanel.add(alarmLabel);
+        alarmLabel.setForeground(Color.white);
+        alarmLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        alarmPanel.add(alarmLabel, BorderLayout.CENTER);
 
         // GameRoomPanel에 JLabel 참조 저장 (UI 갱신에 필요)
         this.alarmLabel = alarmLabel;
@@ -478,6 +485,8 @@ public class GameRoomPanel extends JPanel {
     public void updateAlarmLabel(int remainingTime) {
         if (alarmLabel != null) {
             alarmLabel.setText("Time: " + remainingTime);
+            alarmLabel.setForeground(Color.white);
+            alarmLabel.setHorizontalAlignment(SwingConstants.CENTER);
             //System.out.println("알람 업데이트: 남은 시간 -> " + remainingTime + "초");
         }
     }
