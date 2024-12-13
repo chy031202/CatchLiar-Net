@@ -10,19 +10,18 @@ public class GameMsg implements Serializable {
     public final static int LOGOUT = 4; // 로그아웃 모드
 
     public final static int ROOM_SELECT = 11;//방 선택
-    public final static int ROOM_SELECT_OK = 12;
-    public final static int ROOM_NEW_MEMBER = 13;
-    public final static int ROOM_SELECT_DENIED = 14;
+    public final static int ROOM_NEW_MEMBER = 12;
+    public final static int ROOM_SELECT_DENIED = 13;
+    public final static int ROOM_EXIT = 14;
 
     public final static int CHAT_MESSAGE = 21;
-    public final static int CHAT_MESSAGE_OK = 22;
-    public final static int CHAT_EMOTICON = 23;
+    public final static int CHAT_EMOTICON = 22;
 
     public final static int GAME_READY_AVAILABLE = 31;
     public final static int GAME_READY = 32;
     public final static int GAME_UN_READY = 33;
-    public final static int GAME_READY_OK = 34;
-    public final static int GAME_UN_READY_OK = 35;
+    public final static int GAME_READY_OK = 34; // 없애기
+    public final static int GAME_UN_READY_OK = 35; // 없애기
 
     public final static int DRAW_ACTION = 41;
 
@@ -55,33 +54,32 @@ public class GameMsg implements Serializable {
         this.time = time;
     }
 
-    // 로그인!! 로그아웃?
+    // LOGIN
     public GameMsg(int mode, String name) {
         this.mode = mode;
         this.user = new User(name); // 이름으로 User 객체 생성
         System.out.println("로그인시 User 초기화되는지 확인 " + user.getName());
     }
 
-    // LOGIN_OK, ROOM_SELECT_DENIED, GAME_READY, LIAR_NOTIFICATION, GAME_READY_OK
+    // LOGIN_OK, ROOM_SELECT_DENIED, GAME_READY, LIAR_NOTIFICATION, GAME_READY_OK, GAME_UN_READY_OK, LOGOUT
     public GameMsg(int mode, User user) {
         this.mode = mode;
         this.user = user;
     }
 
-    //ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_MESSAGE_OK, KEYWORD_NOTIFICATION, CHAT_EMOTICON
+    // ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, KEYWORD_NOTIFICATION, CHAT_EMOTICON
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것
         this.message = message; // 방 이름
 
-        if (mode == ROOM_SELECT) {
-            // 방 선택 요청 처리
-            System.out.println("방 선택 요청: " + user.getName() + message);
-        } else if (mode == ROOM_SELECT_OK) {
-            // 방 선택 성공 메시지 처리
-            System.out.println("방 선택 성공: " + user.getName() + " , 들어간 방 : " + message);
-        }
-
+//        if (mode == ROOM_SELECT) {
+//            // 방 선택 요청 처리
+//            System.out.println("방 선택 요청: " + user.getName() + message);
+//        } else if (mode == ROOM_SELECT_OK) {
+//            // 방 선택 성공 메시지 처리
+//            System.out.println("방 선택 성공: " + user.getName() + " , 들어간 방 : " + message);
+//        }
     }
 
     // GAME_READY_AVAILABLE

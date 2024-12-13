@@ -25,15 +25,11 @@ public class Client extends JFrame {
 
     private void buildGUI() {
         setBounds(50, 200, 700, 500);
-        // JPanel을 생성하고 BoxLayout을 설정
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-
         mainPanel.add(startPanel);
-
         // mainPanel을 JFrame의 ContentPane으로 설정
         setContentPane(mainPanel);
-
     }
 
     public void changeSelectRoomPanel() {
@@ -53,6 +49,7 @@ public class Client extends JFrame {
         repaint();
     }
 
+    // 방 유저 목록 업데이트
     public void updateUserToRoom(Vector<User> userNames) {
         if(gameRoomPanel != null) {
             System.out.println("updateUserToRoom : " + userNames);
@@ -60,6 +57,7 @@ public class Client extends JFrame {
         }
     }
 
+    // 방 준비 완료한 유저 목록 업데이트
     public void updateReadyToRoom(Vector<User> readyUsers, User user) {
         if(gameRoomPanel != null) {
             System.out.println("updateReady");
@@ -67,6 +65,7 @@ public class Client extends JFrame {
         }
     }
 
+    // 이모티콘 출력
     public void updateEmoticonPanel(User user, String emoticon) {
         if(gameRoomPanel != null) {
             System.out.println("updateEmoticon");
@@ -74,11 +73,13 @@ public class Client extends JFrame {
         }
     }
 
-    public void showReadyButton() {
-        if(gameRoomPanel != null) {
-            System.out.println("showReadyButton");
-//            gameRoomPanel.ready = true;
-            gameRoomPanel.settingReady();
+    public void setReadyButtonVisibility(boolean visible) {
+        if (gameRoomPanel != null) {
+            if (visible) {
+                gameRoomPanel.settingReady();
+            } else {
+                gameRoomPanel.settingUnReady();
+            }
         }
     }
 
@@ -90,48 +91,30 @@ public class Client extends JFrame {
     }
 
     public void showDialog(GameMsg inMsg) {
+        String message = "";
+        String title = "알림";
+        int messageType = JOptionPane.PLAIN_MESSAGE;
+
         switch (inMsg.mode) {
             case GameMsg.ROOM_SELECT_DENIED:
-                JOptionPane.showMessageDialog(
-                        this,
-                        "방이 꽉 찼습니다. 다른 방으로 입장해주세요!", // 메시지
-                        "알림",              // 제목
-                        JOptionPane.WARNING_MESSAGE // 경고 아이콘
-                );
+                message = "방이 꽉 찼습니다. 다른 방으로 입장해주세요!";
+                messageType = JOptionPane.WARNING_MESSAGE;
                 break;
-
             case GameMsg.GAME_READY_OK:
-                JOptionPane.showMessageDialog(
-                        this,
-                        "게임이 시작됩니다! (개발용 => 추후 삭제)", // 메시지
-                        "알림",              // 제목
-                        JOptionPane.PLAIN_MESSAGE // 경고 아이콘
-                );
+                message = "게임이 시작됩니다! (개발용 => 추후 삭제)";
                 break;
-
             case GameMsg.LIAR_NOTIFICATION:
-                JOptionPane.showMessageDialog(
-                        this,
-                        "당신은 라이어입니다!", // 메시지
-                        "알림",              // 제목
-                        JOptionPane.PLAIN_MESSAGE // 경고 아이콘
-                );
-//                gameRoomPanel.changeGameMsg(inMsg);
+                message = "당신은 라이어입니다!";
                 break;
-
             case GameMsg.KEYWORD_NOTIFICATION:
-                JOptionPane.showMessageDialog(
-                        this,
-                        "키워드 : " + inMsg.message, // 메시지
-                        "알림",              // 제목
-                        JOptionPane.PLAIN_MESSAGE // 경고 아이콘
-                );
+                message = "키워드 : " + inMsg.message;
                 break;
-
             default:
                 System.out.println("showDialog default : " + inMsg);
-                break;
+                return;
         }
+
+        JOptionPane.showMessageDialog(this, message, title, messageType);
     }
 
     public GameRoomPanel getGameRoomPanel() {
@@ -155,12 +138,5 @@ public class Client extends JFrame {
         String serverAddress = "localhost";
         int serverPort = 54321;
         Client client = new Client(serverAddress, serverPort);
-    }
-
-    public String getUserName() {
-        if (clientManager != null && clientManager.getUser() != null) {
-            return clientManager.getUser().getName(); // ClientManager의 User 객체에서 이름 반환
-        }
-        return null; // 사용자 정보가 없을 경우
     }
 }

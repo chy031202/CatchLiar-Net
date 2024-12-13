@@ -113,15 +113,18 @@ public class ServerManager {
                         case GameMsg.ROOM_SELECT:
                             user = inMsg.user;
                             enterRoom(inMsg.getMsg());
+                            user.setCurrentRoom(currentRoom);
+                            user.joinRoom(currentRoom);
+//                            user = inMsg.user;
                             if(user.currentRoom.getMemberCount() > 4) {
                                 user.leaveRoom();
                                 sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_DENIED, user));
                                 server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장하지 못했습니다.");
                                 break;
                             }
-                            server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장했습니다.");
+                            server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + user.currentRoom.getMemberCount() + "명");
                             // user.currentRoom. 키워드 세팅
-                            sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_OK, user, inMsg.getMsg()));
+                            sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, inMsg.getMsg()));
                             broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom
 
                             // 4명 다 들어오면 준비 가능하도록
@@ -132,7 +135,7 @@ public class ServerManager {
 
                         case GameMsg.CHAT_MESSAGE:
                             user = inMsg.user;
-                            broadcasting(new GameMsg(GameMsg.CHAT_MESSAGE_OK, user, inMsg.getMsg()));
+                            broadcasting(new GameMsg(GameMsg.CHAT_MESSAGE, user, inMsg.getMsg()));
                             server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님 채팅 : " + inMsg.getMsg());
                             break;
 
@@ -172,6 +175,7 @@ public class ServerManager {
                         case GameMsg.LOGOUT:
                             server.printDisplay(userName + "님이 로그아웃했습니다.");
                             disconnectClient();
+                            broadcasting(new GameMsg(GameMsg.LOGOUT, inMsg.user));
                             break;
 
                         case GameMsg.DRAW_ACTION:
@@ -183,7 +187,9 @@ public class ServerManager {
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
+                disconnectClient();
                 server.printDisplay("서버 receiveMessage 클라이언트 연결 해제: " + e.getMessage());
+                broadcasting(new GameMsg(GameMsg.LOGOUT, user));
             } finally {
                 disconnectClient();
             }
@@ -330,8 +336,8 @@ public class ServerManager {
                 }
 
                 // 유저의 방 정보 업데이트
-                user.joinRoom(room);
-                user.setCurrentRoom(room);
+//                user.joinRoom(room);
+//                user.setCurrentRoom(room);
                 currentRoom = room; // 현재 클라이언트의 방 업데이트
 
                 // 방 이름에 따라 키워드 설정
@@ -352,7 +358,7 @@ public class ServerManager {
                         currentRoom.setKeyword("마카롱");
                 }
 
-                server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
+//                server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
         }
 

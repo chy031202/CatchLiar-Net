@@ -22,6 +22,7 @@ public class GameRoomPanel extends JPanel {
     private DefaultStyledDocument document;
 
     private JPanel userSidePanel; // 전역 변수로 저장
+    private HashMap<String, JPanel> userLeftTopPanels = new HashMap<>();
     private HashMap<String, JPanel> userLeftBottomPanels = new HashMap<>();
     private HashMap<String, JPanel> userRightPanels = new HashMap<>();
     private JPanel rightPannel;
@@ -58,8 +59,9 @@ public class GameRoomPanel extends JPanel {
         buildGUI();
     }
 
-    public void changeGameMsg(GameMsg gameMsg) {
+    public void changeGameMsg(GameMsg gameMsg, String userName) {
         this.gameMsg = gameMsg;
+        gameMsg.user.name = userName;
     }
 
     // 턴 사용자 업데이트 및 그림 그리기 활성화/비활성화 제어
@@ -110,6 +112,18 @@ public class GameRoomPanel extends JPanel {
     public void settingReady() {
         ready = true;
 //        readyPanel.removeAll();
+        rightPannel.remove(readyPanel);
+        JPanel newReadyPanel = createReadyPanel();
+        readyPanel = newReadyPanel;
+        rightPannel.add(readyPanel, BorderLayout.NORTH);
+        //updateTurnUser();
+
+        revalidate();
+        repaint();
+    }
+
+    public void settingUnReady() {
+        ready = false;
         rightPannel.remove(readyPanel);
         JPanel newReadyPanel = createReadyPanel();
         readyPanel = newReadyPanel;
@@ -327,10 +341,30 @@ public class GameRoomPanel extends JPanel {
 
         JPanel leftPanel = new JPanel(new GridLayout(2, 1));
 
-        JPanel leftTopPanel = new JPanel();
-        leftTopPanel.setBackground(new Color(242,242,242));
-        leftTopPanel.add(new JLabel(userName + " 님"));
-        leftTopPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
+//        JPanel leftTopPanel = new JPanel();
+//        leftTopPanel.setBackground(new Color(242,242,242));
+//        leftTopPanel.add(new JLabel(userName + " 님"));
+//        leftTopPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
+//        leftPanel.add(leftTopPanel);
+
+        JPanel leftTopPanel;
+        if(userLeftTopPanels.containsKey(userName)) {
+            // 기존 패널 가져오기
+            System.out.println("기존 leftBottomPanel 패널 가져옴");
+            leftTopPanel = userLeftTopPanels.get(userName);
+        } else {
+            // 새 패널 생성
+            leftTopPanel = new JPanel();
+            if(userName.equals(gameMsg.user.name)) {
+                leftTopPanel.setBackground(new Color(201,208,191));
+            } else {
+                leftTopPanel.setBackground(new Color(242, 242, 242));
+            }
+            leftTopPanel.add(new JLabel(userName + " 님"));
+            leftTopPanel.setBorder(BorderFactory.createLineBorder(new Color(64, 48, 47), 2)); // 테두리
+
+            userLeftTopPanels.put(userName, leftTopPanel); // userLeftBottomPanels에 저장해서 관리
+        }
         leftPanel.add(leftTopPanel);
 
         JPanel leftBottomPanel;
