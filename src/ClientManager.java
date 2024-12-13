@@ -159,7 +159,7 @@ public class ClientManager {
                         } else {
                             client.getGamePanel().setDrawingEnabled(false); // 그림 그리기 비활성화
                         }
-                        System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
+                        //System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
 
                         if (currentTurnUser != null) {
                             client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());

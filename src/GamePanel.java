@@ -19,11 +19,27 @@ public class GamePanel extends JPanel {
     private static List<DrawingLine> lines = new ArrayList<>();
 
     private int prevX, prevY;
-    private boolean isDrawing = false;
+    private boolean isDrawing = true;
     private MouseAdapter mouseAdapter;
     private MouseMotionAdapter mouseMotionAdapter;
 
     private static final Color ERASER_COLOR = Color.WHITE;
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        if (!isEnabled()) {
+            return; // 패널이 비활성화 상태일 경우 이벤트 무시
+        }
+        super.processMouseEvent(e); // 활성화 상태일 경우 기본 동작 수행
+    }
+
+    @Override
+    protected void processMouseMotionEvent(MouseEvent e) {
+        if (!isEnabled()) {
+            return; // 패널이 비활성화 상태일 경우 이벤트 무시
+        }
+        super.processMouseMotionEvent(e); // 활성화 상태일 경우 기본 동작 수행
+    }
 
     public GamePanel(ClientManager clientManager) {
         this.clientManager = clientManager;
@@ -101,12 +117,12 @@ public class GamePanel extends JPanel {
     }
 
     private void stopDrawing() {
-        isDrawing = false;
+        //isDrawing = false;
         //다음 그리기 준비
         prevX = -1;
         prevY = -1; // 이전 좌표 초기화
-//        revalidate();
-//        repaint();
+        revalidate();
+        repaint();
     }
 
     // ClientManager에 추가할 메서드 제안

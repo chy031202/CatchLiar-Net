@@ -66,19 +66,19 @@ public class GameRoomPanel extends JPanel {
     public void updateTurnUser(String userName) {
         currentTurnUserName = userName;
 
-//        if (userName.equals(clientManager.getUser().getName())) {
-//            gamePanel.enableDrawing(); // 자신의 턴일 때 그림 그리기 활성화
-//        } else {
-//            gamePanel.disableDrawing(); // 자신의 턴이 아닐 때 그림 그리기 비활성화
-//        }
+        // 자신의 턴이 아닐 경우 GamePanel 비활성화
+        if (!userName.equals(clientManager.getUser().getName())) {
+            gamePanel.setEnabled(false); // 패널 비활성화
+            //gamePanel.setBackground(Color.LIGHT_GRAY); // 비활성화 시 시각적 표시
+            System.out.println("다른 사용자의 턴입니다. GamePanel 비활성화.");
+        } else {
+            gamePanel.setEnabled(true); // 패널 활성화
+            //gamePanel.setBackground(Color.WHITE); // 기본 상태로 복구
+            System.out.println("내 턴입니다. GamePanel 활성화.");
+        }
         
         System.out.println("턴 변경::현재 턴: " + userName);
         nowDrawingUser(userName);
-
-        // UI에 턴 사용자 표시
-//        JLabel turnLabel = new JLabel("현재 턴: " + userName);
-//        turnLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16));
-//        add(turnLabel, BorderLayout.NORTH);
 
         revalidate();
         repaint();
@@ -395,9 +395,14 @@ public class GameRoomPanel extends JPanel {
     private JPanel createReadyPanel() {
         JPanel panel = new JPanel(new GridLayout(2,1));
         panel.setPreferredSize(new Dimension(0, 80));
+        panel.setBackground(new Color(64,48,47));
 
         JPanel welcomePanel = new JPanel();
-        welcomePanel.add(new JLabel("환영합니다! " + gameMsg.user.name + " 님"));
+        welcomePanel.setBackground(new Color(64,48,47));
+        JLabel welcomeLabel = new JLabel("환영합니다! " + gameMsg.user.name + " 님");
+        welcomeLabel.setForeground(Color.WHITE); // 텍스트 색상을 흰색으로 설정
+        welcomePanel.add(welcomeLabel);
+        //welcomePanel.add(new JLabel("환영합니다! " + gameMsg.user.name + " 님"));
 
 
         if(ready == true) {
@@ -437,14 +442,16 @@ public class GameRoomPanel extends JPanel {
     }
 
     private JPanel createAlarmPanel() {
-        JPanel alarmPanel = new JPanel();
+        JPanel alarmPanel = new JPanel(new BorderLayout());
         alarmPanel.setPreferredSize(new Dimension(0, 80));
-        alarmPanel.setBackground(Color.pink);
+        alarmPanel.setBackground(new Color(64,48,47));
         //JLabel alarm = new JLabel("시계");
 
         JLabel alarmLabel = new JLabel("남은 시간: 준비 중...");
         alarmLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        alarmPanel.add(alarmLabel);
+        alarmLabel.setForeground(Color.white);
+        alarmLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        alarmPanel.add(alarmLabel, BorderLayout.CENTER);
 
         // GameRoomPanel에 JLabel 참조 저장 (UI 갱신에 필요)
         this.alarmLabel = alarmLabel;
@@ -568,6 +575,8 @@ public class GameRoomPanel extends JPanel {
     public void updateAlarmLabel(int remainingTime) {
         if (alarmLabel != null) {
             alarmLabel.setText("Time: " + remainingTime);
+            alarmLabel.setForeground(Color.white);
+            alarmLabel.setHorizontalAlignment(SwingConstants.CENTER);
             //System.out.println("알람 업데이트: 남은 시간 -> " + remainingTime + "초");
         }
     }
