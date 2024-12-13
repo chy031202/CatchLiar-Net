@@ -185,8 +185,17 @@ public class ClientManager {
                                 paintData.getEndY(),
                                 paintData.getColor()
                         );
-
                         break;
+
+                    case GameMsg.VOTE:
+                        if (inMsg.isVoteStart()) {
+                            client.showDialog(inMsg); // 투표 시작 다이얼로그
+                            //client.showVoteDialog(); // 투표 UI 표시
+                        } else {
+                            client.updateAlarmLabel(inMsg.getTime()); // 투표 타이머 업데이트
+                        }
+
+
                     case GameMsg.CHAT_MESSAGE_OK:
                         System.out.println("클라이언트 CHAT_MESSAGE_OK : " + inMsg.user.name + "의 " + inMsg.message);
                         String chatUser = inMsg.user.name;
@@ -208,6 +217,11 @@ public class ClientManager {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    //투표 다이얼로그
+    private void showVoteDialog() {
+
     }
 
     private void disconnect() {

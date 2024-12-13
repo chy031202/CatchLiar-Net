@@ -121,6 +121,15 @@ public class Client extends JFrame {
                 );
                 break;
 
+            case GameMsg.VOTE:
+                JOptionPane.showMessageDialog(
+                        this,
+                        "라이어 투표를 시작합니다.", // 메시지
+                        "투표 시작 알림",              // 제목
+                        JOptionPane.PLAIN_MESSAGE // 경고 아이콘
+                );
+                break;
+
             default:
                 System.out.println("showDialog default : " + inMsg);
                 break;

@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class Room implements Serializable {
@@ -9,6 +11,7 @@ public class Room implements Serializable {
     public String Keywords;
 
     private int currentTurnIndex = 0; // 현재 그림을 그릴 사용자 인덱스
+    private Map<String, Integer> voteCounts = new HashMap<>();
 
     public Room(String name) {
         this.roomName = name;
@@ -74,4 +77,17 @@ public class Room implements Serializable {
         }
     }
 
+
+    //----------투표 관련
+    public void addVote(String userName) {
+        voteCounts.put(userName, voteCounts.getOrDefault(userName, 0) + 1);
+    }
+
+    public Map<String, Integer> getVoteCounts() {
+        return voteCounts;
+    }
+
+    public void resetVoteCounts() {
+        voteCounts.clear();
+    }
 }

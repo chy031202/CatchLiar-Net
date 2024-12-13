@@ -16,6 +16,10 @@ public class ServerManager {
     private Thread acceptThread = null;
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
+
+    private static final int DRAWING_TIME=12;
+    private static final int DRAWING_PERTIME=DRAWING_TIME/4;
+    private static final int VOTE_TIME=20;
 //    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
@@ -159,8 +163,13 @@ public class ServerManager {
                             broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
 
                             // 타이머 시작
-                            startRoomTimer(currentRoom, 40); // 60초 타이머 예시
+                            startRoomTimer(currentRoom, DRAWING_TIME);
+                            break;
 
+                        case GameMsg.VOTE:
+                            String votedUser = inMsg.getVotedUser();
+                            server.printDisplay(userName + "님이" + votedUser + "에게 투표");
+                            currentRoom.addVote(votedUser);
                             break;
 
                         case GameMsg.LOGOUT:
@@ -212,7 +221,7 @@ public class ServerManager {
                         remainingTime--;
 
                         // 현재 턴 사용자 확인
-                        if (remainingTime % 10 == 0) { // 10초마다 턴 전환
+                        if (remainingTime % DRAWING_PERTIME == 0) { // 턴 전환
                             room.nextTurn(); // 다음 사용자로 턴 전환
                             User currentUser = room.getCurrentTurnUser();
 
@@ -233,14 +242,61 @@ public class ServerManager {
                     }
 
                     // 시간이 종료되면 게임 종료 메시지를 브로드캐스트
-                    GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
-                    broadcasting(endMsg);
+//                    GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
+//                    broadcasting(endMsg);
+                    //시간 종료되면 투표 모드 전환
                     server.printDisplay("시간 종료!!");
+                    // 투표 타이머:
+                    GameMsg voteStartMsg = new GameMsg(GameMsg.VOTE, null, "투표를 시작하세요!", VOTE_TIME);
+                    voteStartMsg.setVoteStart(true); // 투표 시작 메시지로 설정
+                    broadcasting(voteStartMsg);
+                    // 투표 타이머 시작
+                    startVoteTimer(room, VOTE_TIME); // 20초 동안 투표 실행
                     System.out.println("타이머 종료 - 방 [" + room.getRoomName() + "]");
                 } catch (InterruptedException e) {
                     System.err.println("타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
                 }
             }).start();
+        }
+
+        // 투표 타이머 실행
+        private void startVoteTimer(Room room, int voteTime) {
+            new Thread(() -> {
+                int remainingTime = voteTime;
+                try {
+                    while (remainingTime > 0) {
+                        Thread.sleep(1000);
+                        remainingTime--;
+
+                        // 타이머 메시지 전송
+                        GameMsg voteTimeMsg = new GameMsg(GameMsg.VOTE, null, null, remainingTime);
+                        voteTimeMsg.setVoteStart(false); // 타이머 메시지
+                        broadcasting(voteTimeMsg);
+                    }
+
+                    // 투표 결과 집계
+                    server.printDisplay("투표 타이머 끝");
+                    collectVoteResults(room);
+                } catch (InterruptedException e) {
+                    System.err.println("투표 타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
+                }
+            }).start();
+        }
+
+        //투표 결과 집계
+        private void collectVoteResults(Room room) {
+            Map<String, Integer> voteCounts = room.getVoteCounts();
+
+            // 최다 득표자 계산
+            String liarCandidate = voteCounts.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .get()
+                    .getKey();
+
+            GameMsg voteResultMsg = new GameMsg(GameMsg.VOTE_RESULT, null, "투표 결과: " + liarCandidate, 0);
+            broadcasting(voteResultMsg);
+
+            server.printDisplay("투표 결과 - 라이어: " + liarCandidate);
         }
 
         private void broadcasting(GameMsg msg) {
@@ -378,4 +434,7 @@ public class ServerManager {
         }
 
     }
+
+
+
 }
