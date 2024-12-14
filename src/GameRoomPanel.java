@@ -50,42 +50,6 @@ public class GameRoomPanel extends JPanel {
     private ImageIcon penIcon;
     private ImageIcon voteIcon;
 
-
-    public void setVotingActive(boolean active) {
-        isVotingActive = active;
-        System.out.println("setVotingActive 확인  :: "+isVotingActive);
-
-        if (active) {
-            // 투표 모드 활성화 시 모든 패널에 클릭 이벤트 추가
-            for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
-                setupClickEventForPanel(entry.getValue(), entry.getKey());
-            }
-        } else {
-            // 투표 모드 비활성화 시 기존 이벤트 제거
-            for (JPanel panel : userLeftBottomPanels.values()) {
-                for (MouseListener listener : panel.getMouseListeners()) {
-                    panel.removeMouseListener(listener);
-                }
-            }
-        }
-
-        revalidate();
-        repaint();
-    }
-
-    public void setGameMsg(GameMsg gameMsg) {
-        this.gameMsg = gameMsg;
-
-        // gameMsg에 따라 투표 상태를 설정
-        if (gameMsg != null && gameMsg.mode == GameMsg.VOTE) {
-            setVotingActive(true); // 투표 모드 활성화
-        } else {
-            setVotingActive(false); // 투표 모드 비활성화
-        }
-    }
-
-
-
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
         this.gameMsg = gameMsg;
@@ -402,18 +366,44 @@ public class GameRoomPanel extends JPanel {
         }
     }
 
+    public void setVotingActive(boolean active) {
+        isVotingActive = active;
+        System.out.println("setVotingActive 확인  :: "+isVotingActive);
+
+        if (active) {
+            // 투표 모드 활성화 시 모든 패널에 클릭 이벤트 추가
+            for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
+                setupClickEventForPanel(entry.getValue(), entry.getKey());
+            }
+        } else {
+            // 투표 모드 비활성화 시 기존 이벤트 제거
+            for (JPanel panel : userLeftBottomPanels.values()) {
+                for (MouseListener listener : panel.getMouseListeners()) {
+                    panel.removeMouseListener(listener);
+                }
+            }
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    public void setGameMsg(GameMsg inMsg) {
+//        this.gameMsg = gameMsg;
+        // gameMsg에 따라 투표 상태를 설정
+        if (inMsg != null && inMsg.mode == GameMsg.VOTE) {
+            setVotingActive(true); // 투표 모드 활성화
+        } else {
+            setVotingActive(false); // 투표 모드 비활성화
+        }
+    }
+
 
     private JPanel createIndividualUserPanel(String userName) {
 
         JPanel panel = new JPanel(new GridLayout(1, 2));
 
         JPanel leftPanel = new JPanel(new GridLayout(2, 1));
-
-//        JPanel leftTopPanel = new JPanel();
-//        leftTopPanel.setBackground(new Color(242,242,242));
-//        leftTopPanel.add(new JLabel(userName + " 님"));
-//        leftTopPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
-//        leftPanel.add(leftTopPanel);
 
         JPanel leftTopPanel;
         if(userLeftTopPanels.containsKey(userName)) {
@@ -452,10 +442,6 @@ public class GameRoomPanel extends JPanel {
 
         // setupClickEventForPanel을 leftBottomPanel에 적용
         setupClickEventForPanel(leftBottomPanel, userName);
-
-//        JPanel rightPanel = new JPanel();
-//        rightPanel.setBackground(new Color(242,242,242));
-//        rightPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
 
         JPanel rightPanel;
         if (userRightPanels.containsKey(userName)) {
@@ -588,7 +574,6 @@ public class GameRoomPanel extends JPanel {
         } else {
             panel.add(welcomePanel);
         }
-
 
         return panel;
     }
