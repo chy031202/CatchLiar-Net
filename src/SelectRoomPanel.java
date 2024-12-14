@@ -34,9 +34,7 @@ public class SelectRoomPanel extends JPanel {
         title.setHorizontalAlignment(JLabel.CENTER);
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0)); // 여백 추
 
-
         titlePanel.add(title);
-
         return titlePanel;
     }
 
@@ -59,6 +57,27 @@ public class SelectRoomPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String roomName = "food";
+                clientManager.sendRoomSelection(roomName); // 방 선택 서버로 전송
+            }
+        });
+        placeRoomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String roomName = "place";
+                clientManager.sendRoomSelection(roomName); // 방 선택 서버로 전송
+            }
+        });
+        animalRoomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String roomName = "animal";
+                clientManager.sendRoomSelection(roomName); // 방 선택 서버로 전송
+            }
+        });
+        characterRoomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String roomName = "character";
                 clientManager.sendRoomSelection(roomName); // 방 선택 서버로 전송
             }
         });
