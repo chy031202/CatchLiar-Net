@@ -49,11 +49,15 @@ public class StartPanel extends JPanel {
         t_nickname.setMaximumSize(t_nickname.getPreferredSize()); // 입력 필드의 크기를 고정
         t_nickname.setAlignmentX(JTextField.CENTER_ALIGNMENT);
 
-        b_start = new JButton("시작");
-        b_start.setAlignmentX(JButton.CENTER_ALIGNMENT);
-        b_start.addActionListener(new ActionListener() {
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/images/start.png"));
+        Image resizedImage = originalIcon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+        ImageIcon resizedIcon = new ImageIcon(resizedImage);
+        JLabel startButton = new JLabel(resizedIcon);
+
+        // MouseListener 추가
+        startButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
                 try {
                     String nickname = t_nickname.getText();
                     if (nickname.isEmpty()) {
@@ -67,22 +71,17 @@ public class StartPanel extends JPanel {
                     System.err.println(ex.getMessage());
                     System.exit(-1);
                 }
-
             }
         });
+        startButton.setAlignmentX(JTextField.CENTER_ALIGNMENT);
 
-
-        //add(title);
-//        add(b_start);
-//        add(nicknameLabel);
-//        add(t_nickname);
-        // 컴포넌트 배경 패널에 추가
         backgroundPanel.add(Box.createVerticalGlue()); // 컴포넌트를 수직으로 가운데 정렬
+        backgroundPanel.add(Box.createVerticalStrut(180)); // 컴포넌트 간 여백 추가
+        backgroundPanel.add(startButton);
+        backgroundPanel.add(Box.createVerticalStrut(100));
         backgroundPanel.add(nicknameLabel);
-        backgroundPanel.add(Box.createVerticalStrut(10)); // 컴포넌트 간 여백 추가
-        backgroundPanel.add(t_nickname);
         backgroundPanel.add(Box.createVerticalStrut(10));
-        backgroundPanel.add(b_start);
+        backgroundPanel.add(t_nickname);
         backgroundPanel.add(Box.createVerticalGlue());
 
         // 배경 패널을 프레임에 추가
