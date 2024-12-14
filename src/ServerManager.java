@@ -3,9 +3,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Vector;
 
 public class ServerManager {
@@ -172,14 +169,20 @@ public class ServerManager {
 
                             break;
 
-                        case GameMsg.LOGOUT:
-                            server.printDisplay(userName + "님이 로그아웃했습니다.");
-                            disconnectClient();
-                            broadcasting(new GameMsg(GameMsg.LOGOUT, inMsg.user));
-                            break;
-
                         case GameMsg.DRAW_ACTION:
                             handleDrawAction(inMsg);
+                            break;
+
+                        case GameMsg.ROOM_EXIT:
+                            broadcasting(new GameMsg(GameMsg.ROOM_EXIT, user));
+                            user.leaveRoom();
+                            server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다.");
+                            break;
+
+                        case GameMsg.LOGOUT:
+                            broadcasting(new GameMsg(GameMsg.LOGOUT, inMsg.user));
+                            user.leaveRoom();
+                            server.printDisplay(userName + "님이 로그아웃했습니다.");
                             break;
 
                         default:
@@ -378,7 +381,9 @@ public class ServerManager {
 
             users.remove(this); // 클라이언트 목록에서 제거
             try {
-                clientSocket.close();
+                if (in != null) in.close();
+                if (out != null) out.close();
+                if (clientSocket != null) clientSocket.close();
             } catch (IOException e) {
                 server.printDisplay("클라이언트 소켓 닫기 오류: " + e.getMessage());
             }

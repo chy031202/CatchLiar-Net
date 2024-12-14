@@ -87,18 +87,12 @@ public class GameRoomPanel extends JPanel {
     }
 
     public void updateUser(Vector<User> userNames) {
-        System.out.println("들어온 유저 목록: " + userNames);
-
         this.userNames = userNames;
-        System.out.println("현재 userNames : " + userNames);
-
         refreshUserSidePanel();  // 유저 목록 UI 갱신
     }
 
     // 유저 새로 들어오면 UserSidePanel 갱신
     private void refreshUserSidePanel() {
-        System.out.println("refreshUserSidePanel");
-
         remove(userSidePanel); // 기존 userSidePanel 제거
         // 새로운 userSidePanel 붙이기
         JPanel newUserSidePanel = createUserSidePanel();
@@ -350,7 +344,7 @@ public class GameRoomPanel extends JPanel {
         JPanel leftTopPanel;
         if(userLeftTopPanels.containsKey(userName)) {
             // 기존 패널 가져오기
-            System.out.println("기존 leftBottomPanel 패널 가져옴");
+//            System.out.println("기존 leftBottomPanel 패널 가져옴");
             leftTopPanel = userLeftTopPanels.get(userName);
         } else {
             // 새 패널 생성
@@ -370,7 +364,7 @@ public class GameRoomPanel extends JPanel {
         JPanel leftBottomPanel;
         if (userLeftBottomPanels.containsKey(userName)) {
             // 기존 패널 가져오기
-            System.out.println("기존 leftBottomPanel 패널 가져옴");
+//            System.out.println("기존 leftBottomPanel 패널 가져옴");
             leftBottomPanel = userLeftBottomPanels.get(userName);
         } else {
             // 새 패널 생성
@@ -389,7 +383,7 @@ public class GameRoomPanel extends JPanel {
         JPanel rightPanel;
         if (userRightPanels.containsKey(userName)) {
             // 기존 패널 가져오기
-            System.out.println("기존 userRightPanel 패널 가져옴");
+//            System.out.println("기존 userRightPanel 패널 가져옴");
             rightPanel = userRightPanels.get(userName);
         } else {
             // 새 패널 생성
@@ -605,7 +599,7 @@ public class GameRoomPanel extends JPanel {
         label.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                System.out.println(emoticonName + " GIF clicked!");
+//                System.out.println(emoticonName + " GIF clicked!");
                 clientManager.sendEmoticon(gameMsg.user, emoticonName);
             }
         });

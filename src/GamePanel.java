@@ -2,9 +2,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +10,7 @@ import java.util.List;
 
 public class GamePanel extends JPanel {
     private JPanel keywordPanel;
+    private JPanel exitPanel;
     private JPanel southPanel;
     private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
@@ -318,22 +317,94 @@ public class GamePanel extends JPanel {
             keyword.add(label, BorderLayout.CENTER);
 
             keywordPanel.add(keyword, BorderLayout.CENTER);
+        } else {
+            keywordPanel.add(exitPanel, BorderLayout.CENTER);
         }
 
         return keywordPanel;
     }
 
+    private JPanel createExitPanel() {
+//        System.out.println("나가기패널");
+        exitPanel = new JPanel();
+        exitPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 25)); // 가로 간격 10px, 세로 간격 0px 설정
+        exitPanel.setBackground(new Color(64,48,47));
+
+        String[] imagePaths = {
+                "/images/home.png",
+                "/images/retry.png",
+                "/images/exit.png"
+        };
+
+        JButton home = createImageButton(imagePaths[0]);
+        home.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clientManager.sendLogout(clientManager.getUser());
+            }
+        });
+
+        JButton retry = createImageButton(imagePaths[1]);
+        retry.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+//                clientManager.sendLogout(clientManager.getUser());
+            }
+        });
+
+        JButton exit = createImageButton(imagePaths[2]);
+        exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clientManager.sendRoomExit(clientManager.getUser());
+            }
+        });
+
+        exitPanel.add(home);
+        exitPanel.add(retry);
+        exitPanel.add(exit);
+
+        return exitPanel;
+    }
+
+    private JButton createImageButton(String imagePath) {
+        // 이미지 아이콘 로드
+        ImageIcon icon = null;
+        try {
+            // 클래스패스를 통해 리소스를 로드
+            icon = new ImageIcon(getClass().getResource(imagePath));
+        } catch (Exception e) {
+            System.out.println("Error loading image: " + imagePath);
+            e.printStackTrace();
+            return new JButton("Missing Image");
+        }
+
+        // 이미지 크기 조정
+        Image image = icon.getImage().getScaledInstance(35, 30, Image.SCALE_SMOOTH);
+        icon = new ImageIcon(image);
+
+        // 버튼 생성
+        JButton button = new JButton(icon);
+        button.setPreferredSize(new Dimension(30, 30));
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+
+        return button;
+    }
+
+
     private JPanel createSouthPanel() {
         southPanel = new JPanel(new GridLayout(1,2));
         southPanel.add(createItemPanel());
-        southPanel.add(createKeywordPanel(null));
+        southPanel.add(createExitPanel());
 
 
         return southPanel;
     }
 
     public void addKeyword(String word) {
-        southPanel.remove(keywordPanel);
+        southPanel.remove(exitPanel);
         keywordPanel = createKeywordPanel(word);
         southPanel.add(keywordPanel);
     }
@@ -342,13 +413,9 @@ public class GamePanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
-//        JPanel gamepanel = new GamePanel(clientManager);
-//        JPanel Itempanel = createItemPanel();
-
         // 기존 GamePanel 인스턴스 재사용
         panel.add(this, BorderLayout.CENTER); // 현재 GamePanel 객체를 추가
         panel.add(createSouthPanel(), BorderLayout.SOUTH);
-
 
         return panel;
     }

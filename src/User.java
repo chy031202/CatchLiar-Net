@@ -16,6 +16,7 @@ public class User implements Serializable {
 
     public void joinRoom(Room room) {
         if (currentRoom != null) {
+            System.out.println(this.name + " currentRoom이 남아있어서 나감");
             currentRoom.removeMember(this);
         }
         currentRoom = room; // 유저가 특정 방에 들어감
@@ -55,6 +56,14 @@ public class User implements Serializable {
 
     public Room getCurrentRoom() { return currentRoom; }
     public void setCurrentRoom(Room room) { this.currentRoom = room; }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        User user = (User) obj;
+        return name != null && name.equals(user.name); // 이름이 같으면 동일한 객체로 간주
+    }
 
 //    public boolean getReady() { return ready; }
 //    public void setReady(boolean ready) { this.ready = ready; }

@@ -50,20 +50,13 @@ public class ClientManager {
         } catch (Exception e) {
             System.err.println("메시지 수신 중 오류 발생: " + e.getMessage());
         } finally {
-            disconnect();
+            disconnect(); // 스레드 종료 시 연결 해제
         }
     }
 
     private void receiveMessage() {
         try {
             GameMsg inMsg = (GameMsg) in.readObject();
-//            user = inMsg.getUser();
-
-            if (user == null) {
-                System.err.println("클라이언트에서 받은 User 객체가 null입니다.");
-            } else {
-//                System.out.println("User currentRoom: " +user.getName() + ", 현재 방 : " + user.getCurrentRoom().getRoomName()); // currentRoom 확인
-            }
 
             if (inMsg == null) {
                 disconnect();
@@ -77,26 +70,30 @@ public class ClientManager {
                         client.changeSelectRoomPanel();
                         System.out.println("클라이언트 receiveMessage 로그인OK: " + inMsg.mode + "," + inMsg.user.name);
                         break;
+
                     case GameMsg.ROOM_SELECT:
                         user = inMsg.getUser();
                         System.out.println("클라이언트 receiveMessage 방선택OK : " + inMsg.mode + "," + inMsg.user.name + "," + inMsg.message);
                         client.changeGameRoomPanel(inMsg);
                         userNames = user.currentRoom.getMembers();
-                        System.out.println("클라이언트 ROOM_SELECT_OK 이후 userNames 세팅 : " + userNames);
+//                        System.out.println("클라이언트 ROOM_SELECT_OK 이후 userNames 세팅 : " + userNames);
                         client.getGamePanel().clearLines();
                         break;
 
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
-                        System.out.println("추가되기 전 userNames : " + userNames);
-
+//                        System.out.println("추가되기 전 userNames : " + userNames);
                         synchronized (userNames) {
                             if (!userNames.contains(inMsg.user)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
                                 userNames.add(inMsg.user);
-                                System.out.println("추가된 후 userNames : " + userNames);
+//                                System.out.println("추가된 후 userNames : " + userNames);
                             }
                         }
                         client.updateUserToRoom(userNames);
+                        synchronized (readyUsers) {
+                            if(readyUsers != null) { client.updateReadyToRoom(readyUsers, null); }
+                        }
+
                         break;
 
                     case GameMsg.ROOM_SELECT_DENIED:
@@ -109,12 +106,10 @@ public class ClientManager {
 
                     case GameMsg.GAME_READY_OK:
                         synchronized (readyUsers) {
-                            if (!readyUsers.contains(inMsg.user)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
-                                readyUsers.add(inMsg.user);
-                            }
+                            // 목록에 없는 유저가 들어올 때만 리프레쉬
+                            if (!readyUsers.contains(inMsg.user)) { readyUsers.add(inMsg.user); }
                         }
                         client.updateReadyToRoom(readyUsers, null);
-
                         // readyUsers 4명되면 게임 시작
                         if(readyUsers.size() == 4) {
                             System.out.println("겜 시작");
@@ -199,22 +194,37 @@ public class ClientManager {
                         client.updateEmoticonPanel(inMsg.user, inMsg.message);
                         break;
 
+                    case GameMsg.ROOM_EXIT:
+                        User exitUser = inMsg.user;
+                        userNames.remove(exitUser);
+                        readyUsers.remove(exitUser);
+                        client.updateReadyToRoom(readyUsers, inMsg.user);
+                        if(exitUser.getName().equals(userName)) {
+                            client.changeSelectRoomPanel();
+                        } else {
+                            client.updateUserToRoom(userNames);
+                            if(readyUsers.size() < 4) {
+                                client.setReadyButtonVisibility(false);
+                            }
+                            if(readyUsers != null) { client.updateReadyToRoom(readyUsers, null); }
+                        }
+
+                        break;
+
                     case GameMsg.LOGOUT:
                         User logoutUser = inMsg.user;
-
-                        // userNames에서 해당 유저 제거
                         userNames.remove(logoutUser);
-                        System.out.println("LOGOUT 처리: " + logoutUser.getName() + "가 userNames에서 제거되었습니다.");
-
-                        // readyUsers에서 해당 유저 제거
                         readyUsers.remove(logoutUser);
-                        System.out.println("LOGOUT 처리: " + logoutUser.getName() + "가 readyUsers에서 제거되었습니다.");
+                        client.updateReadyToRoom(readyUsers, inMsg.user);
 
-                        // UI 갱신
-                        client.updateUserToRoom(userNames);
-
-                        if(readyUsers.size() < 4) {
-                            client.setReadyButtonVisibility(false);
+                        if(logoutUser.getName().equals(userName)) {
+                            client.changeStartPanel();
+                        } else {
+                            client.updateUserToRoom(userNames);
+                            if(readyUsers.size() < 4) {
+                                client.setReadyButtonVisibility(false);
+                            }
+                            if(readyUsers != null) { client.updateReadyToRoom(readyUsers, null); }
                         }
                         break;
 
@@ -222,16 +232,19 @@ public class ClientManager {
             });
         } catch (IOException e) {
             System.err.println("receiveMessage 서버 연결 종료: " + e.getMessage());
+            disconnect();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void disconnect() {
-        sendGameMsg(new GameMsg(GameMsg.LOGOUT, user));
+        if(user != null) { sendGameMsg(new GameMsg(GameMsg.LOGOUT, user)); }
         try {
+            if (in != null) { in.close(); }
+            if (out != null) { out.close(); }
+            if (socket != null && !socket.isClosed()) socket.close();
             receiveThread = null;
-            socket.close();
         } catch (IOException e) {
             System.err.println("클라이언트 disconnect 닫기 오류> "+e.getMessage());
             System.exit(-1);
@@ -271,13 +284,25 @@ public class ClientManager {
     }
 
     public void sendUnReady(User readyUser) {
-        System.out.println("clientManage의 sendUnReady");
+//        System.out.println("clientManage의 sendUnReady");
         sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY, readyUser));
     }
 
     public void sendEmoticon(User user, String emoticonName) {
-        System.out.println("clientManage의 sendEmoticon");
+//        System.out.println("clientManage의 sendEmoticon");
         sendGameMsg(new GameMsg(GameMsg.CHAT_EMOTICON, user, emoticonName));
+    }
+
+    public void sendLogout(User user) {
+        sendGameMsg(new GameMsg(GameMsg.LOGOUT, user));
+    }
+
+    public void sendRoomExit(User user) {
+        sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT, user));
+    }
+
+    public void sendRetry(User user) {
+
     }
 
     public User getUser() {

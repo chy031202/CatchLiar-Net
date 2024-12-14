@@ -49,10 +49,29 @@ public class Client extends JFrame {
         repaint();
     }
 
+    public void changeStartPanel() {
+        try {
+            // 새로운 ClientManager 생성
+            clientManager = new ClientManager("localhost", 54321, this);
+            startPanel = new StartPanel(clientManager);
+            selectRoomPanel = new SelectRoomPanel(clientManager);
+
+            // UI 초기화
+            getContentPane().removeAll();
+            getContentPane().add(startPanel);
+
+            revalidate();
+            repaint();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "초기화 중 문제가 발생했습니다!", "오류", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // 방 유저 목록 업데이트
     public void updateUserToRoom(Vector<User> userNames) {
         if(gameRoomPanel != null) {
-            System.out.println("updateUserToRoom : " + userNames);
+//            System.out.println("updateUserToRoom : " + userNames);
             gameRoomPanel.updateUser(userNames);
         }
     }
@@ -60,7 +79,7 @@ public class Client extends JFrame {
     // 방 준비 완료한 유저 목록 업데이트
     public void updateReadyToRoom(Vector<User> readyUsers, User user) {
         if(gameRoomPanel != null) {
-            System.out.println("updateReady");
+//            System.out.println("updateReady");
             gameRoomPanel.updateReadyUser(readyUsers, user);
         }
     }
@@ -68,7 +87,7 @@ public class Client extends JFrame {
     // 이모티콘 출력
     public void updateEmoticonPanel(User user, String emoticon) {
         if(gameRoomPanel != null) {
-            System.out.println("updateEmoticon");
+//            System.out.println("updateEmoticon");
             gameRoomPanel.refreshUserRightPanel(user, emoticon);
         }
     }
