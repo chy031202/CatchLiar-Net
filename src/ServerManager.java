@@ -315,8 +315,11 @@ public class ServerManager {
             // 라이어 결과 메시지 생성
 
             // 결과 메시지 작성
-            String liarWinMessage = "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다.";
-            String liarLoseMessage = "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
+            //String liarWinMessage = "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다.";
+            //String liarLoseMessage = "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
+
+            String liarWinMessage = "라이어: " + liar.name ;
+            String liarLoseMessage = "라이어: " + liar.name ;
 
             // 라이어에게 메시지 전송
             String liarResultMessage = liarVictory ? liarWinMessage : liarLoseMessage;

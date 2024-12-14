@@ -359,6 +359,66 @@ public class GamePanel extends JPanel {
         repaint();
     }
 
+    public void changeGameResultWithOverlay(String imagePath, String resultMessage) {
+        // 기존 선 정보 초기화
+        clearLines(); // 기존 그림 데이터 초기화
+
+        // 캔버스 크기 지정
+        Dimension canvasSize = new Dimension(300, 300);
+
+        // 배경 이미지 설정
+        ImageIcon resizedIcon = resizeImageIcon(imagePath, canvasSize);
+        JLabel backgroundLabel = new JLabel(resizedIcon);
+        backgroundLabel.setBounds(0, 0, canvasSize.width, canvasSize.height);
+
+        // 결과 메시지 설정
+        JLabel messageLabel = new JLabel(resultMessage, SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
+        messageLabel.setForeground(Color.WHITE);
+        messageLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        // 메시지 위치: 배경 이미지 중앙보다 약간 아래
+        int centerY = canvasSize.height / 2; // 중앙 Y 좌표
+        int offsetY = 50; // 아래로 내릴 거리 (픽셀)
+        messageLabel.setBounds(0, centerY + offsetY, canvasSize.width, 40);
+
+        // JLayeredPane 설정
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setPreferredSize(canvasSize);
+        layeredPane.setLayout(null);
+
+        // 배경과 텍스트를 서로 다른 레이어에 추가
+        layeredPane.add(backgroundLabel, Integer.valueOf(0)); // 배경 이미지
+        layeredPane.add(messageLabel, Integer.valueOf(1)); // 메시지 텍스트
+
+        // 기존 컴포넌트를 모두 제거하고 JLayeredPane 추가
+        removeAll();
+        setLayout(new BorderLayout());
+        add(layeredPane, BorderLayout.CENTER);
+
+        revalidate();
+        repaint();
+    }
+
+    private ImageIcon resizeImageIcon(String imagePath, Dimension targetSize) {
+        try {
+            // 이미지를 로드
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(imagePath));
+            Image originalImage = originalIcon.getImage();
+
+            // 크기를 조정
+            Image resizedImage = originalImage.getScaledInstance(
+                    targetSize.width,
+                    targetSize.height,
+                    Image.SCALE_SMOOTH // 부드럽게 조정
+            );
+
+            return new ImageIcon(resizedImage);
+        } catch (Exception e) {
+            System.err.println("이미지를 로드하거나 크기를 조정할 수 없습니다: " + imagePath);
+            return null;
+        }
+    }
 
 
     public JPanel createCenterPanel(){

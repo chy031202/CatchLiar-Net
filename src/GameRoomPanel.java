@@ -742,16 +742,12 @@ public class GameRoomPanel extends JPanel {
         //String imagePath = gameMsg.isWinner() ? "/images/result_lost.png" : "/images/result_win.png";
         String imagePath = isWinner ? "/images/result_win.png" : "/images/result_lost.png";
 
-        ImageIcon resizedIcon = resizeImageIcon(imagePath, new Dimension(300, 300));
+        //ImageIcon resizedIcon = resizeImageIcon(imagePath, new Dimension(300, 300));
         // ImageIcon을 JLabel로 변환
-        JLabel backgroundLabel = new JLabel(resizedIcon);
+        //JLabel backgroundLabel = new JLabel(resizedIcon);
 
-        gamePanel.changeGameResult(backgroundLabel);
-
-        JLabel messageLabel = new JLabel(resultMessage, SwingConstants.CENTER);
-        messageLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        messageLabel.setForeground(Color.WHITE);
-        add(messageLabel, BorderLayout.SOUTH);
+        //gamePanel.changeGameResult(backgroundLabel);
+        gamePanel.changeGameResultWithOverlay(imagePath, resultMessage);
 
         // 기존 패널 갱신
         revalidate();
