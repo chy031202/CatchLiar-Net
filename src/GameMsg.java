@@ -20,8 +20,8 @@ public class GameMsg implements Serializable {
     public final static int GAME_READY_AVAILABLE = 31;
     public final static int GAME_READY = 32;
     public final static int GAME_UN_READY = 33;
-    public final static int GAME_READY_OK = 34; // 없애기
-    public final static int GAME_UN_READY_OK = 35; // 없애기
+    public final static int GAME_READY_OK = 34;
+    public final static int GAME_UN_READY_OK = 35;
 
     public final static int DRAW_ACTION = 41;
 
@@ -31,12 +31,32 @@ public class GameMsg implements Serializable {
     public final static int GAME_END = 54;
     public final static int TIME = 55;
 
+    public final static int VOTE = 61;
+    public final static int VOTE_RESULT = 62;
+
     public int mode;   // 모드 값
     User user;  //유저 정보
     Vector<User> readyUsers;
     String message; //방 이름 or 채팅 메시지
     int time; //남은 시간(해당 라운드)
     private Paint paintData; // 그림 데이터용 필드 추가
+    private String votedUser; //투표된 사용자 이름
+    private String resultMessage; // 최종 결과 메시지
+
+    private boolean isWinner; // 승리 여부
+    private boolean isLiar;   // 라이어 여부
+    //private String resultMessage; // 결과 메시지
+
+    //투표 관련 플래그
+    private boolean isVoteStart; // 투표 시작 여부
+
+    public boolean isVoteStart() {
+        return isVoteStart;
+    }
+
+    public void setVoteStart(boolean isVoteStart) {
+        this.isVoteStart = isVoteStart;
+    }
 
     public GameMsg(int mode, Paint paintData) {
         this.mode = mode;
@@ -71,14 +91,20 @@ public class GameMsg implements Serializable {
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것
-        this.message = message; // 방 이름
+        this.message = message;
 
 //        if (mode == ROOM_SELECT) {
+//            this.message = message;
 //            // 방 선택 요청 처리
 //            System.out.println("방 선택 요청: " + user.getName() + message);
 //        } else if (mode == ROOM_SELECT_OK) {
+//            this.message = message;
 //            // 방 선택 성공 메시지 처리
 //            System.out.println("방 선택 성공: " + user.getName() + " , 들어간 방 : " + message);
+//        }
+//        else if (mode == VOTE){
+//            this.votedUser = message;
+//            System.out.println("투표 값" + message);
 //        }
     }
 
@@ -98,6 +124,32 @@ public class GameMsg implements Serializable {
     public GameMsg(int mode, Vector<User> userNames) {
         this.mode = mode;
         this.readyUsers = userNames;
+    }
+
+    //-------투표 관련
+    // 추가 생성자
+    public GameMsg(int mode, User user, String resultMessage, boolean isWinner) {
+        this.mode = mode;
+        this.user = user;
+        this.resultMessage = resultMessage;
+        this.isWinner = isWinner;
+    }
+
+    public String getVotedUser() {
+        return votedUser;
+    }
+
+    public void setVotedUser(String votedUser) {
+        this.votedUser = votedUser;
+    }
+
+    // 결과 메시지 반환
+    public String getResultMessage() {
+        return resultMessage;
+    }
+
+    public boolean isWinner() {
+        return isWinner;
     }
 
 
@@ -142,4 +194,18 @@ public class GameMsg implements Serializable {
                 ", user=" + user +
                 '}';
     }
+
+
+
+    public static class Builder {
+        private int mode;
+        private User user;
+        private String votedUser;
+        private String message;
+        private int time;
+        private boolean isVoteStart;
+
+
+    }
+
 }

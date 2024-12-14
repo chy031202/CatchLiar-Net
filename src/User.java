@@ -3,6 +3,7 @@ import java.io.Serializable;
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private boolean isWinner = false;
 
     String name; //닉네임
     Room currentRoom;  //속한 방 정보
@@ -76,5 +77,15 @@ public class User implements Serializable {
 //    public void logout() {
 //        this.isLoggedIn = false;
 //    }
+
+    public boolean isWinner() {
+        return isWinner;
+    }
+
+    // 승리 여부 설정
+    public void setWinner(boolean winner) {
+        this.isWinner = winner;
+    }
+
 
 }

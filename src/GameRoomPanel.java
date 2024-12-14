@@ -41,8 +41,52 @@ public class GameRoomPanel extends JPanel {
     TimerTask timerTask;
     private JLabel alarmLabel;
 
+    // 투표 상태 플래그
+    private boolean hasVoted = false; // 이미 투표했는지 여부를 추적
+    private boolean isVotingActive; // 플래그는 private로 설정
+
+    //투표 결과
+    private JPanel resultPanel;
+
     //펜 아이콘
     private ImageIcon penIcon;
+    private ImageIcon voteIcon;
+
+
+    public void setVotingActive(boolean active) {
+        isVotingActive = active;
+        System.out.println("setVotingActive 확인  :: "+isVotingActive);
+
+        if (active) {
+            // 투표 모드 활성화 시 모든 패널에 클릭 이벤트 추가
+            for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
+                setupClickEventForPanel(entry.getValue(), entry.getKey());
+            }
+        } else {
+            // 투표 모드 비활성화 시 기존 이벤트 제거
+            for (JPanel panel : userLeftBottomPanels.values()) {
+                for (MouseListener listener : panel.getMouseListeners()) {
+                    panel.removeMouseListener(listener);
+                }
+            }
+        }
+
+        revalidate();
+        repaint();
+    }
+
+    public void setGameMsg(GameMsg gameMsg) {
+        this.gameMsg = gameMsg;
+
+        // gameMsg에 따라 투표 상태를 설정
+        if (gameMsg != null && gameMsg.mode == GameMsg.VOTE) {
+            setVotingActive(true); // 투표 모드 활성화
+        } else {
+            setVotingActive(false); // 투표 모드 비활성화
+        }
+    }
+
+
 
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
@@ -150,6 +194,21 @@ public class GameRoomPanel extends JPanel {
         return penIcon;
     }
 
+    private ImageIcon getVoteICon(){
+        if (voteIcon == null) {
+            URL iconURL = getClass().getResource("/images/Vote.png");
+            if (iconURL != null) {
+                ImageIcon originalIcon = new ImageIcon(iconURL);
+                Image scaledImage = originalIcon.getImage().getScaledInstance(17, 17, Image.SCALE_SMOOTH);
+                voteIcon = new ImageIcon(scaledImage);
+            } else {
+                System.out.println("이미지 파일을 찾을 수 없습니다.");
+                voteIcon = null; // 로드 실패 시 null 처리
+            }
+        }
+        return voteIcon;
+    }
+
     // 현재 그리고 있는 클라이언트 표시
     private void nowDrawingUser(String currentDrawingUserName){
         for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
@@ -208,6 +267,7 @@ public class GameRoomPanel extends JPanel {
             for (JPanel leftBottomPanel : userLeftBottomPanels.values()) {
                 if (leftBottomPanel != null) {
                     leftBottomPanel.removeAll();
+                    leftBottomPanel.setBackground(new Color(242, 242, 242));
                     leftBottomPanel.revalidate();
                     leftBottomPanel.repaint();
                 }
@@ -316,21 +376,39 @@ public class GameRoomPanel extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // 세로 방향 정렬
         panel.setPreferredSize(new Dimension(170, 0));
         panel.setBackground(new Color(64,48,47));
+        System.out.println("userPanel isEnabled: " + panel.isEnabled());
 
         for (User userName : userNames) {
             JPanel userPanel = createIndividualUserPanel(userName.getName());
             userPanel.setMaximumSize(new Dimension(150, 90)); // 크기 고정
 
+            // 초기에는 투표 비활성화 상태
+            //userPanel.setEnabled(isEnabled());
+
             panel.add(userPanel);
             panel.add(Box.createRigidArea(new Dimension(0, 17))); // 간격 추가
 //            panel.add(createIndividualUserPanel(userName));
+
         }
 
         return panel;
     }
 
+    private void setupClickEventForPanel(JPanel userPanel, String userName) {
+        // 클릭 이벤트 추가
+        if (isVotingActive) {
+            userPanel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    handleVote(userName, userPanel);
+                }
+            });
+        }
+    }
+
 
     private JPanel createIndividualUserPanel(String userName) {
+
         JPanel panel = new JPanel(new GridLayout(1, 2));
 
         JPanel leftPanel = new JPanel(new GridLayout(2, 1));
@@ -376,6 +454,9 @@ public class GameRoomPanel extends JPanel {
         }
         leftPanel.add(leftBottomPanel);
 
+        // setupClickEventForPanel을 leftBottomPanel에 적용
+        setupClickEventForPanel(leftBottomPanel, userName);
+
 //        JPanel rightPanel = new JPanel();
 //        rightPanel.setBackground(new Color(242,242,242));
 //        rightPanel.setBorder(BorderFactory.createLineBorder(new Color(64,48,47), 2)); // 테두리
@@ -398,6 +479,52 @@ public class GameRoomPanel extends JPanel {
         panel.add(rightPanel);
 
         return panel;
+    }
+
+    private void handleVote(String votedUserName, JPanel leftBottomPanel) {
+        // 이미 투표를 한 경우
+        if (hasVoted) {
+            //JOptionPane.showMessageDialog(this, "이미 투표했습니다!", "투표 불가", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // 이미 투표한 경우 투표 불가능 처리
+        if (!leftBottomPanel.isEnabled()) {
+            //JOptionPane.showMessageDialog(this, "이미 투표했습니다!", "투표 불가", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // 투표 상태 업데이트
+        hasVoted = true;
+
+        // UI 갱신
+        // 이미지를 JLabel에 추가
+        try {
+            // getVoteIcon 메서드를 통해 아이콘 가져오기
+            ImageIcon voteIcon = getVoteICon(); // 클래스의 getVoteICon 메서드 사용
+            if (voteIcon != null) {
+                JLabel voteLabel = new JLabel(voteIcon, JLabel.CENTER); // 아이콘으로 JLabel 생성
+                //leftBottomPanel.removeAll(); // 기존 내용을 제거
+                leftBottomPanel.add(voteLabel); // 아이콘 추가
+            }
+            else {
+                System.err.println("Vote 아이콘을 가져올 수 없습니다.");
+            }
+        } catch (Exception e) {
+            System.err.println("이미지 로드 실패: " + e.getMessage());
+        }
+        //leftBottomPanel.setBackground(new Color(255, 0, 0)); // 투표한 대상 강조
+        leftBottomPanel.setEnabled(false); // 중복 클릭 방지
+
+        // 투표 요청 서버로 전송
+        clientManager.sendGameMsg(new GameMsg(GameMsg.VOTE, clientManager.getUser(), votedUserName));
+        System.out.println("투표 요청 전송: " + votedUserName);
+
+        revalidate();
+        repaint();
+
+        // 투표 성공 알림
+        JOptionPane.showMessageDialog(this, votedUserName + " 님에게 투표했습니다!", "투표 완료", JOptionPane.INFORMATION_MESSAGE);
     }
 
 
@@ -620,5 +747,60 @@ public class GameRoomPanel extends JPanel {
     public JLabel getAlarmLabel() {
         return alarmLabel;
     }
+
+    public void resetVoteState() {
+        hasVoted = false; // 투표 상태 초기화
+        for (JPanel panel : userLeftBottomPanels.values()) {
+            panel.setEnabled(true); // 모든 패널을 활성화
+            panel.removeAll(); // 기존 컴포넌트 제거
+            panel.setBackground(new Color(242, 242, 242)); // 초기 배경색 설정
+            panel.revalidate();
+            panel.repaint();
+        }
+        System.out.println("투표 상태 초기화 완료");
+    }
+
+    public void showGameResult(boolean isWinner, String resultMessage) {
+        // 디버깅용 메시지 출력
+        System.out.println("[Gam_DEBUG] showGameResult 호출됨!");
+        System.out.println("[Gam_DEBUG] isWinner: " + isWinner);
+        System.out.println("[Gam_DEBUG] resultMessage: " + resultMessage);
+
+        // 배경 이미지 결정
+        //String imagePath = gameMsg.isWinner() ? "/images/result_lost.png" : "/images/result_win.png";
+        String imagePath = isWinner ? "/images/result_win.png" : "/images/result_lost.png";
+
+        //ImageIcon resizedIcon = resizeImageIcon(imagePath, new Dimension(300, 300));
+        // ImageIcon을 JLabel로 변환
+        //JLabel backgroundLabel = new JLabel(resizedIcon);
+
+        //gamePanel.changeGameResult(backgroundLabel);
+        gamePanel.changeGameResultWithOverlay(imagePath, resultMessage);
+
+        // 기존 패널 갱신
+        revalidate();
+        repaint();
+    }
+
+    private ImageIcon resizeImageIcon(String imagePath, Dimension targetSize) {
+        try {
+            // 이미지를 로드
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(imagePath));
+            Image originalImage = originalIcon.getImage();
+
+            // 크기를 조정
+            Image resizedImage = originalImage.getScaledInstance(
+                    targetSize.width,
+                    targetSize.height,
+                    Image.SCALE_SMOOTH // 부드럽게 조정
+            );
+
+            return new ImageIcon(resizedImage);
+        } catch (Exception e) {
+            System.err.println("이미지를 로드하거나 크기를 조정할 수 없습니다: " + imagePath);
+            return null;
+        }
+    }
+
 
 }

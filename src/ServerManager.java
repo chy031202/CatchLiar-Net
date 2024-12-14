@@ -13,6 +13,10 @@ public class ServerManager {
     private Thread acceptThread = null;
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
+
+    private static final int DRAWING_TIME=8;
+    private static final int DRAWING_PERTIME=DRAWING_TIME/4;
+    private static final int VOTE_TIME=6;
 //    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
@@ -165,8 +169,17 @@ public class ServerManager {
                             broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
 
                             // 타이머 시작
-                            startRoomTimer(currentRoom, 40); // 60초 타이머 예시
+                            startRoomTimer(currentRoom, DRAWING_TIME);
+                            break;
 
+                        case GameMsg.VOTE:
+                            String votedUser = inMsg.getVotedUser();
+                            if (votedUser != null) {
+                                server.printDisplay(userName + "님이 " + votedUser + "에게 투표했습니다.");
+                                currentRoom.addVote(votedUser);
+                            } else {
+                                server.printDisplay("투표 값이 null입니다.");
+                            }
                             break;
 
                         case GameMsg.DRAW_ACTION:
@@ -217,8 +230,6 @@ public class ServerManager {
                 broadcasting(initialTurnMsg);
                 server.printDisplay("첫 턴 사용자: " + room.getCurrentTurnUser().getName());
             }
-
-
             new Thread(() -> {
                 int remainingTime = startTime;
                 try {
@@ -227,7 +238,7 @@ public class ServerManager {
                         remainingTime--;
 
                         // 현재 턴 사용자 확인
-                        if (remainingTime % 10 == 0) { // 10초마다 턴 전환
+                        if (remainingTime % DRAWING_PERTIME == 0) { // 턴 전환
                             room.nextTurn(); // 다음 사용자로 턴 전환
                             User currentUser = room.getCurrentTurnUser();
 
@@ -248,14 +259,101 @@ public class ServerManager {
                     }
 
                     // 시간이 종료되면 게임 종료 메시지를 브로드캐스트
-                    GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
-                    broadcasting(endMsg);
+//                    GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
+//                    broadcasting(endMsg);
+                    //시간 종료되면 투표 모드 전환
                     server.printDisplay("시간 종료!!");
+                    // 투표 타이머:
+                    GameMsg voteStartMsg = new GameMsg(GameMsg.VOTE, null, "투표를 시작하세요!", VOTE_TIME);
+                    voteStartMsg.setVoteStart(true); // 투표 시작 메시지로 설정
+                    broadcasting(voteStartMsg);
+                    // 투표 타이머 시작
+                    startVoteTimer(room, VOTE_TIME); // 20초 동안 투표 실행
                     System.out.println("타이머 종료 - 방 [" + room.getRoomName() + "]");
                 } catch (InterruptedException e) {
                     System.err.println("타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
                 }
             }).start();
+        }
+
+        // 투표 타이머 실행
+        private void startVoteTimer(Room room, int voteTime) {
+            new Thread(() -> {
+                int remainingTime = voteTime;
+                try {
+                    while (remainingTime > 0) {
+                        Thread.sleep(1000);
+                        remainingTime--;
+
+                        // 타이머 메시지 전송
+                        GameMsg voteTimeMsg = new GameMsg(GameMsg.VOTE, null, null, remainingTime);
+                        voteTimeMsg.setVoteStart(false); // 타이머 메시지
+                        broadcasting(voteTimeMsg);
+                    }
+
+                    collectVoteResults(room);
+
+                    // 투표 결과 집계
+                    server.printDisplay("투표 타이머 끝");
+//                    GameMsg gameEndMsg = new GameMsg(GameMsg.GAME_END, null, "게임종료");
+//                    broadcasting(gameEndMsg);
+                } catch (InterruptedException e) {
+                    System.err.println("투표 타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
+                }
+            }).start();
+        }
+
+        //투표 결과 집계
+        private void collectVoteResults(Room room) {
+            Map<String, Integer> voteCounts = room.getVoteCounts();
+
+            // 최다 득표자 계산
+            String liarCandidate = voteCounts.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .get()
+                    .getKey();
+
+            // 라이어 승리 여부 판단
+            boolean liarVictory = !liarCandidate.equals(liar.name);
+
+            // 서버 패널 표시용 ----------
+            String resultMessage = liarVictory
+                    ? "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다."
+                    : "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
+
+            // 라이어 결과 메시지 생성
+
+            // 결과 메시지 작성
+            //String liarWinMessage = "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다.";
+            //String liarLoseMessage = "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
+
+            String liarWinMessage = "라이어: " + liar.name ;
+            String liarLoseMessage = "라이어: " + liar.name ;
+
+            // 라이어에게 메시지 전송
+            String liarResultMessage = liarVictory ? liarWinMessage : liarLoseMessage;
+            System.out.println("[DEBUG] 라이어에게 전송할 메시지: " + liarResultMessage);
+            System.out.println("[DEBUG] 라이어의 승리 여부: " + liarVictory);
+
+            broadcastIndividualUser(
+                    liar,
+                    new GameMsg(GameMsg.GAME_END, liar, liarResultMessage, liarVictory)
+            );
+
+            //라이어 아닌사람 메시지 전송
+            boolean isWinner = !liarVictory; // 라이어 승리 여부의 반대
+            String userResultMessage = liarVictory ? liarWinMessage : liarLoseMessage;
+
+            //System.out.println("[DEBUG] 사용자 " + member.name + "에게 전송할 메시지: " + userResultMessage);
+            //System.out.println("[DEBUG] 승리 여부: " + isWinner);
+
+            broadcastExceptUser(
+                    liar,
+                    new GameMsg(GameMsg.GAME_END, liar, userResultMessage, isWinner)
+            );
+
+            server.printDisplay("투표 결과 - 라이어 유추: " + liarCandidate);
+            server.printDisplay(resultMessage);
         }
 
         private void broadcasting(GameMsg msg) {
@@ -395,4 +493,7 @@ public class ServerManager {
         }
 
     }
+
+
+
 }
