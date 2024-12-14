@@ -42,7 +42,11 @@ public class GameMsg implements Serializable {
     int time; //남은 시간(해당 라운드)
     private Paint paintData; // 그림 데이터용 필드 추가
     private String votedUser; //투표된 사용자 이름
+    private String resultMessage; // 최종 결과 메시지
 
+    private boolean isWinner; // 승리 여부
+    private boolean isLiar;   // 라이어 여부
+    //private String resultMessage; // 결과 메시지
 
     //투표 관련 플래그
     private boolean isVoteStart; // 투표 시작 여부
@@ -124,6 +128,14 @@ public class GameMsg implements Serializable {
     }
 
     //-------투표 관련
+    // 추가 생성자
+    public GameMsg(int mode, User user, String resultMessage, boolean isWinner) {
+        this.mode = mode;
+        this.user = user;
+        this.resultMessage = resultMessage;
+        this.isWinner = isWinner;
+    }
+
     public String getVotedUser() {
         return votedUser;
     }
@@ -132,8 +144,14 @@ public class GameMsg implements Serializable {
         this.votedUser = votedUser;
     }
 
+    // 결과 메시지 반환
+    public String getResultMessage() {
+        return resultMessage;
+    }
 
-
+    public boolean isWinner() {
+        return isWinner;
+    }
 
 
     public int getMode() {
@@ -177,6 +195,8 @@ public class GameMsg implements Serializable {
                 ", user=" + user +
                 '}';
     }
+
+
 
     public static class Builder {
         private int mode;

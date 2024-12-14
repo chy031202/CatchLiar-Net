@@ -221,6 +221,20 @@ public class ClientManager {
                         //client.endVote(); // 투표 종료 처리
                         break;
 
+                    case GameMsg.GAME_END:
+                        //client.endgame();
+                        // 디버깅용 메시지 출력
+                        System.out.println("[DEBUG] GAME_END 메시지 수신!");
+                        System.out.println("[DEBUG] inMsg.isWinner(): " + inMsg.isWinner());
+                        System.out.println("[DEBUG] inMsg.getResultMessage(): " + inMsg.getResultMessage());
+
+                        boolean isWinner = inMsg.isWinner();
+                        String resultMessage = inMsg.getResultMessage();
+
+                        // 결과 화면 표시
+                        client.getGameRoomPanel().showGameResult(isWinner, resultMessage);
+                        break;
+
 
                     case GameMsg.CHAT_MESSAGE_OK:
                         System.out.println("클라이언트 CHAT_MESSAGE_OK : " + inMsg.user.name + "의 " + inMsg.message);

@@ -3,6 +3,7 @@ import java.io.Serializable;
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private boolean isWinner = false;
 
     String name; //닉네임
     Room currentRoom;  //속한 방 정보
@@ -56,6 +57,14 @@ public class User implements Serializable {
     public Room getCurrentRoom() { return currentRoom; }
     public void setCurrentRoom(Room room) { this.currentRoom = room; }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        User user = (User) obj;
+        return name != null && name.equals(user.name); // 이름이 같으면 동일한 객체로 간주
+    }
+
 //    public boolean getReady() { return ready; }
 //    public void setReady(boolean ready) { this.ready = ready; }
 
@@ -67,5 +76,15 @@ public class User implements Serializable {
 //    public void logout() {
 //        this.isLoggedIn = false;
 //    }
+
+    public boolean isWinner() {
+        return isWinner;
+    }
+
+    // 승리 여부 설정
+    public void setWinner(boolean winner) {
+        this.isWinner = winner;
+    }
+
 
 }

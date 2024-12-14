@@ -42,36 +42,15 @@ public class GameRoomPanel extends JPanel {
 
     // 투표 상태 플래그
     private boolean hasVoted = false; // 이미 투표했는지 여부를 추적
-
     private boolean isVotingActive; // 플래그는 private로 설정
-    //확인용
-    public Map<String, JPanel> getUserLeftBottomPanels() {
-        return userLeftBottomPanels;
-    }
+
+    //투표 결과
+    private JPanel resultPanel;
 
     //펜 아이콘
     private ImageIcon penIcon;
     private ImageIcon voteIcon;
 
-//    // Getter 메서드
-//    public boolean isVotingActive() {
-//        return isVotingActive;
-//    }
-//
-//    // Setter 메서드 (필요한 경우 추가)
-//    public void setVotingActive(boolean votingActive) {
-//        isVotingActive = votingActive;
-//    }
-
-//    public void setVotingEnabled(boolean enabled) {
-//        SwingUtilities.invokeLater(() -> {
-//            for (JPanel userPanel : userLeftBottomPanels.values()) {
-//                userPanel.setEnabled(enabled); // 패널 활성화/비활성화
-//                //userPanel.setBackground(enabled ? Color.WHITE : Color.GRAY); // 시각적 변화
-//            }
-//            updateUI();
-//        });
-//    }
 
     public void setVotingActive(boolean active) {
         isVotingActive = active;
@@ -751,6 +730,52 @@ public class GameRoomPanel extends JPanel {
             panel.repaint();
         }
         System.out.println("투표 상태 초기화 완료");
+    }
+
+    public void showGameResult(boolean isWinner, String resultMessage) {
+        // 디버깅용 메시지 출력
+        System.out.println("[Gam_DEBUG] showGameResult 호출됨!");
+        System.out.println("[Gam_DEBUG] isWinner: " + isWinner);
+        System.out.println("[Gam_DEBUG] resultMessage: " + resultMessage);
+
+        // 배경 이미지 결정
+        //String imagePath = gameMsg.isWinner() ? "/images/result_lost.png" : "/images/result_win.png";
+        String imagePath = isWinner ? "/images/result_win.png" : "/images/result_lost.png";
+
+        ImageIcon resizedIcon = resizeImageIcon(imagePath, new Dimension(300, 300));
+        // ImageIcon을 JLabel로 변환
+        JLabel backgroundLabel = new JLabel(resizedIcon);
+
+        gamePanel.changeGameResult(backgroundLabel);
+
+        JLabel messageLabel = new JLabel(resultMessage, SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        messageLabel.setForeground(Color.WHITE);
+        add(messageLabel, BorderLayout.SOUTH);
+
+        // 기존 패널 갱신
+        revalidate();
+        repaint();
+    }
+
+    private ImageIcon resizeImageIcon(String imagePath, Dimension targetSize) {
+        try {
+            // 이미지를 로드
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(imagePath));
+            Image originalImage = originalIcon.getImage();
+
+            // 크기를 조정
+            Image resizedImage = originalImage.getScaledInstance(
+                    targetSize.width,
+                    targetSize.height,
+                    Image.SCALE_SMOOTH // 부드럽게 조정
+            );
+
+            return new ImageIcon(resizedImage);
+        } catch (Exception e) {
+            System.err.println("이미지를 로드하거나 크기를 조정할 수 없습니다: " + imagePath);
+            return null;
+        }
     }
 
 

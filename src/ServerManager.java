@@ -221,8 +221,6 @@ public class ServerManager {
                 broadcasting(initialTurnMsg);
                 server.printDisplay("첫 턴 사용자: " + room.getCurrentTurnUser().getName());
             }
-
-
             new Thread(() -> {
                 int remainingTime = startTime;
                 try {
@@ -284,9 +282,12 @@ public class ServerManager {
                         broadcasting(voteTimeMsg);
                     }
 
+                    collectVoteResults(room);
+
                     // 투표 결과 집계
                     server.printDisplay("투표 타이머 끝");
-                    collectVoteResults(room);
+//                    GameMsg gameEndMsg = new GameMsg(GameMsg.GAME_END, null, "게임종료");
+//                    broadcasting(gameEndMsg);
                 } catch (InterruptedException e) {
                     System.err.println("투표 타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
                 }
@@ -303,10 +304,44 @@ public class ServerManager {
                     .get()
                     .getKey();
 
-            GameMsg voteResultMsg = new GameMsg(GameMsg.VOTE_RESULT, null, "투표 결과: " + liarCandidate, 0);
-            broadcasting(voteResultMsg);
+            // 라이어 승리 여부 판단
+            boolean liarVictory = !liarCandidate.equals(liar.name);
 
-            server.printDisplay("투표 결과 - 라이어: " + liarCandidate);
+            // 서버 패널 표시용 ----------
+            String resultMessage = liarVictory
+                    ? "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다."
+                    : "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
+
+            // 라이어 결과 메시지 생성
+
+            // 결과 메시지 작성
+            String liarWinMessage = "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다.";
+            String liarLoseMessage = "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
+
+            // 라이어에게 메시지 전송
+            String liarResultMessage = liarVictory ? liarWinMessage : liarLoseMessage;
+            System.out.println("[DEBUG] 라이어에게 전송할 메시지: " + liarResultMessage);
+            System.out.println("[DEBUG] 라이어의 승리 여부: " + liarVictory);
+
+            broadcastIndividualUser(
+                    liar,
+                    new GameMsg(GameMsg.GAME_END, liar, liarResultMessage, liarVictory)
+            );
+
+            //라이어 아닌사람 메시지 전송
+            boolean isWinner = !liarVictory; // 라이어 승리 여부의 반대
+            String userResultMessage = liarVictory ? liarWinMessage : liarLoseMessage;
+
+            //System.out.println("[DEBUG] 사용자 " + member.name + "에게 전송할 메시지: " + userResultMessage);
+            //System.out.println("[DEBUG] 승리 여부: " + isWinner);
+
+            broadcastExceptUser(
+                    liar,
+                    new GameMsg(GameMsg.GAME_END, liar, userResultMessage, isWinner)
+            );
+
+            server.printDisplay("투표 결과 - 라이어 유추: " + liarCandidate);
+            server.printDisplay(resultMessage);
         }
 
         private void broadcasting(GameMsg msg) {
