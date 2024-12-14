@@ -31,13 +31,13 @@ public class ClientManager {
         //this.gameRoomPanel = gameRoomPanel; // gameRoomPanel 설정
     }
 
-    public ClientManager(GameRoomPanel gameRoomPanel) {
-        this.gameRoomPanel = gameRoomPanel;
-    }
-
-    public void setGameRoomPanel(GameRoomPanel gameRoomPanel) {
-        this.gameRoomPanel = gameRoomPanel;
-    }
+//    public ClientManager(GameRoomPanel gameRoomPanel) {
+//        this.gameRoomPanel = gameRoomPanel;
+//    }
+//
+//    public void setGameRoomPanel(GameRoomPanel gameRoomPanel) {
+//        this.gameRoomPanel = gameRoomPanel;
+//    }
 
     public void connectToServer() throws IOException {
         socket = new Socket();
@@ -101,7 +101,9 @@ public class ClientManager {
                         }
                         client.updateUserToRoom(userNames);
                         synchronized (readyUsers) {
-                            if(readyUsers != null) { client.updateReadyToRoom(readyUsers, null); }
+//                            if(readyUsers != null) {
+                                client.updateReadyToRoom(readyUsers, null);
+//                            }
                         }
 
                         break;
@@ -198,8 +200,8 @@ public class ClientManager {
                             //client.startVote();
                             // 투표 모드 활성화
                             //gameRoomPanel.setVotingActive(true);
-                            if (gameRoomPanel != null) {
-                                gameRoomPanel.setGameMsg(inMsg); // gameMsg를 설정하고 투표 상태를 제어
+                            if (client.getGameRoomPanel() != null) {
+                                client.getGameRoomPanel().setGameMsg(inMsg); // gameMsg를 설정하고 투표 상태를 제어
                                 client.showDialog(inMsg); // 투표 시작 다이얼로그 표시
                             }else {
                                 System.err.println("GameRoomPanel is null!");
@@ -338,6 +340,8 @@ public class ClientManager {
 //        System.out.println("clientManage의 sendEmoticon");
         sendGameMsg(new GameMsg(GameMsg.CHAT_EMOTICON, user, emoticonName));
     }
+
+    public void sendVote(User user, String votedUserName) { sendGameMsg(new GameMsg(GameMsg.VOTE, user, votedUserName)); }
 
     public void sendLogout(User user) {
         sendGameMsg(new GameMsg(GameMsg.LOGOUT, user));

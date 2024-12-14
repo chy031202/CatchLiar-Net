@@ -9,8 +9,6 @@ import java.net.URL;
 import java.util.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
 
 public class GameRoomPanel extends JPanel {
     private ClientManager clientManager;
@@ -91,7 +89,6 @@ public class GameRoomPanel extends JPanel {
     public GameRoomPanel(ClientManager clientManager, GameMsg gameMsg) {
         this.clientManager = clientManager;
         this.gameMsg = gameMsg;
-//        this.readyUsers = readyUsers;
 
         gamePanel = new GamePanel(clientManager);
         centerPanel = gamePanel.createCenterPanel();
@@ -179,7 +176,6 @@ public class GameRoomPanel extends JPanel {
     }
 
     private ImageIcon getPenIcon() {
-        //getClass().getResource()?
         if (penIcon == null) {
             URL iconURL = getClass().getResource("/images/drawingpen.png");
             if (iconURL != null) {
@@ -517,7 +513,8 @@ public class GameRoomPanel extends JPanel {
         leftBottomPanel.setEnabled(false); // 중복 클릭 방지
 
         // 투표 요청 서버로 전송
-        clientManager.sendGameMsg(new GameMsg(GameMsg.VOTE, clientManager.getUser(), votedUserName));
+        clientManager.sendVote(gameMsg.user, votedUserName);
+//        clientManager.sendGameMsg(new GameMsg(GameMsg.VOTE, clientManager.getUser(), votedUserName));
         System.out.println("투표 요청 전송: " + votedUserName);
 
         revalidate();
