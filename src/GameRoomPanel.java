@@ -24,11 +24,11 @@ public class GameRoomPanel extends JPanel {
     private HashMap<String, JPanel> userLeftTopPanels = new HashMap<>();
     private HashMap<String, JPanel> userLeftBottomPanels = new HashMap<>();
     private HashMap<String, JPanel> userRightPanels = new HashMap<>();
-    private JPanel rightPannel;
+    public JPanel rightPannel;
     private JPanel readyPanel;
-    private JPanel alarmPanel;
+    public JPanel alarmPanel;
     private GamePanel gamePanel;
-    private JPanel centerPanel;
+    public JPanel centerPanel;
     private String currentTurnUserName; // 현재 턴 사용자 이름
 
     public boolean ready = false;
@@ -762,7 +762,7 @@ public class GameRoomPanel extends JPanel {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
 //                System.out.println(emoticonName + " GIF clicked!");
-                clientManager.sendEmoticon(gameMsg.user, emoticonName);
+                clientManager.sendEmoticon(emoticonName);
             }
         });
 

@@ -234,6 +234,8 @@ public class ClientManager {
                         // 결과 화면 표시
 //                        client.getGameRoomPanel().showGameResult(isWinner, resultMessage);
                         client.endGame(isWinner, resultMessage);
+                        readyUsers = new Vector<>(); // 준비 초기화
+                        user.currentRoom.setReadyUsers(readyUsers);
                         break;
 
                     case GameMsg.CHAT_MESSAGE:
@@ -248,18 +250,16 @@ public class ClientManager {
                         client.updateEmoticonPanel(inMsg.user, inMsg.message);
                         break;
 
-                    case GameMsg.GAME_READY:
-                        client.restartGame();
-                        break;
-
                     case GameMsg.ROOM_EXIT:
                         User exitUser = inMsg.user;
-//                        user.currentRoom.setMembers(new Vector<>());
+//                        if(inMsg.message.equals("finish")) {
+//                            client.getGameRoomPanel().clearAllLeftBottomPanels();
+//                        }
                         System.out.println("exit 때 remove 하기 전 updateUserToRoom : " + userNames);
                         userNames.remove(exitUser);
-                        readyUsers.remove(exitUser);
+//                        readyUsers.remove(exitUser);
                         client.updateUserToRoom(userNames);
-                        client.updateReadyToRoom(readyUsers, inMsg.user);
+//                        client.updateReadyToRoom(readyUsers, inMsg.user);
 
                         if(exitUser.getName().equals(userName)) {
 //                            client.updateUserToRoom(userNames);
@@ -353,7 +353,7 @@ public class ClientManager {
         sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY, readyUser));
     }
 
-    public void sendEmoticon(User user, String emoticonName) {
+    public void sendEmoticon(String emoticonName) {
 //        System.out.println("clientManage의 sendEmoticon");
         sendGameMsg(new GameMsg(GameMsg.CHAT_EMOTICON, user, emoticonName));
     }
@@ -369,7 +369,19 @@ public class ClientManager {
     }
 
     public void sendRetry(User user) {
+        client.getGameRoomPanel().clearAllLeftBottomPanels();
+        user.currentRoom.setReadyUsers(new Vector<>());
+//        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user));
+        client.getGamePanel().removeAll();
+        client.getGameRoomPanel().remove(client.getGameRoomPanel().centerPanel);
+        client.getGameRoomPanel().add(client.getGamePanel().createCenterPanel());
+        client.getGamePanel().clearLines();
 
+        client.updateUserToRoom(userNames);
+        client.getGameRoomPanel().rightPannel.remove(client.getGameRoomPanel().alarmPanel);
+        System.out.println("sendRetry의y usernames 수 : " + userNames.size());
+
+        client.setReadyButtonVisibility(true);
     }
 
     public User getUser() {

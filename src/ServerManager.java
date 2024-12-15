@@ -141,19 +141,21 @@ public class ServerManager {
                             break;
 
                         case GameMsg.CHAT_EMOTICON:
-                            user = inMsg.user;
+//                            user = inMsg.user;
                             broadcasting(new GameMsg(GameMsg.CHAT_EMOTICON, user, inMsg.getMsg()));
                             server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님이 " + inMsg.getMsg() + "이모티콘 전송");
                             break;
 
                         case GameMsg.GAME_READY:
-                            inMsg.user.setReady();
-                            broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user));
+//                            inMsg.user.setReady();
+                            user.setReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_READY_OK, user));
                             break;
 
                         case GameMsg.GAME_UN_READY:
-                            inMsg.user.setUnReady();
-                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user));
+//                            inMsg.user.setUnReady();
+                            user.setUnReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user));
                             break;
 
                         case GameMsg.GAME_START:
@@ -191,7 +193,7 @@ public class ServerManager {
 
                         case GameMsg.ROOM_EXIT:
 //                            user = inMsg.user;
-                            broadcasting(new GameMsg(GameMsg.ROOM_EXIT, inMsg.user));
+                            broadcasting(new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, "finish"));
                             user.leaveRoom(); // 안 하면, 방 관리는 되는데 순서관리가 안됨
 
 //                            exitRoom();

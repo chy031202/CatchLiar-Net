@@ -348,7 +348,7 @@ public class GamePanel extends JPanel {
         retry.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                clientManager.sendLogout(clientManager.getUser());
+                clientManager.sendRetry(clientManager.getUser());
             }
         });
 
