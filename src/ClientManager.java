@@ -83,31 +83,38 @@ public class ClientManager {
 
                     case GameMsg.ROOM_SELECT:
                         user = inMsg.getUser();
-                        System.out.println("클라이언트 receiveMessage 방선택OK : " + inMsg.mode + "," + inMsg.user.name + "," + user.currentRoom.getRoomName());
                         client.changeGameRoomPanel(inMsg);
-                        userNames = user.currentRoom.getMembers();
+                        synchronized (userNames) {
+                            userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
+                        }
+                        synchronized (readyUsers) {
+                            readyUsers = new Vector<>(inMsg.readyUsers);
+                        }
+                        client.updateUserToRoom(userNames);
+                        client.updateReadyToRoom(readyUsers, null);
+
                         System.out.println("클라이언트 ROOM_SELECT 때 userNames : " + userNames);
-                        client.getGamePanel().clearLines();
+//                        client.getGamePanel().clearLines();
                         break;
 
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
-//                        userNames = inMsg.userNames;
+//                        synchronized (userNames) {
+////                            if (!userNames.contains(inMsg.user)) {
+////                                userNames.add(inMsg.user);
+////                                System.out.println("추가된 후 userNames : " + userNames);
+////                            }
+//                            userNames = new Vector<>(inMsg.userNames);
+//                        }
+//                        client.updateUserToRoom(userNames);
                         synchronized (userNames) {
-                            System.out.println("추가하기 전 userNames : " + userNames);
-                            if (!userNames.contains(inMsg.user)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
-                                userNames.add(inMsg.user);
-                                System.out.println("추가된 후 userNames : " + userNames);
-                            }
+                            userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
+                        }
+                        synchronized (readyUsers) {
+                            readyUsers = new Vector<>(inMsg.readyUsers);
                         }
                         client.updateUserToRoom(userNames);
-                        System.out.println("updateUserToRoom 한 userNames : " + userNames);
-                        synchronized (readyUsers) {
-//                            if(readyUsers != null) {
-                                client.updateReadyToRoom(readyUsers, null);
-//                            }
-                        }
-
+                        client.updateReadyToRoom(readyUsers, null);
                         break;
 
                     case GameMsg.ROOM_SELECT_DENIED:
@@ -119,16 +126,20 @@ public class ClientManager {
                         break;
 
                     case GameMsg.GAME_READY_OK:
+                        // readyUsers 업데이트
                         synchronized (readyUsers) {
-                            // 목록에 없는 유저가 들어올 때만 리프레쉬
-                            if (!readyUsers.contains(inMsg.user)) { readyUsers.add(inMsg.user); }
+                            readyUsers = new Vector<>(inMsg.readyUsers);
+//                            if (!readyUsers.contains(inMsg.user)) { readyUsers.add(inMsg.user); }
+//                            readyUsers = new Vector<>(inMsg.readyUsers);
+                            System.out.println("readyUsers: " + readyUsers);
                         }
                         client.updateReadyToRoom(readyUsers, null);
-                        // readyUsers 4명되면 게임 시작
-                        if(readyUsers.size() == 4) {
+
+                        // readyUsers 4명이 되면 게임 시작
+                        if (readyUsers.size() == 4) {
                             System.out.println("겜 시작");
                             System.out.println("userNames : " + userNames);
-                            // 사용자 한 명만 sendGameMsg 보내도록
+                            // 첫 번째 사용자만 sendGameMsg 보내도록
                             User firstUser = readyUsers.get(0);
                             if (userName.equals(firstUser.name)) {
                                 sendGameMsg(new GameMsg(GameMsg.GAME_START, readyUsers, userNames)); // 첫 번째 사용자만 실행
@@ -140,7 +151,11 @@ public class ClientManager {
 
                     case GameMsg.GAME_UN_READY_OK:
                         System.out.println("GAME_UN_READY 받음 클라이언트");
-                        readyUsers.remove(inMsg.user);
+                        synchronized (readyUsers) {
+                            readyUsers = new Vector<>(inMsg.readyUsers != null ? inMsg.readyUsers : new Vector<>());
+                            System.out.println("readyUsers: " + readyUsers);
+                        }
+//                        readyUsers.remove(inMsg.user);
                         client.updateReadyToRoom(readyUsers, inMsg.user);
                         break;
 
@@ -234,8 +249,10 @@ public class ClientManager {
                         // 결과 화면 표시
 //                        client.getGameRoomPanel().showGameResult(isWinner, resultMessage);
                         client.endGame(isWinner, resultMessage);
+
                         readyUsers = new Vector<>(); // 준비 초기화
                         user.currentRoom.setReadyUsers(readyUsers);
+                        client.updateUserToRoom(userNames);
                         break;
 
                     case GameMsg.CHAT_MESSAGE:
@@ -257,6 +274,7 @@ public class ClientManager {
 //                        }
                         System.out.println("exit 때 remove 하기 전 updateUserToRoom : " + userNames);
                         userNames.remove(exitUser);
+//                        exitUser.setCurrentRoom(null);
 //                        readyUsers.remove(exitUser);
                         client.updateUserToRoom(userNames);
 //                        client.updateReadyToRoom(readyUsers, inMsg.user);
@@ -370,7 +388,8 @@ public class ClientManager {
 
     public void sendRetry(User user) {
         client.getGameRoomPanel().clearAllLeftBottomPanels();
-        user.currentRoom.setReadyUsers(new Vector<>());
+//        user.currentRoom.setReadyUsers(new Vector<>());
+        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
 //        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user));
         client.getGamePanel().removeAll();
         client.getGameRoomPanel().remove(client.getGameRoomPanel().centerPanel);
@@ -379,7 +398,7 @@ public class ClientManager {
 
         client.updateUserToRoom(userNames);
         client.getGameRoomPanel().rightPannel.remove(client.getGameRoomPanel().alarmPanel);
-        System.out.println("sendRetry의y usernames 수 : " + userNames.size());
+        System.out.println("sendRetry usernames 수 : " + userNames.size());
 
         client.setReadyButtonVisibility(true);
     }

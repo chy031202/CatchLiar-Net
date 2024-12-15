@@ -92,20 +92,23 @@ public class GameRoomPanel extends JPanel {
         repaint();
     }
 
+    public void removePanelSave() {
+        // 없어진 유저의 패널은 지움
+        Set<String> currentUserNames = userNames.stream()
+                .map(User::getName)
+                .collect(Collectors.toSet());
+        // userLeftTopPanels에서 제거
+        userLeftTopPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
+        // userLeftBottomPanels에서 제거
+        userLeftBottomPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
+        // userRightPanels에서 제거
+        userRightPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
+
+        refreshUserSidePanel();  // 유저 목록 UI 갱신
+    }
+
     public void updateUser(Vector<User> userNames) {
         this.userNames = userNames;
-//
-//        // 없어진 유저의 패널은 지움
-//        Set<String> currentUserNames = userNames.stream()
-//                .map(User::getName)
-//                .collect(Collectors.toSet());
-//        // userLeftTopPanels에서 제거
-//        userLeftTopPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
-//        // userLeftBottomPanels에서 제거
-//        userLeftBottomPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
-//        // userRightPanels에서 제거
-//        userRightPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
-
         refreshUserSidePanel();  // 유저 목록 UI 갱신
     }
 
@@ -389,7 +392,6 @@ public class GameRoomPanel extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS)); // 세로 방향 정렬
         panel.setPreferredSize(new Dimension(170, 0));
         panel.setBackground(new Color(64,48,47));
-        System.out.println("userPanel isEnabled: " + panel.isEnabled());
 
         for (User userName : userNames) {
             JPanel userPanel = createIndividualUserPanel(userName.getName());
@@ -610,7 +612,7 @@ public class GameRoomPanel extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     readyButton.setEnabled(false);
                     unReadyButton.setEnabled(true);
-                    clientManager.sendReady(gameMsg.user);
+                    clientManager.sendReady(clientManager.getUser());
                 }
             });
             unReadyButton.addActionListener(new ActionListener() {
@@ -618,7 +620,7 @@ public class GameRoomPanel extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     readyButton.setEnabled(true);
                     unReadyButton.setEnabled(false);
-                    clientManager.sendUnReady(gameMsg.user);
+                    clientManager.sendUnReady(clientManager.getUser());
                 }
             });
 

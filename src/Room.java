@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 public class Room implements Serializable {
     private String roomName; // 방 이름
@@ -20,30 +18,38 @@ public class Room implements Serializable {
     }
 
     public void addMember(User user) {
-        members.add(user);
-        if (members.size() == 1) {
-            // 첫 번째 사용자가 방에 들어오면 첫 턴으로 설정
-            currentTurnIndex = 0;
+        synchronized (members) {
+            members.add(user);
+            if (members.size() == 1) {
+                // 첫 번째 사용자가 방에 들어오면 첫 턴으로 설정
+                currentTurnIndex = 0;
+            }
         }
         System.out.println("Room 에서 addMember : " + roomName + "에서 " + user.getName() + "님이 입장");
         System.out.println("현재 방에 있는 멤버들 : " + members);
     }
 
     public void removeMember(User user) {
-        members.remove(user);
+        synchronized (members) {
+            members.remove(user);
+        }
         System.out.println("Room 에서 removeMember : " + roomName + "에서 " + user.getName() + "님이 퇴장");
     }
 
     public void addReadyUser(User user) {
-        readyUsers.add(user);
+        synchronized (readyUsers) {
+            readyUsers.add(user);
+        }
         System.out.println("Room 에서 addReadyUser : " + roomName + "에서 " + user.getName() + "님이 준비");
-        System.out.println("현재 준비한 멤버들 : " + members);
+        System.out.println("현재 준비한 멤버들 : " + readyUsers);
     }
 
     public void removeReadyUser(User user) {
-        readyUsers.remove(user);
+        synchronized (readyUsers) {
+            readyUsers.remove(user);
+        }
         System.out.println("Room 에서 removeReadyUser : " + roomName + "에서 " + user.getName() + "님이 준비 해제");
-        System.out.println("현재 준비한 멤버들 : " + members);
+        System.out.println("현재 준비한 멤버들 : " + readyUsers);
     }
 
 
@@ -52,12 +58,25 @@ public class Room implements Serializable {
     }
     public void setRoomName(String roomName) { this.roomName = roomName; }
 
-    public Vector<User> getMembers() { return members; }
+    public Vector<User> getMembers() {
+        synchronized (members) {
+            return new Vector<>(members);
+        }
+    }
     public void setMembers(Vector<User> members) { this.members = members; }
     public int getMemberCount() { return members.size(); }
 
-    public Vector<User> getReadyUsers() { return readyUsers; }
-    public void setReadyUsers(Vector<User> readyUsers) { this.readyUsers = readyUsers; }
+    public Vector<User> getReadyUsers() {
+        synchronized (readyUsers) {
+            return new Vector<>(readyUsers);
+        }
+    }
+
+    public void setReadyUsers(Vector<User> readyUsers) {
+        synchronized (readyUsers) {
+            this.readyUsers = readyUsers;
+        }
+    }
 
     public String getKeyword() { return Keywords; }
     public void setKeyword(String keywords) { Keywords = keywords; }

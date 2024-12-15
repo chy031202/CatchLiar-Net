@@ -30,12 +30,14 @@ public class GameMsg implements Serializable {
     public final static int KEYWORD_NOTIFICATION = 53;
     public final static int GAME_END = 54;
     public final static int TIME = 55;
+    public final static int GAME_RETRY = 56;
 
     public final static int VOTE = 61;
     public final static int VOTE_RESULT = 62;
 
     public int mode;   // 모드 값
     User user;  //유저 정보
+    Room room;
     Vector<User> readyUsers;
     Vector<User> userNames;
     String message; //방 이름 or 채팅 메시지
@@ -117,7 +119,14 @@ public class GameMsg implements Serializable {
     public GameMsg(int mode, User user, Room room) {
         this.mode = mode;
         this.user = user;
-        this.user.currentRoom = room;
+        this.room = room;
+    }
+
+    public GameMsg(int mode, User user, Vector<User> userNames, Vector<User> readyUsers) {
+        this.mode = mode;
+        this.user = user;
+        this.userNames = userNames;
+        this.readyUsers = readyUsers;
     }
 
     // GAME_READY, GAME_UN_READY

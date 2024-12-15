@@ -125,8 +125,8 @@ public class ServerManager {
                             }
                             server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + user.currentRoom.getMemberCount() + "명");
                             // user.currentRoom. 키워드 세팅
-                            sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, inMsg.getMsg()));
-                            broadcasting(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, inMsg.getMsg())); // currentRoom
+                            sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, currentRoom.getMembers(), currentRoom.getReadyUsers()));
+                            broadcastExceptUser(user, new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, currentRoom.getMembers(), currentRoom.getReadyUsers())); // currentRoom
 
                             // 4명 다 들어오면 준비 가능하도록
                             if(user.currentRoom.getMemberCount() == 4) {
@@ -142,20 +142,23 @@ public class ServerManager {
 
                         case GameMsg.CHAT_EMOTICON:
 //                            user = inMsg.user;
-                            broadcasting(new GameMsg(GameMsg.CHAT_EMOTICON, user, inMsg.getMsg()));
+                            broadcasting(new GameMsg(GameMsg.CHAT_EMOTICON, inMsg.user, inMsg.getMsg()));
                             server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님이 " + inMsg.getMsg() + "이모티콘 전송");
                             break;
 
                         case GameMsg.GAME_READY:
-//                            inMsg.user.setReady();
-                            user.setReady();
-                            broadcasting(new GameMsg(GameMsg.GAME_READY_OK, user));
+                            inMsg.user.setCurrentRoom(currentRoom);
+                            inMsg.user.setReady();
+//                            currentRoom.addReadyUser(inMsg.user);
+//                            user.setReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user, currentRoom.getReadyUsers()));
                             break;
 
                         case GameMsg.GAME_UN_READY:
-//                            inMsg.user.setUnReady();
-                            user.setUnReady();
-                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user));
+                            inMsg.user.setCurrentRoom(currentRoom);
+                            inMsg.user.setUnReady();
+//                            user.setUnReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user, currentRoom.getReadyUsers()));
                             break;
 
                         case GameMsg.GAME_START:
@@ -189,6 +192,11 @@ public class ServerManager {
 
                         case GameMsg.DRAW_ACTION:
                             handleDrawAction(inMsg);
+                            break;
+
+                        case GameMsg.GAME_RETRY:
+                            user.setUnReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user));
                             break;
 
                         case GameMsg.ROOM_EXIT:
@@ -418,9 +426,9 @@ public class ServerManager {
             // 같은 방에 있는 멤버들에게만 메시지를 전송
             synchronized (currentRoom) {
                 for (User member : currentRoom.getMembers()) {
-                    System.out.println("broadcastExceptUser 대상: " + member.name);
                     ClientHandler handler = findHandlerByUser(member);
                     if (!handler.userName.equals(liar.name)) { // 라이어 빼고
+                        System.out.println("broadcastExceptUser 대상: " + member.name);
                         handler.sendGameMsg(msg);
                     }
                 }

@@ -15,17 +15,18 @@ public class User implements Serializable {
         this.name = name;
     }
 
-    public void joinRoom(Room room) {
-        if (currentRoom != null) {
-            System.out.println(this.name + " currentRoom이 남아있어서 나감");
-            currentRoom.removeMember(this);
-        }
+    public synchronized void joinRoom(Room room) {
+//        if (currentRoom != null) {
+//            System.out.println(this.name + " currentRoom이 남아있어서 나감");
+//            currentRoom.removeMember(this);
+//            currentRoom = null;
+//        }
         currentRoom = room; // 유저가 특정 방에 들어감
         currentRoom.addMember(this); // 방에 유저를 추가
         System.out.println("User joinRoom : " + this.name + " , room : " + currentRoom.getRoomName());
     }
 
-    public void leaveRoom() {
+    public synchronized void leaveRoom() {
         if (currentRoom != null) {
             currentRoom.removeMember(this); // 방에서 유저 제거
             currentRoom = null; // 방 정보 초기화
@@ -33,18 +34,18 @@ public class User implements Serializable {
     }
 
     public void setReady() {
-        if (currentRoom != null) {
-            currentRoom.removeReadyUser(this);
-        }
+//        if (currentRoom != null) {
+//            currentRoom.removeReadyUser(this);
+//        }
         ready = true;
         currentRoom.addReadyUser(this);
         System.out.println("User setReady : " + this.name + " , room : " + currentRoom.getRoomName());
     }
 
     public void setUnReady() {
-        if (currentRoom != null) {
-            currentRoom.removeReadyUser(this);
-        }
+//        if (currentRoom != null) {
+//            currentRoom.removeReadyUser(this);
+//        }
         ready = false;
         currentRoom.removeReadyUser(this);
         System.out.println("User setNotReady : " + this.name + " , room : " + currentRoom.getRoomName());
