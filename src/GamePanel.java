@@ -10,8 +10,8 @@ import java.util.List;
 
 public class GamePanel extends JPanel {
     private JPanel keywordPanel;
-    private JPanel exitPanel;
-    private JPanel southPanel;
+    public JPanel exitPanel;
+    public JPanel southPanel;
     private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
     private ClientManager clientManager;

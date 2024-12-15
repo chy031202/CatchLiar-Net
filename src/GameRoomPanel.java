@@ -312,6 +312,10 @@ public class GameRoomPanel extends JPanel {
         // 라이어 빼고 화면에 키워드 추가
         if(!gameMsg.user.isLiar) {
             gamePanel.addKeyword(gameMsg.user.currentRoom.getKeyword());
+        } else {
+            gamePanel.southPanel.remove(gamePanel.exitPanel);
+            JPanel panel= new JPanel(); panel.setBackground(new Color(64,48,47));
+            gamePanel.southPanel.add(panel);
         }
         rightPannel.remove(readyPanel);
         rightPannel.add(alarmPanel, BorderLayout.NORTH);

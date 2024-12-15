@@ -22,7 +22,7 @@ public class SelectRoomPanel extends JPanel {
 
     private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(new Color(60, 30, 30)); // 배경색 설정
+        titlePanel.setBackground(new Color(64,48,47)); // 배경색 설정
 
         ImageIcon roomLogoIcon = new ImageIcon(SelectRoomPanel.class.getResource("/images/roomLogo.png"));
         Image originalImage = roomLogoIcon.getImage(); // 원본 이미지 가져오기
@@ -30,7 +30,7 @@ public class SelectRoomPanel extends JPanel {
         ImageIcon resizedIcon = new ImageIcon(resizedImage); // 크기 조정된 이미지를 새로운 ImageIcon으로 설정
         JLabel title = new JLabel(resizedIcon); // JLabel에 설정
         title.setOpaque(true);
-        title.setBackground(new Color(60, 30, 30)); // 배경색 설정
+        title.setBackground(new Color(64,48,47)); // 배경색 설정
         title.setHorizontalAlignment(JLabel.CENTER);
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0)); // 여백 추
 
