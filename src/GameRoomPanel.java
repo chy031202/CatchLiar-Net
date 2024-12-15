@@ -76,11 +76,14 @@ public class GameRoomPanel extends JPanel {
 
         // 자신의 턴이 아닐 경우 GamePanel 비활성화
         if (!userName.equals(clientManager.getUser().getName())) {
-            gamePanel.setEnabled(false); // 패널 비활성화
+
+            gamePanel.setDrawingEnabled(false);
+            //gamePanel.setEnabled(false); // 패널 비활성화
             //gamePanel.setBackground(Color.LIGHT_GRAY); // 비활성화 시 시각적 표시
             System.out.println("다른 사용자의 턴입니다. GamePanel 비활성화.");
         } else {
-            gamePanel.setEnabled(true); // 패널 활성화
+            gamePanel.setDrawingEnabled(true);
+            //gamePanel.setEnabled(true); // 패널 활성화
             //gamePanel.setBackground(Color.WHITE); // 기본 상태로 복구
             System.out.println("내 턴입니다. GamePanel 활성화.");
         }
@@ -795,6 +798,18 @@ public class GameRoomPanel extends JPanel {
         System.out.println("투표 상태 초기화 완료");
     }
 
+    public void resetLiarState() {
+        // 각 사용자 라이어 상태 초기화
+        for (User user : userNames) {
+            user.isLiar = false; // 모든 사용자 라이어 상태 해제
+        }
+
+//        // 결과 패널 초기화 (이전 결과 제거)
+//        gamePanel.clearResultOverlay();
+
+        System.out.println("라이어 상태 및 결과 화면 초기화 완료.");
+    }
+
     public void showGameResult(boolean isWinner, String resultMessage) {
         // 디버깅용 메시지 출력
         System.out.println("[Gam_DEBUG] showGameResult 호출됨!");
@@ -802,14 +817,11 @@ public class GameRoomPanel extends JPanel {
         System.out.println("[Gam_DEBUG] resultMessage: " + resultMessage);
 
         // 배경 이미지 결정
-        //String imagePath = gameMsg.isWinner() ? "/images/result_lost.png" : "/images/result_win.png";
         String imagePath = isWinner ? "/images/result_win.png" : "/images/result_lost.png";
 
-        //ImageIcon resizedIcon = resizeImageIcon(imagePath, new Dimension(300, 300));
-        // ImageIcon을 JLabel로 변환
-        //JLabel backgroundLabel = new JLabel(resizedIcon);
+        System.out.println("[DEBUG] changeGameResultWithOverlay 호출 직전");
 
-        //gamePanel.changeGameResult(backgroundLabel);
+
         gamePanel.changeGameResultWithOverlay(imagePath, resultMessage);
 
         // 기존 패널 갱신
@@ -817,25 +829,7 @@ public class GameRoomPanel extends JPanel {
         repaint();
     }
 
-    private ImageIcon resizeImageIcon(String imagePath, Dimension targetSize) {
-        try {
-            // 이미지를 로드
-            ImageIcon originalIcon = new ImageIcon(getClass().getResource(imagePath));
-            Image originalImage = originalIcon.getImage();
-
-            // 크기를 조정
-            Image resizedImage = originalImage.getScaledInstance(
-                    targetSize.width,
-                    targetSize.height,
-                    Image.SCALE_SMOOTH // 부드럽게 조정
-            );
-
-            return new ImageIcon(resizedImage);
-        } catch (Exception e) {
-            System.err.println("이미지를 로드하거나 크기를 조정할 수 없습니다: " + imagePath);
-            return null;
-        }
+    public String getCurrentTurnUserName() {
+        return currentTurnUserName;
     }
-
-
 }

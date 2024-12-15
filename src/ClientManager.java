@@ -163,11 +163,16 @@ public class ClientManager {
 
                         client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
 
-                         //자신의 턴 여부 확인
-                        if (currentTurnUser != null && currentTurnUser.getName().equals(userName)) {
-                            client.getGamePanel().setDrawingEnabled(true); // 그림 그리기 활성화
-                        } else {
-                            client.getGamePanel().setDrawingEnabled(false); // 그림 그리기 비활성화
+                        if (currentTurnUser != null) {
+                            if (!currentTurnUser.getName().equals(client.getGameRoomPanel().getCurrentTurnUserName())) {
+                                client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
+
+                                if (currentTurnUser.getName().equals(userName)) {
+                                    client.getGamePanel().setDrawingEnabled(true);
+                                } else {
+                                    client.getGamePanel().setDrawingEnabled(false);
+                                }
+                            }
                         }
                         //System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
 
@@ -201,6 +206,7 @@ public class ClientManager {
 
                     case GameMsg.VOTE:
                         if (inMsg.isVoteStart()) {
+                            client.getGamePanel().setDrawingEnabled(false);
                             System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
                             //client.startVote();
                             // 투표 모드 활성화
@@ -222,8 +228,6 @@ public class ClientManager {
                         break;
 
                     case GameMsg.GAME_END:
-                        //client.endgame();
-                        // 디버깅용 메시지 출력
                         System.out.println("[DEBUG] GAME_END 메시지 수신!");
                         System.out.println("[DEBUG] inMsg.isWinner(): " + inMsg.isWinner());
                         System.out.println("[DEBUG] inMsg.getResultMessage(): " + inMsg.getResultMessage());
@@ -366,6 +370,12 @@ public class ClientManager {
 
     public void sendRoomExit(User user) {
         sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT, user));
+        // 2. 투표 상태 초기화
+        client.getGameRoomPanel().resetVoteState();
+        // 3. 라이어 상태 초기화
+        user.currentRoom.setReadyUsers(new Vector<>()); // 준비 사용자 목록 초기화
+        client.getGameRoomPanel().resetLiarState();
+        client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
     }
 
     public void sendRetry(User user) {
@@ -377,7 +387,14 @@ public class ClientManager {
         client.getGameRoomPanel().add(client.getGamePanel().createCenterPanel());
         client.getGamePanel().clearLines();
 
+        // 2. 투표 상태 초기화
+        client.getGameRoomPanel().resetVoteState();
+        // 3. 라이어 상태 초기화
+        user.currentRoom.setReadyUsers(new Vector<>()); // 준비 사용자 목록 초기화
+        client.getGameRoomPanel().resetLiarState();
+
         client.updateUserToRoom(userNames);
+        client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
         client.getGameRoomPanel().rightPannel.remove(client.getGameRoomPanel().alarmPanel);
         System.out.println("sendRetry의y usernames 수 : " + userNames.size());
 

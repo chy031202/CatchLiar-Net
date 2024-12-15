@@ -14,9 +14,9 @@ public class ServerManager {
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
 
-    private static final int DRAWING_TIME=8;
+    private static final int DRAWING_TIME=12;
     private static final int DRAWING_PERTIME=DRAWING_TIME/4;
-    private static final int VOTE_TIME=20;
+    private static final int VOTE_TIME=10;
 //    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
@@ -83,7 +83,8 @@ public class ServerManager {
         }
 
         // 그림 데이터를 처리하는 메서드 추가
-        private void handleDrawAction(GameMsg inMsg) {
+        private void
+        handleDrawAction(GameMsg inMsg) {
             Paint paintData = inMsg.getPaintData();
             Color color = inMsg.getPaintData().getColor() != null ? inMsg.getPaintData().getColor() : Color.BLACK;
 
@@ -148,12 +149,14 @@ public class ServerManager {
 
                         case GameMsg.GAME_READY:
 //                            inMsg.user.setReady();
+                            server.printDisplay(user+"님이 준비 완료");
                             user.setReady();
                             broadcasting(new GameMsg(GameMsg.GAME_READY_OK, user));
                             break;
 
                         case GameMsg.GAME_UN_READY:
 //                            inMsg.user.setUnReady();
+                            server.printDisplay(user+"님이 준비 해제");
                             user.setUnReady();
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user));
                             break;
@@ -164,23 +167,28 @@ public class ServerManager {
                             liar.isLiar = true;
                             if(liar == null) {
                                 System.out.println("라이어가 뽑히지 않았습니다.");
+                                server.printDisplay("에러 : 라이어가 뽑히지 않았습니다.");
                             } else {
                                 System.out.println("뽑힌 라이어 이름 : " + liar.name);
+                                server.printDisplay("뽑힌 라이어 이름 : " + liar.name);
                             }
                             currentRoom.setMembers(inMsg.userNames);
+                            //턴 초기화
+                            currentRoom.resetTurns();
                             System.out.println("setMembers 함 : " + currentRoom.getMembers());
 
                             broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
                             broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
 
                             // 타이머 시작
+                            server.printDisplay("타이머 시작");
                             startRoomTimer(currentRoom, DRAWING_TIME);
                             break;
 
                         case GameMsg.VOTE:
                             String votedUser = inMsg.getMsg();
                             if (votedUser != null) {
-                                server.printDisplay(userName + "님이 " + votedUser + "에게 투표했습니다.");
+                                server.printDisplay(userName + "이 " + votedUser + "에게 투표했습니다.");
                                 currentRoom.addVote(votedUser);
                             } else {
                                 server.printDisplay("투표 값이 null입니다.");
@@ -232,45 +240,64 @@ public class ServerManager {
 
         }
 
-        private void startRoomTimer(Room room, int startTime) {
-            // 첫 턴 사용자 브로드캐스트
-            //User currentUser = room.getCurrentTurnUser();
-            if (room.getCurrentTurnUser() != null) {
-                GameMsg initialTurnMsg = new GameMsg(GameMsg.TIME, room.getCurrentTurnUser(), "Your turn!", startTime, currentRoom.getMembers());
-                broadcasting(initialTurnMsg);
-                server.printDisplay("첫 턴 사용자: " + room.getCurrentTurnUser().getName());
-            }
+        private void startRoomTimer(Room room, int totalTime) {
             new Thread(() -> {
-                int remainingTime = startTime;
+                int remainingTime = totalTime;
+                int turns = 0; // 현재 턴 횟수
+                int totalTurns = room.getMembers().size(); // 총 턴 횟수
+                int turnTimeRemaining = DRAWING_PERTIME; // 각 턴의 남은 시간 초기화
+                //User lastTurnUser = null;
                 try {
+                    // 첫 번째 사용자 알림
+                    room.nextTurn(); // 첫 사용자 설정
+                    User currentUser = room.getCurrentTurnUser();
+                    if (currentUser != null) {
+                        GameMsg firstTurnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, room.getMembers());
+                        broadcasting(firstTurnMsg);
+                        server.printDisplay("현재 턴: " + currentUser.getName());
+                    }
+
                     while (remainingTime > 0) {
                         Thread.sleep(1000); // 1초 간격으로 실행
                         remainingTime--;
 
+                        turnTimeRemaining--; // 현재 턴의 남은 시간 감소
+                        //User currentUser = room.getCurrentTurnUser();
+
                         // 현재 턴 사용자 확인
-                        if (remainingTime % DRAWING_PERTIME == 0) { // 턴 전환
+//                        if (remainingTime % DRAWING_PERTIME == 0 || remainingTime ==totalTime) { // 턴 전환
+//                            room.nextTurn(); // 다음 사용자로 턴 전환
+//                            User currentUser = room.getCurrentTurnUser();
+//
+//                            // 현재 턴 사용자 정보 브로드캐스트
+//                            GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, currentRoom.getMembers());
+//                            broadcasting(turnMsg);
+//
+//
+//                            //lastTurnUser = currentUser; // 마지막 턴 사용자 업데이트
+//                            server.printDisplay("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
+//                            System.out.println("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
+//                        }
+
+                        // 턴 종료 조건 확인
+                        if (turnTimeRemaining <= 0 && remainingTime > 0) {
+                            turnTimeRemaining = DRAWING_PERTIME; // 다음 턴 시간 초기화
                             room.nextTurn(); // 다음 사용자로 턴 전환
-                            User currentUser = room.getCurrentTurnUser();
+                            currentUser = room.getCurrentTurnUser();
 
-                            // 현재 턴 사용자 정보 브로드캐스트
-                            GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, currentRoom.getMembers());
-                            broadcasting(turnMsg);
-
-
-                            server.printDisplay("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
-                            System.out.println("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
+                            // 다음 사용자 알림
+                            if (currentUser != null) {
+                                GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, room.getMembers());
+                                broadcasting(turnMsg);
+                                server.printDisplay("현재 턴: " + currentUser.getName());
+                            }
                         }
 
                         // TIME 메시지를 생성하여 브로드캐스트
                         GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime, currentRoom.getMembers());
                         broadcasting(timeMsg);
-
-                        //System.out.println("타이머 - 방 [" + room.getRoomName() + "] 남은 시간: " + remainingTime + "초");
                     }
 
-                    // 시간이 종료되면 게임 종료 메시지를 브로드캐스트
-//                    GameMsg endMsg = new GameMsg(GameMsg.TIME, null, "시간 종료", 0);
-//                    broadcasting(endMsg);
                     //시간 종료되면 투표 모드 전환
                     server.printDisplay("시간 종료!!");
                     // 투표 타이머:
@@ -364,6 +391,9 @@ public class ServerManager {
 
             server.printDisplay("투표 결과 - 라이어 유추: " + liarCandidate);
             server.printDisplay(resultMessage);
+            room.resetVoteCounts(); // 투표 초기화
+            room.resetVoteCounts(); // 라이어 초기화
+            server.printDisplay("[ServerManager] 게임 상태 초기화 완료");
         }
 
         private void broadcasting(GameMsg msg) {
