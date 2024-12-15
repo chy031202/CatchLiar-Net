@@ -47,8 +47,7 @@ public class GameMsg implements Serializable {
     private String resultMessage; // 최종 결과 메시지
 
     private boolean isWinner; // 승리 여부
-    private boolean isLiar;   // 라이어 여부
-    //private String resultMessage; // 결과 메시지
+
 
     //투표 관련 플래그
     private boolean isVoteStart; // 투표 시작 여부

@@ -8,7 +8,8 @@ public class Room implements Serializable {
     private Vector<User> readyUsers;
     public String Keywords;
 
-    private int currentTurnIndex = 0; // 현재 그림을 그릴 사용자 인덱스
+    private int currentTurnIndex = -1; // 현재 그림을 그릴 사용자 인덱스
+    private User currentTurnUser = null;
     private Map<String, Integer> voteCounts = new HashMap<>();
 
     public Room(String name) {
@@ -87,16 +88,22 @@ public class Room implements Serializable {
 
     public User getCurrentTurnUser() {
         if (members.isEmpty()) return null;
+        if (currentTurnIndex == -1) return null;// 첫 턴이 설정되지 않았다면 null 반환
         System.out.println("getCurrentTurnUser에서 현재 members : " + members);
         return members.get(currentTurnIndex); // 현재 그림 그릴 사용자 반환
     }
 
     public void nextTurn() {
-        if (!members.isEmpty()) {
-            currentTurnIndex = (currentTurnIndex + 1) % members.size(); // 순환 인덱스
-        }
+        if (members.isEmpty()) return; // 멤버가 없을 때 방어 코드
+
+        currentTurnIndex = (currentTurnIndex + 1) % members.size(); // 다음 턴으로 전환
     }
 
+    public void resetTurns() {
+        currentTurnIndex = -1; // 턴 인덱스 초기화
+        currentTurnUser = null;
+        System.out.println("턴 초기화 완료: currentTurnIndex = " + currentTurnIndex);
+    }
 
     //----------투표 관련
     public void addVote(String userName) {
@@ -107,7 +114,9 @@ public class Room implements Serializable {
         return voteCounts;
     }
 
+    // 기존 투표 결과 초기화
     public void resetVoteCounts() {
         voteCounts.clear();
+        System.out.println("[Room] 투표 결과 초기화 완료");
     }
 }

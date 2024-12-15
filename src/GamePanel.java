@@ -184,7 +184,7 @@ public class GamePanel extends JPanel {
     }
 
     public void setDrawingEnabled(boolean enabled) {
-        this.isDrawing = enabled;
+        //this.isDrawing = enabled;
         if (enabled) {
             enableDrawing(); // 리스너 등록
         } else {
@@ -192,7 +192,7 @@ public class GamePanel extends JPanel {
         }
 
         revalidate();
-        SwingUtilities.invokeLater(this::repaint);
+        repaint();
     }
 
 
@@ -203,19 +203,20 @@ public class GamePanel extends JPanel {
             addMouseMotionListener(mouseMotionAdapter);
             System.out.println("Drawing enabled.");
         }
-
+        setEnabled(true); // 명시적으로 패널을 활성화
+        requestFocusInWindow(); // 포커스 요청
         revalidate();
         SwingUtilities.invokeLater(this::repaint);
     }
 
     public void disableDrawing() {
-        if (!isDrawing) {
+        if (isDrawing) {
             isDrawing = false;
             removeMouseListener(mouseAdapter);
             removeMouseMotionListener(mouseMotionAdapter);
-            System.out.println("Drawing enabled.");
+            System.out.println("Drawing disabled.");
         }
-
+        setEnabled(false); // 패널 비활성화
         revalidate();
         SwingUtilities.invokeLater(this::repaint);
     }
