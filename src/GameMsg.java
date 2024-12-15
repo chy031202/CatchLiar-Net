@@ -37,6 +37,7 @@ public class GameMsg implements Serializable {
     public int mode;   // 모드 값
     User user;  //유저 정보
     Vector<User> readyUsers;
+    Vector<User> userNames;
     String message; //방 이름 or 채팅 메시지
     int time; //남은 시간(해당 라운드)
     private Paint paintData; // 그림 데이터용 필드 추가
@@ -59,11 +60,12 @@ public class GameMsg implements Serializable {
         return paintData;
     }
 
-    public GameMsg(int mode, User user, String message, int time) {
+    public GameMsg(int mode, User user, String message, int time, Vector<User> userNames) {
         this.mode = mode;
         this.user = user;
         this.message = message;
         this.time = time;
+        this.userNames = userNames;
     }
 
     // LOGIN
@@ -100,9 +102,22 @@ public class GameMsg implements Serializable {
 //        }
     }
 
+//    public GameMsg(int mode, User user, String message, Vector<User> userNames) {
+//        this.mode = mode;
+//        this.user = user; // 전에 생성한 User 객체 사용할 것
+//        this.message = message;
+//        this.userNames = userNames;
+//    }
+
     // GAME_READY_AVAILABLE
     public GameMsg(int mode) {
         this.mode = mode;
+    }
+
+    public GameMsg(int mode, User user, Room room) {
+        this.mode = mode;
+        this.user = user;
+        this.user.currentRoom = room;
     }
 
     // GAME_READY, GAME_UN_READY
@@ -113,9 +128,10 @@ public class GameMsg implements Serializable {
     }
 
     // GAME_START
-    public GameMsg(int mode, Vector<User> userNames) {
+    public GameMsg(int mode, Vector<User> readyUsers, Vector<User> userNames) {
         this.mode = mode;
-        this.readyUsers = userNames;
+        this.readyUsers = readyUsers;
+        this.userNames = userNames;
     }
 
     //-------투표 관련

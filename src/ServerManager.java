@@ -165,6 +165,9 @@ public class ServerManager {
                             } else {
                                 System.out.println("뽑힌 라이어 이름 : " + liar.name);
                             }
+                            currentRoom.setMembers(inMsg.userNames);
+                            System.out.println("setMembers 함 : " + currentRoom.getMembers());
+
                             broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
                             broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
 
@@ -187,9 +190,14 @@ public class ServerManager {
                             break;
 
                         case GameMsg.ROOM_EXIT:
-                            broadcasting(new GameMsg(GameMsg.ROOM_EXIT, user));
-                            user.leaveRoom();
-                            server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다.");
+//                            user = inMsg.user;
+                            broadcasting(new GameMsg(GameMsg.ROOM_EXIT, inMsg.user));
+                            user.leaveRoom(); // 안 하면, 방 관리는 되는데 순서관리가 안됨
+
+//                            exitRoom();
+
+                            server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount());
+//                            currentRoom = null;
                             break;
 
                         case GameMsg.LOGOUT:
@@ -226,7 +234,7 @@ public class ServerManager {
             // 첫 턴 사용자 브로드캐스트
             //User currentUser = room.getCurrentTurnUser();
             if (room.getCurrentTurnUser() != null) {
-                GameMsg initialTurnMsg = new GameMsg(GameMsg.TIME, room.getCurrentTurnUser(), "Your turn!", startTime);
+                GameMsg initialTurnMsg = new GameMsg(GameMsg.TIME, room.getCurrentTurnUser(), "Your turn!", startTime, currentRoom.getMembers());
                 broadcasting(initialTurnMsg);
                 server.printDisplay("첫 턴 사용자: " + room.getCurrentTurnUser().getName());
             }
@@ -243,7 +251,7 @@ public class ServerManager {
                             User currentUser = room.getCurrentTurnUser();
 
                             // 현재 턴 사용자 정보 브로드캐스트
-                            GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime);
+                            GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, currentRoom.getMembers());
                             broadcasting(turnMsg);
 
 
@@ -252,7 +260,7 @@ public class ServerManager {
                         }
 
                         // TIME 메시지를 생성하여 브로드캐스트
-                        GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime);
+                        GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime, currentRoom.getMembers());
                         broadcasting(timeMsg);
 
                         //System.out.println("타이머 - 방 [" + room.getRoomName() + "] 남은 시간: " + remainingTime + "초");
@@ -264,7 +272,7 @@ public class ServerManager {
                     //시간 종료되면 투표 모드 전환
                     server.printDisplay("시간 종료!!");
                     // 투표 타이머:
-                    GameMsg voteStartMsg = new GameMsg(GameMsg.VOTE, null, "투표를 시작하세요!", VOTE_TIME);
+                    GameMsg voteStartMsg = new GameMsg(GameMsg.VOTE, null, "투표를 시작하세요!", VOTE_TIME, currentRoom.getMembers());
                     voteStartMsg.setVoteStart(true); // 투표 시작 메시지로 설정
                     broadcasting(voteStartMsg);
                     // 투표 타이머 시작
@@ -286,7 +294,7 @@ public class ServerManager {
                         remainingTime--;
 
                         // 타이머 메시지 전송
-                        GameMsg voteTimeMsg = new GameMsg(GameMsg.VOTE, null, null, remainingTime);
+                        GameMsg voteTimeMsg = new GameMsg(GameMsg.VOTE, null, null, remainingTime, currentRoom.getMembers());
                         voteTimeMsg.setVoteStart(false); // 타이머 메시지
                         broadcasting(voteTimeMsg);
                     }
@@ -417,6 +425,21 @@ public class ServerManager {
             }
         }
 
+        private Room findRoom(String roomName) {
+            synchronized (rooms) {
+                // 방 검색
+                Room room = rooms.stream()
+                        .filter(r -> r.getRoomName().equals(roomName)) // 이름이 같은 방 필터링
+                        .findFirst() // 첫 번째 방 반환
+                        .orElseGet(() -> { // 방이 없으면 새로 생성
+                            Room newRoom = new Room(roomName);
+                            rooms.add(newRoom); // 새 방을 목록에 추가
+                            server.printDisplay("새 방 생성: " + roomName);
+                            return newRoom; // 새로 만든 방 반환
+                        });
+                return room;
+            }
+        }
 
 
         private void enterRoom(String roomName) {
@@ -462,6 +485,26 @@ public class ServerManager {
 //                server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
         }
+
+        private void exitRoom() {
+            synchronized (rooms) {
+                if (currentRoom != null) {
+                    // 현재 방에서 유저 제거
+//                    currentRoom.removeMember(user);
+                    user.leaveRoom();
+
+                    // 방의 멤버가 아무도 없다면 방 삭제
+                    if (currentRoom.getMembers().isEmpty()) {
+                        rooms.remove(currentRoom);
+                        server.printDisplay("빈 방 삭제: " + currentRoom.getRoomName());
+                    }
+
+                    // 현재 방 정보 초기화
+                    currentRoom = null;
+                }
+            }
+        }
+
 
         private User selectLiar(Vector<User> readyUsers) {
             // 랜덤으로 라이어 선택

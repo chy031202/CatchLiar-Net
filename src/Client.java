@@ -110,6 +110,18 @@ public class Client extends JFrame {
         }
     }
 
+    public void restartGame() {
+        gameRoomPanel.refreshReadyGame();
+    }
+
+    public void endGame(boolean isWinner, String resultMessage) {
+        if(gameRoomPanel != null) {
+            System.out.println("endGame");
+            gameRoomPanel.showGameResult(isWinner, resultMessage);
+            gameRoomPanel.refreshEndGame();
+        }
+    }
+
     public void showDialog(GameMsg inMsg) {
         String message = "";
         String title = "알림";

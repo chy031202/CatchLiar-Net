@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.stream.Collectors;
 
 public class GameRoomPanel extends JPanel {
     private ClientManager clientManager;
@@ -93,6 +94,18 @@ public class GameRoomPanel extends JPanel {
 
     public void updateUser(Vector<User> userNames) {
         this.userNames = userNames;
+//
+//        // 없어진 유저의 패널은 지움
+//        Set<String> currentUserNames = userNames.stream()
+//                .map(User::getName)
+//                .collect(Collectors.toSet());
+//        // userLeftTopPanels에서 제거
+//        userLeftTopPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
+//        // userLeftBottomPanels에서 제거
+//        userLeftBottomPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
+//        // userRightPanels에서 제거
+//        userRightPanels.keySet().removeIf(username -> !currentUserNames.contains(username));
+
         refreshUserSidePanel();  // 유저 목록 UI 갱신
     }
 
@@ -135,7 +148,7 @@ public class GameRoomPanel extends JPanel {
 
     public void updateReadyUser(Vector<User> readyUsers, User user) {
         this.readyUsers = readyUsers;
-        System.out.println("updateReadyUser : " + readyUsers);
+//        System.out.println("updateReadyUser : " + readyUsers);
         refreshLeftBottomPanel(user);
     }
 
@@ -249,7 +262,7 @@ public class GameRoomPanel extends JPanel {
                     userRightPanel.add(emoticonLabel); // 이모티콘 추가
 
                     // 6초 후에 이모티콘 제거
-                    Timer timer = new Timer(6000, e -> {
+                    Timer timer = new Timer(3000, e -> {
                         userRightPanel.remove(emoticonLabel);
                         userRightPanel.revalidate();
                         userRightPanel.repaint();
@@ -302,6 +315,42 @@ public class GameRoomPanel extends JPanel {
         }
         rightPannel.remove(readyPanel);
         rightPannel.add(alarmPanel, BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+    }
+
+    public void refreshReadyGame() {
+        System.out.println("refreshReadyGame");
+        start = false;
+        ready = true;
+
+        readyUsers = new Vector<>();
+        updateUser(readyUsers);
+        for (User readyUser : readyUsers) {
+            JPanel leftBottomPanel = userLeftBottomPanels.get(readyUser.getName());
+            if(leftBottomPanel != null) {
+                leftBottomPanel.removeAll();
+                leftBottomPanel.revalidate();
+                leftBottomPanel.repaint();
+            }
+        }
+
+        // 유저 하단 패널 초기화
+        clearAllLeftBottomPanels();
+
+        gamePanel.clearLines(); // 캔버스 초기화
+
+        rightPannel.remove(alarmPanel);
+        rightPannel.add(readyPanel, BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+    }
+
+    public void refreshEndGame() {
+        System.out.println("refreshEndGame");
+        gamePanel.endGameSouthPanel(gameMsg.user.currentRoom.getKeyword());
 
         revalidate();
         repaint();

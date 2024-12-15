@@ -68,6 +68,7 @@ public class Room implements Serializable {
 
     public User getCurrentTurnUser() {
         if (members.isEmpty()) return null;
+        System.out.println("getCurrentTurnUser에서 현재 members : " + members);
         return members.get(currentTurnIndex); // 현재 그림 그릴 사용자 반환
     }
 

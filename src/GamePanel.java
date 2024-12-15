@@ -409,27 +409,34 @@ public class GamePanel extends JPanel {
         southPanel.add(keywordPanel);
     }
 
-    public void changeGameResult(JLabel backgroundLabel){
-        // 기존 선 정보 초기화
-        clearLines(); // 기존 그림 데이터 초기화
-
-        // 캔버스 크기 지정
-        Dimension canvasSize = new Dimension(500, 500); // 캔버스 크기 (현재 GamePanel 크기에 맞게 설정)
-        backgroundLabel.setPreferredSize(canvasSize);
-        backgroundLabel.setHorizontalAlignment(JLabel.CENTER);
-        backgroundLabel.setVerticalAlignment(JLabel.CENTER);
-        // 기존의 모든 컴포넌트를 제거하고 새로 구성
-        removeAll();
-        setLayout(new BorderLayout());
-
-        // 새로운 배경 이미지를 추가
-        add(backgroundLabel, BorderLayout.CENTER);
-        // 기존 SouthPanel 유지
-        //add(createSouthPanel(), BorderLayout.SOUTH);
-
-        revalidate();
-        repaint();
+    // 게임 종료하면 모든 유저에게 키워드 패널 띄우고, exitPanel 띄움
+    public void endGameSouthPanel(String word) {
+        southPanel.removeAll();
+        southPanel.add(exitPanel);
+        southPanel.add(createKeywordPanel(word));
     }
+
+//    public void changeGameResult(JLabel backgroundLabel){
+//        // 기존 선 정보 초기화
+//        clearLines(); // 기존 그림 데이터 초기화
+//
+//        // 캔버스 크기 지정
+//        Dimension canvasSize = new Dimension(500, 500); // 캔버스 크기 (현재 GamePanel 크기에 맞게 설정)
+//        backgroundLabel.setPreferredSize(canvasSize);
+//        backgroundLabel.setHorizontalAlignment(JLabel.CENTER);
+//        backgroundLabel.setVerticalAlignment(JLabel.CENTER);
+//        // 기존의 모든 컴포넌트를 제거하고 새로 구성
+//        removeAll();
+//        setLayout(new BorderLayout());
+//
+//        // 새로운 배경 이미지를 추가
+//        add(backgroundLabel, BorderLayout.CENTER);
+//        // 기존 SouthPanel 유지
+//        //add(createSouthPanel(), BorderLayout.SOUTH);
+//
+//        revalidate();
+//        repaint();
+//    }
 
     public void changeGameResultWithOverlay(String imagePath, String resultMessage) {
         // 기존 선 정보 초기화

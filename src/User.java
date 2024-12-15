@@ -87,5 +87,9 @@ public class User implements Serializable {
         this.isWinner = winner;
     }
 
+    @Override
+    public String toString() {
+        return name; // toString() 호출 시 유저 이름 반환
+    }
 
 }

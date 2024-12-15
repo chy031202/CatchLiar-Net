@@ -83,23 +83,25 @@ public class ClientManager {
 
                     case GameMsg.ROOM_SELECT:
                         user = inMsg.getUser();
-                        System.out.println("클라이언트 receiveMessage 방선택OK : " + inMsg.mode + "," + inMsg.user.name + "," + inMsg.message);
+                        System.out.println("클라이언트 receiveMessage 방선택OK : " + inMsg.mode + "," + inMsg.user.name + "," + user.currentRoom.getRoomName());
                         client.changeGameRoomPanel(inMsg);
                         userNames = user.currentRoom.getMembers();
-//                        System.out.println("클라이언트 ROOM_SELECT_OK 이후 userNames 세팅 : " + userNames);
+                        System.out.println("클라이언트 ROOM_SELECT 때 userNames : " + userNames);
                         client.getGamePanel().clearLines();
                         break;
 
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
-//                        System.out.println("추가되기 전 userNames : " + userNames);
+//                        userNames = inMsg.userNames;
                         synchronized (userNames) {
+                            System.out.println("추가하기 전 userNames : " + userNames);
                             if (!userNames.contains(inMsg.user)) { // 목록에 없는 유저가 들어올 때만 리프레쉬
                                 userNames.add(inMsg.user);
-//                                System.out.println("추가된 후 userNames : " + userNames);
+                                System.out.println("추가된 후 userNames : " + userNames);
                             }
                         }
                         client.updateUserToRoom(userNames);
+                        System.out.println("updateUserToRoom 한 userNames : " + userNames);
                         synchronized (readyUsers) {
 //                            if(readyUsers != null) {
                                 client.updateReadyToRoom(readyUsers, null);
@@ -125,10 +127,11 @@ public class ClientManager {
                         // readyUsers 4명되면 게임 시작
                         if(readyUsers.size() == 4) {
                             System.out.println("겜 시작");
+                            System.out.println("userNames : " + userNames);
                             // 사용자 한 명만 sendGameMsg 보내도록
                             User firstUser = readyUsers.get(0);
                             if (userName.equals(firstUser.name)) {
-                                sendGameMsg(new GameMsg(GameMsg.GAME_START, readyUsers)); // 첫 번째 사용자만 실행
+                                sendGameMsg(new GameMsg(GameMsg.GAME_START, readyUsers, userNames)); // 첫 번째 사용자만 실행
                             } else {
                                 System.out.println("첫 번째 사용자가 아님, 메시지 전송 안 함");
                             }
@@ -154,6 +157,7 @@ public class ClientManager {
                         break;
 
                     case GameMsg.TIME:
+                        userNames = inMsg.userNames;
                         int remainingTime = inMsg.getTime(); // 서버에서 받은 남은 시간
                         User currentTurnUser = inMsg.getUser();
 
@@ -168,6 +172,7 @@ public class ClientManager {
                         //System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
 
                         if (currentTurnUser != null) {
+                            System.out.println("Time에서 userNames : " + userNames);
                             client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
                         }
 
@@ -227,7 +232,8 @@ public class ClientManager {
                         String resultMessage = inMsg.getResultMessage();
 
                         // 결과 화면 표시
-                        client.getGameRoomPanel().showGameResult(isWinner, resultMessage);
+//                        client.getGameRoomPanel().showGameResult(isWinner, resultMessage);
+                        client.endGame(isWinner, resultMessage);
                         break;
 
                     case GameMsg.CHAT_MESSAGE:
@@ -242,21 +248,31 @@ public class ClientManager {
                         client.updateEmoticonPanel(inMsg.user, inMsg.message);
                         break;
 
+                    case GameMsg.GAME_READY:
+                        client.restartGame();
+                        break;
+
                     case GameMsg.ROOM_EXIT:
                         User exitUser = inMsg.user;
+//                        user.currentRoom.setMembers(new Vector<>());
+                        System.out.println("exit 때 remove 하기 전 updateUserToRoom : " + userNames);
                         userNames.remove(exitUser);
                         readyUsers.remove(exitUser);
+                        client.updateUserToRoom(userNames);
                         client.updateReadyToRoom(readyUsers, inMsg.user);
+
                         if(exitUser.getName().equals(userName)) {
+//                            client.updateUserToRoom(userNames);
                             client.changeSelectRoomPanel();
                         } else {
-                            client.updateUserToRoom(userNames);
+//                            client.updateUserToRoom(userNames);
                             if(readyUsers.size() < 4) {
                                 client.setReadyButtonVisibility(false);
+//                                client.restartGame();
                             }
                             if(readyUsers != null) { client.updateReadyToRoom(readyUsers, null); }
+//                            sendGameMsg(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, null, userNames));
                         }
-
                         break;
 
                     case GameMsg.LOGOUT:
@@ -266,6 +282,7 @@ public class ClientManager {
                         client.updateReadyToRoom(readyUsers, inMsg.user);
 
                         if(logoutUser.getName().equals(userName)) {
+                            client.updateUserToRoom(userNames);
                             client.changeStartPanel();
                         } else {
                             client.updateUserToRoom(userNames);
