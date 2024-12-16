@@ -27,6 +27,7 @@ public class Paint implements Serializable {
     public int getEndY() { return endY; }
 
     public Color getColor() { return color; }
+    public boolean isErasing() { return isErasing; }
 
     @Override
     public String toString() {

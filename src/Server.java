@@ -2,16 +2,22 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.*;
+import java.util.List;
 import java.io.IOException;
 
 public class Server extends JFrame {
     private JTextArea t_display;
     private JButton b_connect, b_disconnect, b_exit;
     private ServerManager serverManager;
+    private String currentFilter = "모두"; // 현재 필터 상태
+    private Map<String, List<String>> logsByType; // 로그를 종류별로 저장
 
     public Server(int port) {
         super("캐치 라이어 서버");
         serverManager = new ServerManager(port, this);
+        logsByType = new HashMap<>();
+        initializeLogTypes();
         buildGUI();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
@@ -19,8 +25,39 @@ public class Server extends JFrame {
 
     private void buildGUI() {
         setBounds(700, 200, 600, 400);
+        add(createFilterPanel(), BorderLayout.NORTH);
         add(createDisplayPanel(), BorderLayout.CENTER);
         add(createControlPanel(), BorderLayout.SOUTH);
+    }
+
+    private void initializeLogTypes() {
+        String[] logTypes = {"모두", "접속", "게임상태", "채팅+이모티콘", "페인팅", "투표"};
+        for (String type : logTypes) {
+            logsByType.put(type, new ArrayList<>());
+        }
+    }
+
+    private JPanel createFilterPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT)); // 상단 필터 패널
+        ButtonGroup group = new ButtonGroup();
+        String[] logTypes = {"모두", "접속", "게임상태", "채팅+이모티콘", "페인팅", "투표"};
+
+        for (String logType : logTypes) {
+            JRadioButton radioButton = new JRadioButton(logType);
+            if (logType.equals("모두")) radioButton.setSelected(true); // 기본 선택
+            group.add(radioButton);
+            panel.add(radioButton);
+
+            radioButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    currentFilter = logType; // 선택된 필터 업데이트
+                    updateDisplay(); // 화면 갱신
+                }
+            });
+        }
+
+        return panel;
     }
 
     private JPanel createDisplayPanel() {
@@ -80,6 +117,31 @@ public class Server extends JFrame {
 
     public void printDisplay(String msg) {
         t_display.append(msg + "\n");
+        t_display.setCaretPosition(t_display.getDocument().getLength());
+    }
+
+    // 로그 출력 메서드
+    public void printDisplay(String msg, String type) {
+        logsByType.get("모두").add(msg); // 모든 로그에 추가
+        if (logsByType.containsKey(type)) {
+            logsByType.get(type).add(msg); // 해당 타입에 추가
+        }
+
+        if (currentFilter.equals("모두") || currentFilter.equals(type)) {
+            t_display.append(msg + "\n"); // 현재 필터에 맞는 로그 출력
+            t_display.setCaretPosition(t_display.getDocument().getLength());
+        }
+    }
+
+    // 필터링된 로그를 출력
+    private void updateDisplay() {
+        t_display.setText(""); // 기존 로그 지우기
+        List<String> filteredLogs = logsByType.get(currentFilter); // 선택된 필터의 로그 가져오기
+        if (filteredLogs != null) {
+            for (String log : filteredLogs) {
+                t_display.append(log + "\n");
+            }
+        }
         t_display.setCaretPosition(t_display.getDocument().getLength());
     }
 
