@@ -16,7 +16,7 @@ public class ServerManager {
 
     private static final int DRAWING_TIME=12;
     private static final int DRAWING_PERTIME=DRAWING_TIME/4;
-    private static final int VOTE_TIME=20;
+    private static final int VOTE_TIME=5;
 //    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
@@ -351,6 +351,30 @@ public class ServerManager {
         //투표 결과 집계
         private void collectVoteResults(Room room) {
             Map<String, Integer> voteCounts = room.getVoteCounts();
+
+
+            // 아무도 투표하지 않은 경우 처리
+            if (voteCounts.isEmpty()) {
+                String liarVictoryMessage = "라이어: " + liar.name + "</html>";
+                System.out.println(liarVictoryMessage);
+
+                // 라이어에게 메시지 전송
+                broadcastIndividualUser(
+                        liar,
+                        new GameMsg(GameMsg.GAME_END, liar, liarVictoryMessage, true) // true = 라이어 승리
+                );
+
+                // 라이어가 아닌 사람들에게 메시지 전송
+                broadcastExceptUser(
+                        liar,
+                        new GameMsg(GameMsg.GAME_END, liar, liarVictoryMessage, false) // false = 라이어가 승리
+                );
+
+                // 투표 상태 및 게임 상태 초기화
+                room.resetVoteCounts();
+                server.printDisplay("아무도 투표하지 않음. 게임 상태 초기화 완료");
+                return; // 조기 종료
+            }
 
             // 최다 득표자 계산
             String liarCandidate = voteCounts.entrySet().stream()
