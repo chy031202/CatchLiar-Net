@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="CatchLiar:jarSERVER">
+    <output-path>$PROJECT_DIR$/out/artifacts/CatchLiar_jarSERVER</output-path>
+    <root id="archive" name="CatchLiar.jar">
+      <element id="module-output" name="CatchLiar" />
+    </root>
+  </artifact>
+</component>
