@@ -289,7 +289,25 @@ public class GamePanel extends JPanel {
 //        itemPanel.add(customColorButton);
 
         // 지우개 버튼
-        JToggleButton eraserButton = new JToggleButton("지우개");
+        JToggleButton eraserButton = new JToggleButton();
+        try {
+            // 이미지 불러오기
+            ImageIcon eraserIcon = new ImageIcon(getClass().getResource("/images/eraser.png"));
+            Image scaledImage = eraserIcon.getImage().getScaledInstance(37, 37, Image.SCALE_SMOOTH);
+            eraserIcon = new ImageIcon(scaledImage);
+
+            // 버튼에 아이콘 설정
+            eraserButton.setIcon(eraserIcon);
+        } catch (Exception e) {
+            System.err.println("이미지 로드 실패: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // 버튼 스타일 설정
+        eraserButton.setBorderPainted(false);    // 테두리 제거
+        eraserButton.setContentAreaFilled(false); // 버튼 배경 제거
+        //eraserButton.setFocusPainted(false);     // 포커스 테두리 제거
+
         eraserButton.addActionListener(e -> {
             toggleEraser();
             eraserButton.setSelected(isErasing);
