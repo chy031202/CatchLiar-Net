@@ -1,5 +1,7 @@
 import javax.swing.*;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Vector;
 
 public class Client extends JFrame {
@@ -10,8 +12,14 @@ public class Client extends JFrame {
     private GameRoomPanel gameRoomPanel;
     private GamePanel gamePanel;
 
-    public Client(String serverAddress, int serverPort){
+    public Client(){
         super("캐치 라이어");
+
+        // 서버 설정 파일 읽기
+        String[] serverConfig = readServerConfig();
+        String serverAddress = serverConfig[0];
+        int serverPort = Integer.parseInt(serverConfig[1]);
+
         clientManager = new ClientManager(serverAddress, serverPort, this);
 
         startPanel = new StartPanel(clientManager);
@@ -174,10 +182,23 @@ public class Client extends JFrame {
         }
     }
 
+    private String[] readServerConfig() {
+        String defaultAddress = "localhost";
+        int defaultPort = 54321;
+
+        try (BufferedReader br = new BufferedReader(new FileReader("server.txt"))) {
+            String serverAddress = br.readLine(); // 첫 번째 줄: 서버 주소
+            String serverPort = br.readLine();    // 두 번째 줄: 포트 번호
+            return new String[]{serverAddress, serverPort};
+        } catch (IOException e) {
+            System.err.println("서버 설정 파일을 읽을 수 없습니다. 기본 설정을 사용합니다.");
+            return new String[]{defaultAddress, String.valueOf(defaultPort)};
+        }
+    }
+
     public static void main(String[] args) {
-        String serverAddress = "localhost";
-        int serverPort = 54321;
-        Client client = new Client(serverAddress, serverPort);
+        // 서버 주소와 포트를 파일에서 읽음
+        new Client();
     }
 
 }

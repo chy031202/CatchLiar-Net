@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 
 public class Server extends JFrame {
@@ -93,7 +95,19 @@ public class Server extends JFrame {
     }
 
     public static void main(String[] args){
-        int port = 54321;
+        String ip = "localhost"; // 기본 IP
+        int port = 54321;        // 기본 포트
+
+        // server.txt에서 서버 설정 읽기
+        try (BufferedReader br = new BufferedReader(new FileReader("server.txt"))) {
+            ip = br.readLine(); // 첫 번째 줄: IP 주소
+            port = Integer.parseInt(br.readLine()); // 두 번째 줄: 포트 번호
+            System.out.println("서버 IP: " + ip + ", 포트: " + port);
+        } catch (IOException e) {
+            System.err.println("서버 설정 파일을 읽을 수 없습니다. 기본 설정을 사용합니다.");
+        }
+
         Server server = new Server(port);
+        server.printDisplay("서버 IP: " + ip + ", 포트: " + port);
     }
 }
