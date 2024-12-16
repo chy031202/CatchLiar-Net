@@ -230,22 +230,30 @@ public class ClientManager {
 
                     case GameMsg.ROOM_EXIT:
                         User exitUser = inMsg.user;
-                        System.out.println("exit 때 remove 하기 전 updateUserToRoom : " + userNames);
-                        userNames.remove(exitUser);
+                        synchronized (userNames) {
+                            userNames = new Vector<>(inMsg.userNames);
+                            System.out.println("userNames: " + userNames);
+                        }
+                        synchronized (readyUsers) {
+                            readyUsers = new Vector<>(inMsg.readyUsers);
+                            System.out.println("readyUsers: " + readyUsers);
+                        }
+                        client.updateReadyToRoom(readyUsers, exitUser);
                         client.updateUserToRoom(userNames);
 
-                        if(exitUser.getName().equals(userName)) {
-//                            client.updateUserToRoom(userNames);
-                            client.changeSelectRoomPanel();
-                        } else {
-//                            client.updateUserToRoom(userNames);
-                            if(readyUsers.size() < 4) {
-                                client.setReadyButtonVisibility(false);
-//                                client.restartGame();
-                            }
-                            if(readyUsers != null) { client.updateReadyToRoom(readyUsers, null); }
-//                            sendGameMsg(new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, null, userNames));
+                        if(readyUsers.size() < 4) {
+                            client.setReadyButtonVisibility(false);
                         }
+                        break;
+
+                    case GameMsg.ROOM_EXIT_OK:
+                        synchronized (userNames) {
+                            userNames = new Vector<>();
+                        }
+                        synchronized (readyUsers) {
+                            readyUsers = new Vector<>();
+                        }
+                        client.changeSelectRoomPanel();
                         break;
 
                     case GameMsg.LOGOUT:
@@ -350,9 +358,7 @@ public class ClientManager {
     }
 
     public void sendRoomExit(User user) {
-        sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT, user));
-        // 준비 사용자 목록 초기화
-        user.currentRoom.setReadyUsers(new Vector<>());
+        sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT, user, userNames, readyUsers));
         // 투표 상태 초기화
         client.getGameRoomPanel().resetVoteState();
         // 라이어 상태 초기화
@@ -376,7 +382,7 @@ public class ClientManager {
         client.setReadyButtonVisibility(true);
 
         sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
-        sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
+        sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName)); // 뒤에 메시지 추가해서
     }
 
     public User getUser() {

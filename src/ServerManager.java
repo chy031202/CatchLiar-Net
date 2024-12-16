@@ -178,7 +178,6 @@ public class ServerManager {
 
                             broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
                             broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
-
                             // 타이머 시작
                             server.printDisplay("타이머 시작");
                             startRoomTimer(currentRoom, DRAWING_TIME);
@@ -206,15 +205,20 @@ public class ServerManager {
 //                            user.setUnReady();
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user, inMsg.user.currentRoom.getReadyUsers()));
                             break;
-
-
+                            
                         case GameMsg.ROOM_EXIT:
 //                            user = inMsg.user;
-                            broadcasting(new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, "finish"));
-                            user.leaveRoom(); // 안 하면, 방 관리는 되는데 순서관리가 안됨
-//                            exitRoom();
-                            server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount());
-//                            currentRoom = null;
+                            currentRoom.setReadyUsers(inMsg.readyUsers);
+                            currentRoom.removeReadyUser(inMsg.user);
+                            currentRoom.setMembers(inMsg.userNames);
+                            currentRoom.removeMember(inMsg.user);
+                            broadcastExceptUser(inMsg.user, new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, currentRoom.getMembers(), currentRoom.getReadyUsers()));
+                            server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount() +"명");
+
+                            inMsg.user.setUnReady();
+                            inMsg.user.leaveRoom(); // user의 currentRoom null됨
+                            sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT_OK, inMsg.user));
+                            currentRoom = null;
                             break;
 
                         case GameMsg.LOGOUT:
