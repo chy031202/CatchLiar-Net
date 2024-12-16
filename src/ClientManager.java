@@ -221,7 +221,7 @@ public class ClientManager {
                     case GameMsg.CHAT_MESSAGE:
                         String chatUser = inMsg.user.name;
                         String chatMsg = inMsg.message;
-                        client.getGameRoomPanel().showChat("[ " + chatUser + "] : " + chatMsg);
+                        client.getGameRoomPanel().showChat("[" + chatUser + "] : " + chatMsg);
                         break;
 
                     case GameMsg.CHAT_EMOTICON:
