@@ -470,7 +470,7 @@ public class GamePanel extends JPanel {
         clearLines(); // 기존 그림 데이터 초기화
 
         // 캔버스 크기 지정
-        Dimension canvasSize = new Dimension(300, 300);
+        Dimension canvasSize = new Dimension(365, 365);
 
         // 배경 이미지 설정
         ImageIcon resizedIcon = resizeImageIcon(imagePath, canvasSize);

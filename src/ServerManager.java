@@ -360,7 +360,7 @@ public class ServerManager {
 
             // 아무도 투표하지 않은 경우 처리
             if (voteCounts.isEmpty()) {
-                String liarVictoryMessage = "라이어: " + liar.name + "</html>";
+                String liarVictoryMessage = "라이어: " + liar.name;
                 System.out.println(liarVictoryMessage);
 
                 // 라이어에게 메시지 전송
