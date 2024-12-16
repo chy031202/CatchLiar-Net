@@ -14,10 +14,8 @@ public class SelectRoomPanel extends JPanel {
     private void buildGUI() {
         setBounds(50, 200, 800, 600);
         setLayout(new BorderLayout());
-
         add(createTitlePanel(), BorderLayout.NORTH);
         add(createButtonPanel(), BorderLayout.CENTER);
-
     }
 
     private JPanel createTitlePanel() {

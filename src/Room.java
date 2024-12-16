@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.io.Serializable;
 import java.util.*;
 
@@ -35,6 +34,7 @@ public class Room implements Serializable {
             members.remove(user);
         }
         System.out.println("Room 에서 removeMember : " + roomName + "에서 " + user.getName() + "님이 퇴장");
+        System.out.println("현재 방에 있는 멤버들 : " + members);
     }
 
     public void addReadyUser(User user) {
