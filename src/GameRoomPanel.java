@@ -1,4 +1,3 @@
-import javax.sound.sampled.Line;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
@@ -29,25 +28,15 @@ public class GameRoomPanel extends JPanel {
     public JPanel alarmPanel;
     public GamePanel gamePanel;
     public JPanel centerPanel;
+    private JLabel alarmLabel;
     private JComboBox<String> userDropdown;
     private String currentTurnUserName; // 현재 턴 사용자 이름
 
     public boolean ready = false;
     private boolean start = false;
-
-    //시계 관련
-    int count= 10;
-    Timer timer;
-    TimerTask timerTask;
-    private JLabel alarmLabel;
-
     // 투표 상태 플래그
-    private boolean hasVoted = false; // 이미 투표했는지 여부를 추적
+    private boolean hasVoted = false; // 이미 투표했는지 여부 추적
     private boolean isVotingActive; // 플래그는 private로 설정
-
-    //투표 결과
-    private JPanel resultPanel;
-
     //펜 아이콘
     private ImageIcon penIcon;
     private ImageIcon voteIcon;
@@ -74,21 +63,14 @@ public class GameRoomPanel extends JPanel {
     // 턴 사용자 업데이트 및 그림 그리기 활성화/비활성화 제어
     public void updateTurnUser(String userName) {
         currentTurnUserName = userName;
-
         // 자신의 턴이 아닐 경우 GamePanel 비활성화
         if (!userName.equals(clientManager.getUser().getName())) {
-
             gamePanel.setDrawingEnabled(false);
-            //gamePanel.setEnabled(false); // 패널 비활성화
-            //gamePanel.setBackground(Color.LIGHT_GRAY); // 비활성화 시 시각적 표시
             System.out.println("다른 사용자의 턴입니다. GamePanel 비활성화.");
         } else {
             gamePanel.setDrawingEnabled(true);
-            //gamePanel.setEnabled(true); // 패널 활성화
-            //gamePanel.setBackground(Color.WHITE); // 기본 상태로 복구
             System.out.println("내 턴입니다. GamePanel 활성화.");
         }
-        
         System.out.println("턴 변경::현재 턴: " + userName);
         nowDrawingUser(userName);
 
@@ -117,6 +99,12 @@ public class GameRoomPanel extends JPanel {
         updateUserDropdown();    // 토글 유저 목록 갱신
     }
 
+    public void updateReadyUser(Vector<User> readyUsers, User user) {
+        this.readyUsers = readyUsers;
+//        System.out.println("updateReadyUser : " + readyUsers);
+        refreshLeftBottomPanel(user);
+    }
+
     // 유저 새로 들어오면 UserSidePanel 갱신
     private void refreshUserSidePanel() {
         remove(userSidePanel); // 기존 userSidePanel 제거
@@ -129,96 +117,9 @@ public class GameRoomPanel extends JPanel {
         repaint();  // 화면 갱신
     }
 
-    public void settingReady() {
-        ready = true;
-//        readyPanel.removeAll();
-        rightPannel.remove(readyPanel);
-        JPanel newReadyPanel = createReadyPanel();
-        readyPanel = newReadyPanel;
-        rightPannel.add(readyPanel, BorderLayout.NORTH);
-        //updateTurnUser();
-
-        revalidate();
-        repaint();
-    }
-
-    public void settingUnReady() {
-        ready = false;
-        rightPannel.remove(readyPanel);
-        JPanel newReadyPanel = createReadyPanel();
-        readyPanel = newReadyPanel;
-        rightPannel.add(readyPanel, BorderLayout.NORTH);
-        //updateTurnUser();
-
-        revalidate();
-        repaint();
-    }
-
-    public void updateReadyUser(Vector<User> readyUsers, User user) {
-        this.readyUsers = readyUsers;
-//        System.out.println("updateReadyUser : " + readyUsers);
-        refreshLeftBottomPanel(user);
-    }
-
-    private ImageIcon getPenIcon() {
-        if (penIcon == null) {
-            URL iconURL = getClass().getResource("/images/drawingpen.png");
-            if (iconURL != null) {
-                ImageIcon originalIcon = new ImageIcon(iconURL);
-                Image scaledImage = originalIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
-                penIcon = new ImageIcon(scaledImage);
-            } else {
-                System.out.println("이미지 파일을 찾을 수 없습니다.");
-                penIcon = null; // 로드 실패 시 null 처리
-            }
-        }
-        return penIcon;
-    }
-
-    private ImageIcon getVoteICon(){
-        if (voteIcon == null) {
-            URL iconURL = getClass().getResource("/images/Vote.png");
-            if (iconURL != null) {
-                ImageIcon originalIcon = new ImageIcon(iconURL);
-                Image scaledImage = originalIcon.getImage().getScaledInstance(17, 17, Image.SCALE_SMOOTH);
-                voteIcon = new ImageIcon(scaledImage);
-            } else {
-                System.out.println("이미지 파일을 찾을 수 없습니다.");
-                voteIcon = null; // 로드 실패 시 null 처리
-            }
-        }
-        return voteIcon;
-    }
-
-    // 현재 그리고 있는 클라이언트 표시
-    private void nowDrawingUser(String currentDrawingUserName){
-        for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
-            JPanel leftBottomPanel = entry.getValue();
-            leftBottomPanel.removeAll(); // 기존 내용을 제거
-
-            if (entry.getKey().equals(currentDrawingUserName)) {
-                // 현재 그림을 그리는 사용자 강조
-                ImageIcon penIcon = getPenIcon();
-                if (penIcon != null) {
-                    JLabel drawingLabel = new JLabel(penIcon, JLabel.CENTER);
-                    leftBottomPanel.add(drawingLabel);
-                }
-                //leftBottomPanel.add(drawingLabel);
-                leftBottomPanel.setBackground(new Color(201,208,191)); // 강조 배경색
-            } else {
-                // 기본 상태 유지
-                leftBottomPanel.add(new JLabel("대기 중"));
-                leftBottomPanel.setBackground(new Color(242, 242, 242)); // 기본 배경색
-            }
-
-            leftBottomPanel.revalidate();
-            leftBottomPanel.repaint();
-        }
-    }
-
     // 유저왼쪽하단 준비 완료 화면 갱신
     private void refreshLeftBottomPanel(User user) {
-        System.out.println("refreshLeftBottomPanel");
+//        System.out.println("refreshLeftBottomPanel");
         if(user != null) { // 준비해제
             JPanel leftBottomPanel = userLeftBottomPanels.get(user.getName());
             if(leftBottomPanel != null) {
@@ -287,6 +188,83 @@ public class GameRoomPanel extends JPanel {
         }
     }
 
+    public void settingReady() {
+        ready = true;
+        rightPannel.remove(readyPanel);
+        JPanel newReadyPanel = createReadyPanel();
+        readyPanel = newReadyPanel;
+        rightPannel.add(readyPanel, BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+    }
+
+    public void settingUnReady() {
+        ready = false;
+        rightPannel.remove(readyPanel);
+        JPanel newReadyPanel = createReadyPanel();
+        readyPanel = newReadyPanel;
+        rightPannel.add(readyPanel, BorderLayout.NORTH);
+
+        revalidate();
+        repaint();
+    }
+
+    private ImageIcon getPenIcon() {
+        if (penIcon == null) {
+            URL iconURL = getClass().getResource("/images/drawingpen.png");
+            if (iconURL != null) {
+                ImageIcon originalIcon = new ImageIcon(iconURL);
+                Image scaledImage = originalIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+                penIcon = new ImageIcon(scaledImage);
+            } else {
+                System.out.println("이미지 파일을 찾을 수 없습니다.");
+                penIcon = null; // 로드 실패 시 null 처리
+            }
+        }
+        return penIcon;
+    }
+
+    private ImageIcon getVoteICon(){
+        if (voteIcon == null) {
+            URL iconURL = getClass().getResource("/images/Vote.png");
+            if (iconURL != null) {
+                ImageIcon originalIcon = new ImageIcon(iconURL);
+                Image scaledImage = originalIcon.getImage().getScaledInstance(17, 17, Image.SCALE_SMOOTH);
+                voteIcon = new ImageIcon(scaledImage);
+            } else {
+                System.out.println("이미지 파일을 찾을 수 없습니다.");
+                voteIcon = null; // 로드 실패 시 null 처리
+            }
+        }
+        return voteIcon;
+    }
+
+    // 현재 그리고 있는 클라이언트 표시
+    private void nowDrawingUser(String currentDrawingUserName){
+        for (Map.Entry<String, JPanel> entry : userLeftBottomPanels.entrySet()) {
+            JPanel leftBottomPanel = entry.getValue();
+            leftBottomPanel.removeAll(); // 기존 내용을 제거
+
+            if (entry.getKey().equals(currentDrawingUserName)) {
+                // 현재 그림을 그리는 사용자 강조
+                ImageIcon penIcon = getPenIcon();
+                if (penIcon != null) {
+                    JLabel drawingLabel = new JLabel(penIcon, JLabel.CENTER);
+                    leftBottomPanel.add(drawingLabel);
+                }
+                leftBottomPanel.setBackground(new Color(201,208,191)); // 강조 배경색
+            } else {
+                // 기본 상태 유지
+                leftBottomPanel.add(new JLabel("대기 중"));
+                leftBottomPanel.setBackground(new Color(242, 242, 242)); // 기본 배경색
+            }
+
+            leftBottomPanel.revalidate();
+            leftBottomPanel.repaint();
+        }
+    }
+
     private String getEmoticonPath(String emoticonName) {
         switch (emoticonName) {
             case "like":
@@ -315,16 +293,14 @@ public class GameRoomPanel extends JPanel {
 
         // 유저 하단 패널 초기화
         clearAllLeftBottomPanels();
-
         gamePanel.clearLines(); // 캔버스 초기화
 
-//        gamePanel.southPanel.removeAll();
         if(gamePanel.keywordPanel != null) {
             gamePanel.southPanel.remove(gamePanel.keywordPanel);
             gamePanel.keywordPanel.removeAll();
         }
         gamePanel.southPanel.remove(gamePanel.exitPanel);
-//        gamePanel.southPanel.add(gamePanel.itemPanel);
+
         // 라이어 빼고 화면에 키워드 추가
         if(!gameMsg.user.isLiar) {
             System.out.println("refreshStartGame 나머지 : " + gameMsg.user.name);
@@ -344,34 +320,6 @@ public class GameRoomPanel extends JPanel {
         repaint();
     }
 
-    public void refreshReadyGame() {
-        System.out.println("refreshReadyGame");
-        start = false;
-        ready = true;
-
-        readyUsers = new Vector<>();
-        updateUser(readyUsers);
-        for (User readyUser : readyUsers) {
-            JPanel leftBottomPanel = userLeftBottomPanels.get(readyUser.getName());
-            if(leftBottomPanel != null) {
-                leftBottomPanel.removeAll();
-                leftBottomPanel.revalidate();
-                leftBottomPanel.repaint();
-            }
-        }
-
-        // 유저 하단 패널 초기화
-        clearAllLeftBottomPanels();
-
-        gamePanel.clearLines(); // 캔버스 초기화
-
-        rightPannel.remove(alarmPanel);
-        rightPannel.add(readyPanel, BorderLayout.NORTH);
-
-        revalidate();
-        repaint();
-    }
-
     public void refreshEndGame() {
         System.out.println("refreshEndGame");
         gamePanel.endGameSouthPanel(gameMsg.user.currentRoom.getKeyword());
@@ -379,7 +327,6 @@ public class GameRoomPanel extends JPanel {
         revalidate();
         repaint();
     }
-
 
     private void buildGUI() {
         setBounds(50, 200, 800, 600);
@@ -389,9 +336,6 @@ public class GameRoomPanel extends JPanel {
         add(userSidePanel, BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);
         add(rightPannel, BorderLayout.EAST);
-        //add(updateTurnUser());
-
-//        refreshLeftBottomPanel();
     }
 
     private JPanel createTopPanel() {
@@ -414,15 +358,9 @@ public class GameRoomPanel extends JPanel {
             JPanel userPanel = createIndividualUserPanel(userName.getName());
             userPanel.setMaximumSize(new Dimension(150, 90)); // 크기 고정
 
-            // 초기에는 투표 비활성화 상태
-            //userPanel.setEnabled(isEnabled());
-
             panel.add(userPanel);
             panel.add(Box.createRigidArea(new Dimension(0, 17))); // 간격 추가
-//            panel.add(createIndividualUserPanel(userName));
-
         }
-
         return panel;
     }
 
@@ -455,14 +393,12 @@ public class GameRoomPanel extends JPanel {
                 }
             }
         }
-
         revalidate();
         repaint();
     }
 
     public void setGameMsg(GameMsg inMsg) {
-//        this.gameMsg = gameMsg;
-        // gameMsg에 따라 투표 상태를 설정
+        // gameMsg 모드에 따라 투표 상태를 설정
         if (inMsg != null && inMsg.mode == GameMsg.VOTE) {
             setVotingActive(true); // 투표 모드 활성화
         } else {
@@ -472,9 +408,7 @@ public class GameRoomPanel extends JPanel {
 
 
     private JPanel createIndividualUserPanel(String userName) {
-
         JPanel panel = new JPanel(new GridLayout(1, 2));
-
         JPanel leftPanel = new JPanel(new GridLayout(2, 1));
 
         JPanel leftTopPanel;
@@ -528,10 +462,8 @@ public class GameRoomPanel extends JPanel {
 
             userRightPanels.put(userName, rightPanel); // userRightPanels에 저장해서 관리
         }
-
         panel.add(leftPanel);
         panel.add(rightPanel);
-
         return panel;
     }
 
@@ -541,7 +473,6 @@ public class GameRoomPanel extends JPanel {
             //JOptionPane.showMessageDialog(this, "이미 투표했습니다!", "투표 불가", JOptionPane.WARNING_MESSAGE);
             return;
         }
-
         // 이미 투표한 경우 투표 불가능 처리
         if (!leftBottomPanel.isEnabled()) {
             //JOptionPane.showMessageDialog(this, "이미 투표했습니다!", "투표 불가", JOptionPane.WARNING_MESSAGE);
@@ -550,15 +481,12 @@ public class GameRoomPanel extends JPanel {
 
         // 투표 상태 업데이트
         hasVoted = true;
-
-        // UI 갱신
-        // 이미지를 JLabel에 추가
+        // UI 갱신 // 이미지를 JLabel에 추가
         try {
             // getVoteIcon 메서드를 통해 아이콘 가져오기
             ImageIcon voteIcon = getVoteICon(); // 클래스의 getVoteICon 메서드 사용
             if (voteIcon != null) {
                 JLabel voteLabel = new JLabel(voteIcon, JLabel.CENTER); // 아이콘으로 JLabel 생성
-                //leftBottomPanel.removeAll(); // 기존 내용을 제거
                 leftBottomPanel.add(voteLabel); // 아이콘 추가
             }
             else {
@@ -567,17 +495,13 @@ public class GameRoomPanel extends JPanel {
         } catch (Exception e) {
             System.err.println("이미지 로드 실패: " + e.getMessage());
         }
-        //leftBottomPanel.setBackground(new Color(255, 0, 0)); // 투표한 대상 강조
         leftBottomPanel.setEnabled(false); // 중복 클릭 방지
-
         // 투표 요청 서버로 전송
         clientManager.sendVote(gameMsg.user, votedUserName);
-//        clientManager.sendGameMsg(new GameMsg(GameMsg.VOTE, clientManager.getUser(), votedUserName));
         System.out.println("투표 요청 전송: " + votedUserName);
 
         revalidate();
         repaint();
-
         // 투표 성공 알림
         JOptionPane.showMessageDialog(this, votedUserName + " 님에게 투표했습니다!", "투표 완료", JOptionPane.INFORMATION_MESSAGE);
     }
@@ -588,13 +512,10 @@ public class GameRoomPanel extends JPanel {
         panel.setLayout(new BorderLayout()); // 위아래로 나눔
         panel.setPreferredSize(new Dimension(170, 0));
 
-
         panel.add(readyPanel, BorderLayout.NORTH);
-
         // 가운데 채팅 패널
         JPanel chatPanel = ChatPanel();
         panel.add(chatPanel, BorderLayout.CENTER);
-
         // 아래쪽 이모티콘 패널
         JPanel imgPanel = ImgPanel();
         panel.add(imgPanel, BorderLayout.SOUTH);
@@ -612,15 +533,12 @@ public class GameRoomPanel extends JPanel {
         JLabel welcomeLabel = new JLabel("환영합니다! " + gameMsg.user.name + " 님");
         welcomeLabel.setForeground(Color.WHITE); // 텍스트 색상을 흰색으로 설정
         welcomePanel.add(welcomeLabel);
-        //welcomePanel.add(new JLabel("환영합니다! " + gameMsg.user.name + " 님"));
-
 
         if(ready == true) {
             JPanel buttonPanel = new JPanel(new GridLayout(1,2));
             JButton readyButton = new JButton("준비");
             JButton unReadyButton = new JButton("준비 해제");
             unReadyButton.setEnabled(false);
-//            buttonPanel.add(new JLabel("gif 추가 예정"));
             buttonPanel.add(readyButton);
             buttonPanel.add(unReadyButton);
 
@@ -640,13 +558,11 @@ public class GameRoomPanel extends JPanel {
                     clientManager.sendUnReady(clientManager.getUser());
                 }
             });
-
             panel.add(welcomePanel);
             panel.add(buttonPanel);
         } else {
             panel.add(welcomePanel);
         }
-
         return panel;
     }
 
@@ -695,7 +611,6 @@ public class GameRoomPanel extends JPanel {
         chat_display.setEditable(false);
 
         JScrollPane scrollPane = new JScrollPane(chat_display);
-
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
@@ -761,15 +676,13 @@ public class GameRoomPanel extends JPanel {
 
     public void showChat(String msg) {
         System.out.println("showChat에 " + msg);
-//        SwingUtilities.invokeLater(() -> {
-            int len = chat_display.getDocument().getLength();
-            try {
-                document.insertString(len, msg + "\n", null);
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }
-            chat_display.setCaretPosition(len);
-//        });
+        int len = chat_display.getDocument().getLength();
+        try {
+            document.insertString(len, msg + "\n", null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        chat_display.setCaretPosition(len);
     }
 
     private JPanel ImgPanel() {
@@ -800,7 +713,6 @@ public class GameRoomPanel extends JPanel {
         // 이미지 로드
         ImageIcon icon = new ImageIcon(getClass().getResource(resourcePath));
         JLabel label = new JLabel(icon);
-
         // MouseListener 추가
         label.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -809,10 +721,8 @@ public class GameRoomPanel extends JPanel {
                 clientManager.sendEmoticon(emoticonName);
             }
         });
-
         return label;
     }
-
 
     public void updateAlarmLabel(int remainingTime) {
         if (alarmLabel != null) {
@@ -821,10 +731,6 @@ public class GameRoomPanel extends JPanel {
             alarmLabel.setHorizontalAlignment(SwingConstants.CENTER);
             //System.out.println("알람 업데이트: 남은 시간 -> " + remainingTime + "초");
         }
-    }
-
-    public JLabel getAlarmLabel() {
-        return alarmLabel;
     }
 
     public void resetVoteState() {
@@ -844,10 +750,6 @@ public class GameRoomPanel extends JPanel {
         for (User user : userNames) {
             user.isLiar = false; // 모든 사용자 라이어 상태 해제
         }
-
-//        // 결과 패널 초기화 (이전 결과 제거)
-//        gamePanel.clearResultOverlay();
-
         System.out.println("라이어 상태 및 결과 화면 초기화 완료.");
     }
 
@@ -856,20 +758,14 @@ public class GameRoomPanel extends JPanel {
         System.out.println("[Gam_DEBUG] showGameResult 호출됨!");
         System.out.println("[Gam_DEBUG] isWinner: " + isWinner);
         System.out.println("[Gam_DEBUG] resultMessage: " + resultMessage);
-
         // 배경 이미지 결정
         String imagePath = isWinner ? "/images/result_win.png" : "/images/result_lost.png";
-
-        System.out.println("[DEBUG] changeGameResultWithOverlay 호출 직전");
-
-
+//        System.out.println("[DEBUG] changeGameResultWithOverlay 호출 직전");
         gamePanel.changeGameResultWithOverlay(imagePath, resultMessage);
-
         // 기존 패널 갱신
         revalidate();
         repaint();
     }
-
     public String getCurrentTurnUserName() {
         return currentTurnUserName;
     }

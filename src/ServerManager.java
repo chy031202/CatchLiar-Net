@@ -17,7 +17,6 @@ public class ServerManager {
     private static final int DRAWING_TIME=12;
     private static final int DRAWING_PERTIME=DRAWING_TIME/4;
     private static final int VOTE_TIME=5;
-//    private Set<ClientHandler> clients = Collections.synchronizedSet(new HashSet<>());
 
     public ServerManager(int port, Server server) {
         this.port = port;
@@ -82,17 +81,14 @@ public class ServerManager {
             this.clientSocket = clientSocket;
         }
 
-        // 그림 데이터를 처리하는 메서드 추가
-        private void
-        handleDrawAction(GameMsg inMsg) {
+        // 그림 데이터를 처리하는 메서드
+        private void handleDrawAction(GameMsg inMsg) {
             Paint paintData = inMsg.getPaintData();
             Color color = inMsg.getPaintData().getColor() != null ? inMsg.getPaintData().getColor() : Color.BLACK;
-
             //드로잉 확인 패널
 //            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
 //                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
 //                    ", 지우개 모드: " + paintData.isErasing());
-
             broadcasting(new GameMsg(GameMsg.DRAW_ACTION, paintData)); // 그림 데이터를 다른 클라이언트들에게 전송
         }
 
@@ -216,9 +212,7 @@ public class ServerManager {
 //                            user = inMsg.user;
                             broadcasting(new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, "finish"));
                             user.leaveRoom(); // 안 하면, 방 관리는 되는데 순서관리가 안됨
-
 //                            exitRoom();
-
                             server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount());
 //                            currentRoom = null;
                             break;
@@ -259,7 +253,6 @@ public class ServerManager {
                 int turns = 0; // 현재 턴 횟수
                 int totalTurns = room.getMembers().size(); // 총 턴 횟수
                 int turnTimeRemaining = DRAWING_PERTIME; // 각 턴의 남은 시간 초기화
-                //User lastTurnUser = null;
                 try {
                     // 첫 번째 사용자 알림
                     room.nextTurn(); // 첫 사용자 설정
@@ -273,25 +266,7 @@ public class ServerManager {
                     while (remainingTime > 0) {
                         Thread.sleep(1000); // 1초 간격으로 실행
                         remainingTime--;
-
                         turnTimeRemaining--; // 현재 턴의 남은 시간 감소
-                        //User currentUser = room.getCurrentTurnUser();
-
-                        // 현재 턴 사용자 확인
-//                        if (remainingTime % DRAWING_PERTIME == 0 || remainingTime ==totalTime) { // 턴 전환
-//                            room.nextTurn(); // 다음 사용자로 턴 전환
-//                            User currentUser = room.getCurrentTurnUser();
-//
-//                            // 현재 턴 사용자 정보 브로드캐스트
-//                            GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, currentRoom.getMembers());
-//                            broadcasting(turnMsg);
-//
-//
-//                            //lastTurnUser = currentUser; // 마지막 턴 사용자 업데이트
-//                            server.printDisplay("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
-//                            System.out.println("현재 턴: " + (currentUser != null ? currentUser.getName() : "없음"));
-//                        }
-
                         // 턴 종료 조건 확인
                         if (turnTimeRemaining <= 0 && remainingTime > 0) {
                             turnTimeRemaining = DRAWING_PERTIME; // 다음 턴 시간 초기화
@@ -305,12 +280,10 @@ public class ServerManager {
                                 server.printDisplay("현재 턴: " + currentUser.getName());
                             }
                         }
-
                         // TIME 메시지를 생성하여 브로드캐스트
                         GameMsg timeMsg = new GameMsg(GameMsg.TIME, null, null, remainingTime, currentRoom.getMembers());
                         broadcasting(timeMsg);
                     }
-
                     //시간 종료되면 투표 모드 전환
                     server.printDisplay("시간 종료!!");
                     // 투표 타이머:
@@ -334,19 +307,14 @@ public class ServerManager {
                     while (remainingTime > 0) {
                         Thread.sleep(1000);
                         remainingTime--;
-
                         // 타이머 메시지 전송
                         GameMsg voteTimeMsg = new GameMsg(GameMsg.VOTE, null, null, remainingTime, currentRoom.getMembers());
                         voteTimeMsg.setVoteStart(false); // 타이머 메시지
                         broadcasting(voteTimeMsg);
                     }
-
                     collectVoteResults(room);
-
                     // 투표 결과 집계
                     server.printDisplay("투표 타이머 끝");
-//                    GameMsg gameEndMsg = new GameMsg(GameMsg.GAME_END, null, "게임종료");
-//                    broadcasting(gameEndMsg);
                 } catch (InterruptedException e) {
                     System.err.println("투표 타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
                 }
@@ -356,25 +324,20 @@ public class ServerManager {
         //투표 결과 집계
         private void collectVoteResults(Room room) {
             Map<String, Integer> voteCounts = room.getVoteCounts();
-
-
             // 아무도 투표하지 않은 경우 처리
             if (voteCounts.isEmpty()) {
                 String liarVictoryMessage = "라이어: " + liar.name;
                 System.out.println(liarVictoryMessage);
-
                 // 라이어에게 메시지 전송
                 broadcastIndividualUser(
                         liar,
                         new GameMsg(GameMsg.GAME_END, liar, liarVictoryMessage, true) // true = 라이어 승리
                 );
-
                 // 라이어가 아닌 사람들에게 메시지 전송
                 broadcastExceptUser(
                         liar,
                         new GameMsg(GameMsg.GAME_END, liar, liarVictoryMessage, false) // false = 라이어가 승리
                 );
-
                 // 투표 상태 및 게임 상태 초기화
                 room.resetVoteCounts();
                 server.printDisplay("아무도 투표하지 않음. 게임 상태 초기화 완료");
@@ -395,12 +358,6 @@ public class ServerManager {
                     ? "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다."
                     : "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
 
-            // 라이어 결과 메시지 생성
-
-            // 결과 메시지 작성
-            //String liarWinMessage = "라이어가 승리했습니다! 라이어는 " + liar.name + "입니다.";
-            //String liarLoseMessage = "라이어가 패배했습니다! " + liarCandidate + "님이 지목되었습니다.";
-
             String liarWinMessage = "라이어: " + liar.name ;
             String liarLoseMessage = "라이어: " + liar.name ;
 
@@ -413,12 +370,9 @@ public class ServerManager {
                     liar,
                     new GameMsg(GameMsg.GAME_END, liar, liarResultMessage, liarVictory)
             );
-//            sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY_OK, liar, liar.currentRoom.getMembers()));
-
             //라이어 아닌사람 메시지 전송
             boolean isWinner = !liarVictory; // 라이어 승리 여부의 반대
             String userResultMessage = liarVictory ? liarWinMessage : liarLoseMessage;
-
             //System.out.println("[DEBUG] 사용자 " + member.name + "에게 전송할 메시지: " + userResultMessage);
             //System.out.println("[DEBUG] 승리 여부: " + isWinner);
 
@@ -551,8 +505,6 @@ public class ServerManager {
                     default:
                         currentRoom.setKeyword("마카롱");
                 }
-
-//                server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + room.getMemberCount() + "명");
             }
         }
 
@@ -562,19 +514,16 @@ public class ServerManager {
                     // 현재 방에서 유저 제거
 //                    currentRoom.removeMember(user);
                     user.leaveRoom();
-
                     // 방의 멤버가 아무도 없다면 방 삭제
                     if (currentRoom.getMembers().isEmpty()) {
                         rooms.remove(currentRoom);
                         server.printDisplay("빈 방 삭제: " + currentRoom.getRoomName());
                     }
-
                     // 현재 방 정보 초기화
                     currentRoom = null;
                 }
             }
         }
-
 
         private User selectLiar(Vector<User> readyUsers) {
             // 랜덤으로 라이어 선택
@@ -604,9 +553,5 @@ public class ServerManager {
         public void run() {
             receiveMessage(clientSocket);
         }
-
     }
-
-
-
 }

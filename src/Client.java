@@ -37,10 +37,10 @@ public class Client extends JFrame {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.add(startPanel);
-        // mainPanel을 JFrame의 ContentPane으로 설정
-        setContentPane(mainPanel);
+        setContentPane(mainPanel); // mainPanel을 JFrame의 ContentPane으로 설정
     }
 
+    // 방 선택 화면으로 전환
     public void changeSelectRoomPanel() {
         getContentPane().removeAll();
         getContentPane().add(selectRoomPanel);
@@ -49,16 +49,17 @@ public class Client extends JFrame {
         repaint();
     }
 
+    // 게임 화면으로 전환
     public void changeGameRoomPanel(GameMsg inMsg) {
         getContentPane().removeAll();
         gameRoomPanel = new GameRoomPanel(clientManager, inMsg);
-//        clientManager.setGameRoomPanel(gameRoomPanel);
         getContentPane().add(gameRoomPanel);
 
         revalidate();
         repaint();
     }
 
+    // 시작 화면으로 전환
     public void changeStartPanel() {
         try {
             // 새로운 ClientManager 생성
@@ -77,18 +78,33 @@ public class Client extends JFrame {
         }
     }
 
+    // 게임 시작 화면으로 리프레쉬
+    public void startGame() {
+        if(gameRoomPanel != null) {
+            System.out.println("startGame");
+            gameRoomPanel.refreshStartGame();
+        }
+    }
+
+    // 게임 종료 화면으로 리프레쉬
+    public void endGame(boolean isWinner, String resultMessage) {
+        if(gameRoomPanel != null) {
+            System.out.println("endGame");
+            gameRoomPanel.showGameResult(isWinner, resultMessage);
+            gameRoomPanel.refreshEndGame();
+        }
+    }
+
     // 방 유저 목록 업데이트
     public void updateUserToRoom(Vector<User> userNames) {
         if(gameRoomPanel != null) {
-//            System.out.println("updateUserToRoom : " + userNames);
             gameRoomPanel.updateUser(userNames);
         }
     }
 
-    // 방 준비 완료한 유저 목록 업데이트
+    // 준비 완료 유저 목록 업데이트
     public void updateReadyToRoom(Vector<User> readyUsers, User user) {
         if(gameRoomPanel != null) {
-//            System.out.println("updateReady");
             gameRoomPanel.updateReadyUser(readyUsers, user);
         }
     }
@@ -96,11 +112,18 @@ public class Client extends JFrame {
     // 이모티콘 출력
     public void updateEmoticonPanel(User user, String emoticon) {
         if(gameRoomPanel != null) {
-//            System.out.println("updateEmoticon");
             gameRoomPanel.refreshUserRightPanel(user, emoticon);
         }
     }
 
+    // 타이머 출력
+    public void updateAlarmLabel(int remainingTime) {
+        if (gameRoomPanel != null) {
+            gameRoomPanel.updateAlarmLabel(remainingTime);
+        }
+    }
+
+    // 방인원 다 쳤을 때만 준비 패널 출력
     public void setReadyButtonVisibility(boolean visible) {
         if (gameRoomPanel != null) {
             if (visible) {
@@ -111,25 +134,7 @@ public class Client extends JFrame {
         }
     }
 
-    public void startGame() {
-        if(gameRoomPanel != null) {
-            System.out.println("startGame");
-            gameRoomPanel.refreshStartGame();
-        }
-    }
-
-    public void restartGame() {
-        gameRoomPanel.refreshReadyGame();
-    }
-
-    public void endGame(boolean isWinner, String resultMessage) {
-        if(gameRoomPanel != null) {
-            System.out.println("endGame");
-            gameRoomPanel.showGameResult(isWinner, resultMessage);
-            gameRoomPanel.refreshEndGame();
-        }
-    }
-
+    // 다이얼로그
     public void showDialog(GameMsg inMsg) {
         String message = "";
         String title = "알림";
@@ -157,7 +162,6 @@ public class Client extends JFrame {
                 System.out.println("showDialog default : " + inMsg);
                 return;
         }
-
         JOptionPane.showMessageDialog(this, message, title, messageType);
     }
 
@@ -172,15 +176,6 @@ public class Client extends JFrame {
         return gamePanel;
     }
 
-    public void setGamePanel(ClientManager clientManager) {
-        getGameRoomPanel().gamePanel = new GamePanel(clientManager);
-    }
-
-    public void updateAlarmLabel(int remainingTime) {
-        if (gameRoomPanel != null) {
-            gameRoomPanel.updateAlarmLabel(remainingTime);
-        }
-    }
 
     private String[] readServerConfig() {
         String defaultAddress = "localhost";

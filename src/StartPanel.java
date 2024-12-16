@@ -6,18 +6,15 @@ import java.io.IOException;
 
 public class StartPanel extends JPanel {
     private JTextField t_nickname;
-
     private ClientManager clientManager;
 
     public StartPanel(ClientManager clientManager) {
         this.clientManager = clientManager;
-
         buildGUI();
     }
 
     public class BackgroundPanel extends JPanel {
         private Image background;
-
         // 생성자에서 배경 이미지 설정
         public BackgroundPanel(String imagePath) {
             background = new ImageIcon(getClass().getResource(imagePath)).getImage();

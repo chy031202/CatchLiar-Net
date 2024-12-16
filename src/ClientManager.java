@@ -16,9 +16,6 @@ public class ClientManager {
     private ObjectInputStream in;
     private Thread receiveThread;
 
-    private GamePanel gamePanel;
-    private GameRoomPanel gameRoomPanel;
-
     private User user;
     private String userName;
     private String roomName;
@@ -29,16 +26,7 @@ public class ClientManager {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.client = client;
-        //this.gameRoomPanel = gameRoomPanel; // gameRoomPanel 설정
     }
-
-//    public ClientManager(GameRoomPanel gameRoomPanel) {
-//        this.gameRoomPanel = gameRoomPanel;
-//    }
-//
-//    public void setGameRoomPanel(GameRoomPanel gameRoomPanel) {
-//        this.gameRoomPanel = gameRoomPanel;
-//    }
 
     public void connectToServer() throws IOException {
         socket = new Socket();
@@ -96,19 +84,11 @@ public class ClientManager {
                         client.updateReadyToRoom(readyUsers, null);
 
                         System.out.println("클라이언트 ROOM_SELECT 때 userNames : " + userNames);
-//                        client.getGamePanel().clearLines();
+                        client.getGamePanel().clearLines();
                         break;
 
                     case GameMsg.ROOM_NEW_MEMBER:
                         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
-//                        synchronized (userNames) {
-////                            if (!userNames.contains(inMsg.user)) {
-////                                userNames.add(inMsg.user);
-////                                System.out.println("추가된 후 userNames : " + userNames);
-////                            }
-//                            userNames = new Vector<>(inMsg.userNames);
-//                        }
-//                        client.updateUserToRoom(userNames);
                         synchronized (userNames) {
                             userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
                         }
@@ -128,11 +108,8 @@ public class ClientManager {
                         break;
 
                     case GameMsg.GAME_READY_OK:
-                        // readyUsers 업데이트
                         synchronized (readyUsers) {
                             readyUsers = new Vector<>(inMsg.readyUsers);
-//                            if (!readyUsers.contains(inMsg.user)) { readyUsers.add(inMsg.user); }
-//                            readyUsers = new Vector<>(inMsg.readyUsers);
                             System.out.println("readyUsers: " + readyUsers);
                         }
                         client.updateReadyToRoom(readyUsers, null);
@@ -140,8 +117,8 @@ public class ClientManager {
                         // readyUsers 4명이 되면 게임 시작
                         if (readyUsers.size() == 4) {
                             System.out.println("겜 시작");
-                            System.out.println("userNames : " + userNames);
-                            // 첫 번째 사용자만 sendGameMsg 보내도록
+//                            System.out.println("userNames : " + userNames);
+                            // 한 명만 '게임 시작' 서버에 보내도록
                             User firstUser = readyUsers.get(0);
                             if (userName.equals(firstUser.name)) {
                                 sendGameMsg(new GameMsg(GameMsg.GAME_START, readyUsers, userNames)); // 첫 번째 사용자만 실행
@@ -152,12 +129,11 @@ public class ClientManager {
                         break;
 
                     case GameMsg.GAME_UN_READY_OK:
-                        System.out.println("GAME_UN_READY 받음 클라이언트");
+//                        System.out.println("GAME_UN_READY 받음 클라이언트");
                         synchronized (readyUsers) {
                             readyUsers = new Vector<>(inMsg.readyUsers != null ? inMsg.readyUsers : new Vector<>());
                             System.out.println("readyUsers: " + readyUsers);
                         }
-//                        readyUsers.remove(inMsg.user);
                         client.updateReadyToRoom(readyUsers, inMsg.user);
                         break;
 
@@ -197,10 +173,6 @@ public class ClientManager {
                             System.out.println("Time에서 userNames : " + userNames);
                             client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
                         }
-
-                        // 알람 UI 업데이트
-                        //client.updateAlarmLabel(remainingTime);
-
                         break;
 
                     case GameMsg.DRAW_ACTION:
@@ -224,69 +196,43 @@ public class ClientManager {
                     case GameMsg.VOTE:
                         if (inMsg.isVoteStart()) {
                             client.getGamePanel().setDrawingEnabled(false);
-                            System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
-                            //client.startVote();
                             // 투표 모드 활성화
-                            //gameRoomPanel.setVotingActive(true);
+//                            System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
                             if (client.getGameRoomPanel() != null) {
                                 client.getGameRoomPanel().setGameMsg(inMsg); // gameMsg를 설정하고 투표 상태를 제어
                                 client.showDialog(inMsg); // 투표 시작 다이얼로그 표시
                             }else {
                                 System.err.println("GameRoomPanel is null!");
                             }
-                            //client.showVoteDialog(); // 투표 UI 표시
                         } else {
                             client.updateAlarmLabel(inMsg.getTime()); // 투표 타이머 업데이트
                         }
                         break;
 
-//                    case GameMsg.VOTE_RESULT:
-//                        //client.endVote(); // 투표 종료 처리
-//                        break;
-
                     case GameMsg.GAME_END:
-                        System.out.println("[DEBUG] GAME_END 메시지 수신!");
-                        System.out.println("[DEBUG] inMsg.isWinner(): " + inMsg.isWinner());
-                        System.out.println("[DEBUG] inMsg.getResultMessage(): " + inMsg.getResultMessage());
-
                         boolean isWinner = inMsg.isWinner();
                         String resultMessage = inMsg.getResultMessage();
-
-                        // 결과 화면 표시
-//                        client.getGameRoomPanel().showGameResult(isWinner, resultMessage);
                         client.endGame(isWinner, resultMessage);
 
-//                        client.getGameRoomPanel().clearAllLeftBottomPanels();
-                        readyUsers = new Vector<>(); // 준비 초기화
+                        readyUsers = new Vector<>(); // 준비 유저 초기화
                         user.currentRoom.setReadyUsers(readyUsers);
-//                        client.updateReadyToRoom(readyUsers, user);
-//                        client.updateUserToRoom(userNames);
-//                        client.getGameRoomPanel().clearAllLeftBottomPanels();
                         break;
 
                     case GameMsg.CHAT_MESSAGE:
-                        System.out.println("클라이언트 CHAT_MESSAGE_OK : " + inMsg.user.name + "의 " + inMsg.message);
                         String chatUser = inMsg.user.name;
                         String chatMsg = inMsg.message;
                         client.getGameRoomPanel().showChat("[ " + chatUser + "] : " + chatMsg);
                         break;
 
                     case GameMsg.CHAT_EMOTICON:
-                        System.out.println("클라이언트 CHAT_EMOTICON 받음 : " + inMsg.user.name + "의 " + inMsg.message);
                         client.updateEmoticonPanel(inMsg.user, inMsg.message);
                         break;
 
                     case GameMsg.ROOM_EXIT:
                         User exitUser = inMsg.user;
-//                        if(inMsg.message.equals("finish")) {
-//                            client.getGameRoomPanel().clearAllLeftBottomPanels();
-//                        }
                         System.out.println("exit 때 remove 하기 전 updateUserToRoom : " + userNames);
                         userNames.remove(exitUser);
-//                        exitUser.setCurrentRoom(null);
-//                        readyUsers.remove(exitUser);
                         client.updateUserToRoom(userNames);
-//                        client.updateReadyToRoom(readyUsers, inMsg.user);
 
                         if(exitUser.getName().equals(userName)) {
 //                            client.updateUserToRoom(userNames);
@@ -376,13 +322,25 @@ public class ClientManager {
     }
 
     public void sendUnReady(User readyUser) {
-//        System.out.println("clientManage의 sendUnReady");
         sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY, readyUser));
     }
 
     public void sendEmoticon(String emoticonName) {
-//        System.out.println("clientManage의 sendEmoticon");
         sendGameMsg(new GameMsg(GameMsg.CHAT_EMOTICON, user, emoticonName));
+    }
+
+    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color, boolean isErasing) {
+        if (out == null) {
+            System.err.println("출력 스트림이 초기화되지 않았습니다. 데이터를 전송할 수 없습니다.");
+            return;
+        }
+        try {
+            Paint paintData = new Paint(startX, startY, endX, endY, color, isErasing);
+            GameMsg msg = new GameMsg(GameMsg.DRAW_ACTION, paintData);
+            sendGameMsg(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendVote(User user, String votedUserName) { sendGameMsg(new GameMsg(GameMsg.VOTE, user, votedUserName)); }
@@ -393,74 +351,35 @@ public class ClientManager {
 
     public void sendRoomExit(User user) {
         sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT, user));
-        // 2. 투표 상태 초기화
+        // 준비 사용자 목록 초기화
+        user.currentRoom.setReadyUsers(new Vector<>());
+        // 투표 상태 초기화
         client.getGameRoomPanel().resetVoteState();
-        // 3. 라이어 상태 초기화
-        user.currentRoom.setReadyUsers(new Vector<>()); // 준비 사용자 목록 초기화
+        // 라이어 상태 초기화
         client.getGameRoomPanel().resetLiarState();
-        client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
+        // 리스너까지 다시 등록
+        client.getGamePanel().setDrawingEnabled(true);
     }
 
     public void sendRetry(User user) {
         client.getGameRoomPanel().clearAllLeftBottomPanels();
-//        user.currentRoom.setReadyUsers(new Vector<>());
-//        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
-//        sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, user.currentRoom.getRoomName()));
-//        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user));
-//        client.getGamePanel().removeAll();
-//        client.getGameRoomPanel().remove(client.getGameRoomPanel().centerPanel);
-//        client.getGameRoomPanel().add(client.getGamePanel().createCenterPanel());
         client.getGamePanel().clearLines();
-//        client.getGameRoomPanel().remove(client.getGamePanel());
-//        client.setGamePanel(this);
 
-        // 2. 투표 상태 초기화
+        // 투표 상태 초기화
         client.getGameRoomPanel().resetVoteState();
-        // 3. 라이어 상태 초기화
-//        readyUsers = new Vector<>();
-//        user.currentRoom.setReadyUsers(readyUsers); // 준비 사용자 목록 초기화
+        // 라이어 상태 초기화
         client.getGameRoomPanel().resetLiarState();
-
-//        client.updateUserToRoom(userNames);
-//        client.updateReadyToRoom(readyUsers, user);
-        client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
+        // 리스너까지 다시 등록
+        client.getGamePanel().setDrawingEnabled(true);
+        // 다시 게임 대기 상태로 전환
         client.getGameRoomPanel().rightPannel.remove(client.getGameRoomPanel().alarmPanel);
-        System.out.println("sendRetry usernames 수 : " + userNames.size());
+        client.setReadyButtonVisibility(true);
 
-//        readyUsers = new Vector<>();
         sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
         sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
-
-        client.setReadyButtonVisibility(true);
     }
 
     public User getUser() {
-        return this.user; // 현재 사용자 객체 반환
-    }
-
-    public void sendDrawingData(int startX, int startY, int endX, int endY, Color color, boolean isErasing) {
-        if (out == null) {
-            System.err.println("출력 스트림이 초기화되지 않았습니다. 데이터를 전송할 수 없습니다.");
-            return;
-        }
-        try {
-            // Color를 RGB 값으로 변환
-            //int colorRGB = color.getRGB();
-            // Paint 객체 생성 시 현재 색상과 지우개 상태 전달
-            //System.out.println("전송 데이터 디버깅: 색상 RGB - " + color.getRGB());
-            Paint paintData = new Paint(startX, startY, endX, endY, color, isErasing);
-            GameMsg msg = new GameMsg(GameMsg.DRAW_ACTION, paintData);
-            
-            //드로잉 관련
-//            System.out.println(String.format(
-//                    "클라이언트 전송 - 시작(%d, %d), 끝(%d, %d), 색상: R:%d, G:%d, B:%d, 지우개: %b",
-//                    startX, startY, endX, endY,
-//                    color.getRed(), color.getGreen(), color.getBlue(),
-//                    isErasing
-//            ));
-            sendGameMsg(msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        return this.user; // 사용자 객체 반환
     }
 }
