@@ -7,15 +7,12 @@ import java.io.IOException;
 public class Server extends JFrame {
     private JTextArea t_display;
     private JButton b_connect, b_disconnect, b_exit;
-
     private ServerManager serverManager;
 
     public Server(int port) {
         super("캐치 라이어 서버");
         serverManager = new ServerManager(port, this);
-
         buildGUI();
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
@@ -28,14 +25,10 @@ public class Server extends JFrame {
 
     private JPanel createDisplayPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-
         t_display = new JTextArea();
         t_display.setEditable(false);
-
         JScrollPane scrollPane = new JScrollPane(t_display);
-
         panel.add(scrollPane, BorderLayout.CENTER);
-
         return panel;
     }
 
@@ -69,7 +62,6 @@ public class Server extends JFrame {
             }
         });
 
-
         b_exit = new JButton("종료");
         b_exit.addActionListener(new ActionListener() {
             @Override
@@ -89,7 +81,6 @@ public class Server extends JFrame {
     public void printDisplay(String msg) {
         t_display.append(msg + "\n");
         t_display.setCaretPosition(t_display.getDocument().getLength());
-
     }
 
     public static void main(String[] args){

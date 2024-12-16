@@ -9,7 +9,6 @@ public class User implements Serializable {
     Room currentRoom;  //속한 방 정보
     boolean ready;  //준비 여부 // 0: 대기 중 // 1: 준비완료
     boolean isLiar = false;
-//    private boolean isLoggedIn = true;
 
     public User(String name){
         this.name = name;
@@ -59,33 +58,20 @@ public class User implements Serializable {
     public Room getCurrentRoom() { return currentRoom; }
     public void setCurrentRoom(Room room) { this.currentRoom = room; }
 
+    public boolean isWinner() {
+        return isWinner;
+    }
+    // 승리 여부 설정
+    public void setWinner(boolean winner) {
+        this.isWinner = winner;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         User user = (User) obj;
         return name != null && name.equals(user.name); // 이름이 같으면 동일한 객체로 간주
-    }
-
-//    public boolean getReady() { return ready; }
-//    public void setReady(boolean ready) { this.ready = ready; }
-
-
-//    public boolean isLoggedIn() {
-//        return isLoggedIn;
-//    }
-//
-//    public void logout() {
-//        this.isLoggedIn = false;
-//    }
-
-    public boolean isWinner() {
-        return isWinner;
-    }
-
-    // 승리 여부 설정
-    public void setWinner(boolean winner) {
-        this.isWinner = winner;
     }
 
     @Override

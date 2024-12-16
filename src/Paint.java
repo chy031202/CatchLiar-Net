@@ -20,31 +20,13 @@ public class Paint implements Serializable {
         this.isErasing = isErasing;
     }
 
-    // Getter 및 Setter
-    // Getters and Setters
-    public int getStartX() {
-        return startX;
-    }
+    public int getStartX() { return startX; }
+    public int getStartY() { return startY; }
 
+    public int getEndX() { return endX; }
+    public int getEndY() { return endY; }
 
-    public int getStartY() {
-        return startY;
-    }
-
-
-    public int getEndX() {
-        return endX;
-    }
-
-
-    public int getEndY() {
-        return endY;
-    }
-
-
-    public Color getColor() {
-        return color;
-    }
+    public Color getColor() { return color; }
 
     @Override
     public String toString() {
