@@ -204,10 +204,13 @@ public class ServerManager {
 
                         case GameMsg.GAME_RETRY:
                             user.isLiar = false;
-                            user.setUnReady();
-                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user));
+                            currentRoom.setReadyUsers(inMsg.readyUsers);
+                            inMsg.user.setCurrentRoom(currentRoom);
+                            inMsg.user.setUnReady();
+//                            user.setUnReady();
+                            broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user, inMsg.user.currentRoom.getReadyUsers()));
                             break;
-                            
+
 
                         case GameMsg.ROOM_EXIT:
 //                            user = inMsg.user;
