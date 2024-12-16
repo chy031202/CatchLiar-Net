@@ -164,6 +164,10 @@ public class Client extends JFrame {
         return gamePanel;
     }
 
+    public void setGamePanel(ClientManager clientManager) {
+        getGameRoomPanel().gamePanel = new GamePanel(clientManager);
+    }
+
     public void updateAlarmLabel(int remainingTime) {
         if (gameRoomPanel != null) {
             gameRoomPanel.updateAlarmLabel(remainingTime);

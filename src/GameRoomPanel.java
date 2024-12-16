@@ -27,8 +27,9 @@ public class GameRoomPanel extends JPanel {
     public JPanel rightPannel;
     private JPanel readyPanel;
     public JPanel alarmPanel;
-    private GamePanel gamePanel;
+    public GamePanel gamePanel;
     public JPanel centerPanel;
+    private JComboBox<String> userDropdown;
     private String currentTurnUserName; // 현재 턴 사용자 이름
 
     public boolean ready = false;
@@ -113,6 +114,7 @@ public class GameRoomPanel extends JPanel {
     public void updateUser(Vector<User> userNames) {
         this.userNames = userNames;
         refreshUserSidePanel();  // 유저 목록 UI 갱신
+        updateUserDropdown();    // 토글 유저 목록 갱신
     }
 
     // 유저 새로 들어오면 UserSidePanel 갱신
@@ -315,17 +317,29 @@ public class GameRoomPanel extends JPanel {
         clearAllLeftBottomPanels();
 
         gamePanel.clearLines(); // 캔버스 초기화
+
+//        gamePanel.southPanel.removeAll();
+        if(gamePanel.keywordPanel != null) {
+            gamePanel.southPanel.remove(gamePanel.keywordPanel);
+            gamePanel.keywordPanel.removeAll();
+        }
+        gamePanel.southPanel.remove(gamePanel.exitPanel);
+//        gamePanel.southPanel.add(gamePanel.itemPanel);
         // 라이어 빼고 화면에 키워드 추가
         if(!gameMsg.user.isLiar) {
+            System.out.println("refreshStartGame 나머지 : " + gameMsg.user.name);
             gamePanel.addKeyword(gameMsg.user.currentRoom.getKeyword());
         } else {
-            gamePanel.southPanel.remove(gamePanel.exitPanel);
+//            gamePanel.southPanel.remove(gamePanel.exitPanel);
+            System.out.println("refreshStartGame 라이어 : " + gameMsg.user.name);
             JPanel panel= new JPanel(); panel.setBackground(new Color(64,48,47));
             gamePanel.southPanel.add(panel);
         }
         rightPannel.remove(readyPanel);
         rightPannel.add(alarmPanel, BorderLayout.NORTH);
 
+        gamePanel.revalidate();
+        gamePanel.repaint();
         revalidate();
         repaint();
     }
@@ -689,10 +703,10 @@ public class GameRoomPanel extends JPanel {
 
     private JPanel ChatInputPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setPreferredSize(new Dimension(0, 30));
+        panel.setPreferredSize(new Dimension(0, 40));
 
         JTextField chat_input = new JTextField();
-//        chat_input.setEnabled(false);
+        chat_input.setPreferredSize(new Dimension(100, 40));
         chat_input.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -703,8 +717,13 @@ public class GameRoomPanel extends JPanel {
             }
         });
 
+        // 유저 목록 드롭다운 초기화
+        userDropdown = new JComboBox<>();
+        userDropdown.addItem("모두"); // 기본값
+        userDropdown.setPreferredSize(new Dimension(40, 40));
+
         JButton b_send = new JButton("전송");
-//        b_send.setEnabled(false);
+        b_send.setPreferredSize(new Dimension(30, 40));
         b_send.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -716,8 +735,28 @@ public class GameRoomPanel extends JPanel {
 
         panel.add(chat_input, BorderLayout.CENTER);
         panel.add(b_send, BorderLayout.EAST);
+//        JPanel controlsPanel = new JPanel();
+//        controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.X_AXIS));
+//
+//        controlsPanel.add(userDropdown);
+//        controlsPanel.add(Box.createHorizontalStrut(5)); // 간격 추가
+//        controlsPanel.add(chat_input);
+//        controlsPanel.add(Box.createHorizontalStrut(5)); // 간격 추가
+//        controlsPanel.add(b_send);
+//
+//        panel.add(controlsPanel, BorderLayout.CENTER);
 
         return panel;
+    }
+
+    private void updateUserDropdown() {
+        if (userDropdown != null) {
+            userDropdown.removeAllItems(); // 기존 항목 모두 제거
+            userDropdown.addItem("모두");  // 기본값 추가
+            for (User user : userNames) {
+                userDropdown.addItem(user.getName()); // 유저 이름 추가
+            }
+        }
     }
 
     public void showChat(String msg) {

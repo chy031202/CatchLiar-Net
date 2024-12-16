@@ -9,8 +9,9 @@ import java.util.List;
 
 
 public class GamePanel extends JPanel {
-    private JPanel keywordPanel;
+    public JPanel keywordPanel;
     public JPanel exitPanel;
+    public JPanel itemPanel;
     public JPanel southPanel;
     private Color currentColor = Color.BLACK;
     private boolean isErasing = false;
@@ -256,7 +257,7 @@ public class GamePanel extends JPanel {
 
 
     private JPanel createItemPanel(){
-        JPanel itemPanel = new JPanel();
+        itemPanel = new JPanel();
         itemPanel.setPreferredSize(new Dimension(0, 120));
         itemPanel.setLayout(new GridLayout(2,3,10,10));
         itemPanel.setBorder(new EmptyBorder(15, 5, 15, 15));
@@ -306,7 +307,7 @@ public class GamePanel extends JPanel {
         keywordPanel = new JPanel(new BorderLayout());
         keywordPanel.setBackground(new Color(64,48,47));
         keywordPanel.setBorder(new EmptyBorder(20, 15, 20, 10));
-
+        System.out.println("keywordPanel 키워드 : " + word);
 
         if(word != null) {
             JPanel keyword = new JPanel(new BorderLayout());
@@ -405,14 +406,21 @@ public class GamePanel extends JPanel {
     }
 
     public void addKeyword(String word) {
-        southPanel.remove(exitPanel);
+//        southPanel.remove(exitPanel);
+        if (keywordPanel != null) {
+            southPanel.remove(keywordPanel);
+            System.out.println("add keyword: " + word);
+        }
         keywordPanel = createKeywordPanel(word);
         southPanel.add(keywordPanel);
+//        southPanel.revalidate();
+//        southPanel.repaint();
     }
 
     // 게임 종료하면 모든 유저에게 키워드 패널 띄우고, exitPanel 띄움
     public void endGameSouthPanel(String word) {
         southPanel.removeAll();
+        exitPanel = createExitPanel();
         southPanel.add(exitPanel);
         southPanel.add(createKeywordPanel(word));
     }
@@ -444,7 +452,7 @@ public class GamePanel extends JPanel {
         clearLines(); // 기존 그림 데이터 초기화
 
         // 캔버스 크기 지정
-        Dimension canvasSize = new Dimension(360, 360);
+        Dimension canvasSize = new Dimension(300, 300);
 
         // 배경 이미지 설정
         ImageIcon resizedIcon = resizeImageIcon(imagePath, canvasSize);

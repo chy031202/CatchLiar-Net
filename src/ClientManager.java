@@ -21,6 +21,7 @@ public class ClientManager {
 
     private User user;
     private String userName;
+    private String roomName;
     private Vector<User> userNames = new Vector<>();
     private Vector<User> readyUsers = new Vector<>();
 
@@ -83,6 +84,7 @@ public class ClientManager {
 
                     case GameMsg.ROOM_SELECT:
                         user = inMsg.getUser();
+                        roomName = inMsg.getMsg();
                         client.changeGameRoomPanel(inMsg);
                         synchronized (userNames) {
                             userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
@@ -238,9 +240,9 @@ public class ClientManager {
                         }
                         break;
 
-                    case GameMsg.VOTE_RESULT:
-                        //client.endVote(); // 투표 종료 처리
-                        break;
+//                    case GameMsg.VOTE_RESULT:
+//                        //client.endVote(); // 투표 종료 처리
+//                        break;
 
                     case GameMsg.GAME_END:
                         System.out.println("[DEBUG] GAME_END 메시지 수신!");
@@ -254,9 +256,12 @@ public class ClientManager {
 //                        client.getGameRoomPanel().showGameResult(isWinner, resultMessage);
                         client.endGame(isWinner, resultMessage);
 
-                        readyUsers = new Vector<>(); // 준비 초기화
-                        user.currentRoom.setReadyUsers(readyUsers);
-                        client.updateUserToRoom(userNames);
+//                        client.getGameRoomPanel().clearAllLeftBottomPanels();
+//                        readyUsers = new Vector<>(); // 준비 초기화
+//                        user.currentRoom.setReadyUsers(readyUsers);
+//                        client.updateReadyToRoom(readyUsers, user);
+//                        client.updateUserToRoom(userNames);
+//                        client.getGameRoomPanel().clearAllLeftBottomPanels();
                         break;
 
                     case GameMsg.CHAT_MESSAGE:
@@ -399,12 +404,15 @@ public class ClientManager {
     public void sendRetry(User user) {
         client.getGameRoomPanel().clearAllLeftBottomPanels();
 //        user.currentRoom.setReadyUsers(new Vector<>());
-        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
+//        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
+//        sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, user.currentRoom.getRoomName()));
 //        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user));
-        client.getGamePanel().removeAll();
-        client.getGameRoomPanel().remove(client.getGameRoomPanel().centerPanel);
-        client.getGameRoomPanel().add(client.getGamePanel().createCenterPanel());
+//        client.getGamePanel().removeAll();
+//        client.getGameRoomPanel().remove(client.getGameRoomPanel().centerPanel);
+//        client.getGameRoomPanel().add(client.getGamePanel().createCenterPanel());
         client.getGamePanel().clearLines();
+//        client.getGameRoomPanel().remove(client.getGamePanel());
+//        client.setGamePanel(this);
 
         // 2. 투표 상태 초기화
         client.getGameRoomPanel().resetVoteState();
@@ -412,10 +420,14 @@ public class ClientManager {
         user.currentRoom.setReadyUsers(new Vector<>()); // 준비 사용자 목록 초기화
         client.getGameRoomPanel().resetLiarState();
 
-        client.updateUserToRoom(userNames);
+//        client.updateUserToRoom(userNames);
+//        client.updateReadyToRoom(readyUsers, user);
         client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
         client.getGameRoomPanel().rightPannel.remove(client.getGameRoomPanel().alarmPanel);
         System.out.println("sendRetry usernames 수 : " + userNames.size());
+
+        sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
+        sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
 
         client.setReadyButtonVisibility(true);
     }

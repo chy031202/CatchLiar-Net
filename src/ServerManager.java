@@ -126,8 +126,8 @@ public class ServerManager {
                             }
                             server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + user.currentRoom.getMemberCount() + "명");
                             // user.currentRoom. 키워드 세팅
-                            sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, currentRoom.getMembers(), currentRoom.getReadyUsers()));
-                            broadcastExceptUser(user, new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, currentRoom.getMembers(), currentRoom.getReadyUsers())); // currentRoom
+                            sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, currentRoom.getMembers(), currentRoom.getReadyUsers(), inMsg.getMsg()));
+                            broadcastExceptUser(user, new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, currentRoom.getMembers(), currentRoom.getReadyUsers(), inMsg.getMsg())); // currentRoom
 
                             // 4명 다 들어오면 준비 가능하도록
                             if(user.currentRoom.getMemberCount() == 4) {
@@ -203,9 +203,11 @@ public class ServerManager {
                             break;
 
                         case GameMsg.GAME_RETRY:
+                            user.isLiar = false;
                             user.setUnReady();
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user));
                             break;
+                            
 
                         case GameMsg.ROOM_EXIT:
 //                            user = inMsg.user;
@@ -384,6 +386,7 @@ public class ServerManager {
                     liar,
                     new GameMsg(GameMsg.GAME_END, liar, liarResultMessage, liarVictory)
             );
+//            sendGameMsg(new GameMsg(GameMsg.GAME_UN_READY_OK, liar, liar.currentRoom.getMembers()));
 
             //라이어 아닌사람 메시지 전송
             boolean isWinner = !liarVictory; // 라이어 승리 여부의 반대
