@@ -138,7 +138,6 @@ public class ServerManager {
                             break;
 
                         case GameMsg.CHAT_EMOTICON:
-//                            user = inMsg.user;
                             broadcasting(new GameMsg(GameMsg.CHAT_EMOTICON, inMsg.user, inMsg.getMsg()));
                             server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님이 " + inMsg.getMsg() + "이모티콘 전송");
                             break;
@@ -146,6 +145,7 @@ public class ServerManager {
                         case GameMsg.GAME_READY:
                             inMsg.user.setCurrentRoom(currentRoom);
                             inMsg.user.setReady();
+                            currentRoom = inMsg.user.getCurrentRoom();
 //                            currentRoom.addReadyUser(inMsg.user);
 //                            user.setReady();
                             server.printDisplay(user+"님이 준비 완료");
@@ -156,6 +156,7 @@ public class ServerManager {
                             server.printDisplay(user+"님이 준비 해제");
                             inMsg.user.setCurrentRoom(currentRoom);
                             inMsg.user.setUnReady();
+                            currentRoom = inMsg.user.getCurrentRoom();
 //                            user.setUnReady();
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user, currentRoom.getReadyUsers()));
                             break;
@@ -205,7 +206,7 @@ public class ServerManager {
 //                            user.setUnReady();
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user, inMsg.user.currentRoom.getReadyUsers()));
                             break;
-                            
+
                         case GameMsg.ROOM_EXIT:
 //                            user = inMsg.user;
                             currentRoom.setReadyUsers(inMsg.readyUsers);
@@ -222,9 +223,19 @@ public class ServerManager {
                             break;
 
                         case GameMsg.LOGOUT:
-                            broadcasting(new GameMsg(GameMsg.LOGOUT, inMsg.user));
-                            user.leaveRoom();
+                            currentRoom.setReadyUsers(inMsg.readyUsers);
+                            currentRoom.removeReadyUser(inMsg.user);
+                            currentRoom.setMembers(inMsg.userNames);
+                            currentRoom.removeMember(inMsg.user);
+
+                            broadcastExceptUser(inMsg.user, new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, currentRoom.getMembers(), currentRoom.getReadyUsers()));
+                            server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount() +"명");
                             server.printDisplay(userName + "님이 로그아웃했습니다.");
+
+                            inMsg.user.setUnReady();
+                            inMsg.user.leaveRoom(); // user의 currentRoom null됨
+                            sendGameMsg(new GameMsg(GameMsg.LOGOUT, inMsg.user));
+                            currentRoom = null;
                             break;
 
                         default:

@@ -257,23 +257,14 @@ public class ClientManager {
                         break;
 
                     case GameMsg.LOGOUT:
-                        User logoutUser = inMsg.user;
-                        userNames.remove(logoutUser);
-                        readyUsers.remove(logoutUser);
-                        client.updateReadyToRoom(readyUsers, inMsg.user);
-
-                        if(logoutUser.getName().equals(userName)) {
-                            client.updateUserToRoom(userNames);
-                            client.changeStartPanel();
-                        } else {
-                            client.updateUserToRoom(userNames);
-                            if(readyUsers.size() < 4) {
-                                client.setReadyButtonVisibility(false);
-                            }
-                            if(readyUsers != null) { client.updateReadyToRoom(readyUsers, null); }
+                        synchronized (userNames) {
+                            userNames = new Vector<>();
                         }
+                        synchronized (readyUsers) {
+                            readyUsers = new Vector<>();
+                        }
+                        client.changeStartPanel();
                         break;
-
                 }
             });
         } catch (IOException e) {
@@ -354,35 +345,34 @@ public class ClientManager {
     public void sendVote(User user, String votedUserName) { sendGameMsg(new GameMsg(GameMsg.VOTE, user, votedUserName)); }
 
     public void sendLogout(User user) {
-        sendGameMsg(new GameMsg(GameMsg.LOGOUT, user));
+        sendGameMsg(new GameMsg(GameMsg.LOGOUT, user, userNames, readyUsers));
+
+        client.getGameRoomPanel().resetVoteState(); // 투표 상태 초기화
+        client.getGameRoomPanel().resetLiarState(); // 라이어 상태 초기화
+        client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
     }
 
     public void sendRoomExit(User user) {
         sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT, user, userNames, readyUsers));
-        // 투표 상태 초기화
-        client.getGameRoomPanel().resetVoteState();
-        // 라이어 상태 초기화
-        client.getGameRoomPanel().resetLiarState();
-        // 리스너까지 다시 등록
-        client.getGamePanel().setDrawingEnabled(true);
+
+        client.getGameRoomPanel().resetVoteState(); // 투표 상태 초기화
+        client.getGameRoomPanel().resetLiarState(); // 라이어 상태 초기화
+        client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
     }
 
     public void sendRetry(User user) {
         client.getGameRoomPanel().clearAllLeftBottomPanels();
         client.getGamePanel().clearLines();
 
-        // 투표 상태 초기화
-        client.getGameRoomPanel().resetVoteState();
-        // 라이어 상태 초기화
-        client.getGameRoomPanel().resetLiarState();
-        // 리스너까지 다시 등록
-        client.getGamePanel().setDrawingEnabled(true);
+        client.getGameRoomPanel().resetVoteState(); // 투표 상태 초기화
+        client.getGameRoomPanel().resetLiarState(); // 라이어 상태 초기화
+        client.getGamePanel().setDrawingEnabled(true); // 리스너까지 다시 등록
         // 다시 게임 대기 상태로 전환
         client.getGameRoomPanel().rightPannel.remove(client.getGameRoomPanel().alarmPanel);
         client.setReadyButtonVisibility(true);
 
         sendGameMsg(new GameMsg(GameMsg.GAME_RETRY, user, readyUsers));
-        sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName)); // 뒤에 메시지 추가해서
+        sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, roomName));
     }
 
     public User getUser() {

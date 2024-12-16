@@ -523,6 +523,16 @@ public class GameRoomPanel extends JPanel {
         return panel;
     }
 
+    // 유저가 준비 상태인지 확인 메서드
+    private boolean isUserReady(String username) {
+        for (User user : readyUsers) {
+            if (user.getName().equals(username)) {
+                return true; // 준비 상태인 유저
+            }
+        }
+        return false; // 준비 안 된 유저
+    }
+
     private JPanel createReadyPanel() {
         JPanel panel = new JPanel(new GridLayout(2,1));
         panel.setPreferredSize(new Dimension(0, 80));
@@ -538,7 +548,14 @@ public class GameRoomPanel extends JPanel {
             JPanel buttonPanel = new JPanel(new GridLayout(1,2));
             JButton readyButton = new JButton("준비");
             JButton unReadyButton = new JButton("준비 해제");
-            unReadyButton.setEnabled(false);
+            // 초기 버튼 상태 설정
+            if (isUserReady(gameMsg.user.name)) { // 유저가 이미 준비 상태인지 확인
+                readyButton.setEnabled(false);
+                unReadyButton.setEnabled(true);
+            } else {
+                readyButton.setEnabled(true);
+                unReadyButton.setEnabled(false);
+            }
             buttonPanel.add(readyButton);
             buttonPanel.add(unReadyButton);
 
