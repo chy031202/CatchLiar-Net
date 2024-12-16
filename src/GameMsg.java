@@ -12,6 +12,7 @@ public class GameMsg implements Serializable {
     public final static int ROOM_NEW_MEMBER = 12;
     public final static int ROOM_SELECT_DENIED = 13;
     public final static int ROOM_EXIT = 14;
+    public final static int ROOM_EXIT_OK = 15;
 
     public final static int CHAT_MESSAGE = 21;
     public final static int CHAT_EMOTICON = 22;
@@ -85,6 +86,13 @@ public class GameMsg implements Serializable {
         this.userNames = userNames;
         this.readyUsers = readyUsers;
         this.message = message;
+    }
+
+    public GameMsg(int mode, User user, Vector<User> userNames, Vector<User> readyUsers) {
+        this.mode = mode;
+        this.user = user;
+        this.userNames = userNames;
+        this.readyUsers = readyUsers;
     }
 
     // GAME_RETRY, GAME_READY_OK

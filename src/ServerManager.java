@@ -27,18 +27,18 @@ public class ServerManager {
         acceptThread = new Thread(() -> {
             try {
                 serverSocket = new ServerSocket(port);
-                server.printDisplay("서버가 시작되었습니다. 포트: " + port);
+                server.printDisplay("[접속] 서버가 시작되었습니다. 포트 : " + port, "접속");
 
                 while (acceptThread == Thread.currentThread()) {
                     Socket clientSocket = serverSocket.accept();
-                    server.printDisplay("클라이언트가 연결되었습니다: " + clientSocket.getInetAddress().getHostAddress());
+                    server.printDisplay("[접속] 새로운 클라이언트가 연결되었습니다  (" + clientSocket.getInetAddress().getHostAddress() + ")", "접속");
 
                     ClientHandler handler = new ClientHandler(clientSocket);
                     users.add(handler);
                     handler.start();
                 }
             } catch (IOException e) {
-                server.printDisplay("서버 소켓 종료: " + e.getMessage());
+                server.printDisplay("[접속] 서버 소켓 종료 : " + e.getMessage(), "접속");
             } finally {
                 stopServer();
             }
@@ -50,9 +50,9 @@ public class ServerManager {
         try {
             if (serverSocket != null) serverSocket.close();
             acceptThread = null;
-            server.printDisplay("서버가 종료되었습니다.");
+//            server.printDisplay("[접속] 서버가 종료되었습니다.", "접속");
         } catch (IOException e) {
-            server.printDisplay("서버 종료 중 오류: " + e.getMessage());
+            server.printDisplay("[접속] 서버 종료 중 오류 : " + e.getMessage(), "접속");
         }
     }
 
@@ -60,6 +60,7 @@ public class ServerManager {
         try {
             if (serverSocket != null) serverSocket.close();
         } catch (IOException e) {
+            server.printDisplay("[접속] 서버 닫기 오류 : " + e.getMessage(), "접속");
             System.err.println("서버 닫기 오류> " + e.getMessage());
         }
         System.exit(-1);
@@ -86,9 +87,9 @@ public class ServerManager {
             Paint paintData = inMsg.getPaintData();
             Color color = inMsg.getPaintData().getColor() != null ? inMsg.getPaintData().getColor() : Color.BLACK;
             //드로잉 확인 패널
-//            server.printDisplay("DRAW_ACTION 수신: 시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
-//                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
-//                    ", 지우개 모드: " + paintData.isErasing());
+            server.printDisplay("[페인팅][" + currentRoom.getRoomName()+ "][" + user.name + "]" + "시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
+                    "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() + "), 색상: " + paintData.getColor() +
+                    ", 지우개 모드: " + paintData.isErasing(), "페인팅");
             broadcasting(new GameMsg(GameMsg.DRAW_ACTION, paintData)); // 그림 데이터를 다른 클라이언트들에게 전송
         }
 
@@ -104,7 +105,7 @@ public class ServerManager {
                         case GameMsg.LOGIN:
                             user = inMsg.getUser();
                             userName = user.name;
-                            server.printDisplay("새 참가자: " + userName);
+                            server.printDisplay("[접속][로그인] " + userName + "님이 로그인하였습니다.", "접속");
                             sendGameMsg(new GameMsg(GameMsg.LOGIN_OK, user));
                             break;
 
@@ -113,14 +114,13 @@ public class ServerManager {
                             enterRoom(inMsg.getMsg());
                             user.setCurrentRoom(currentRoom);
                             user.joinRoom(currentRoom);
-//                            user = inMsg.user;
                             if(user.currentRoom.getMemberCount() > 4) {
                                 user.leaveRoom();
                                 sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT_DENIED, user));
-                                server.printDisplay(userName + "님이 " + inMsg.getMsg() + "방에 입장하지 못했습니다.");
+                                server.printDisplay("[" + currentRoom.getRoomName() + "][방 입장 실패] " + userName + "님이 " + inMsg.getMsg() + "방에 입장하지 못했습니다.", "접속");
                                 break;
                             }
-                            server.printDisplay(userName + "님이 방 [" + user.getCurrentRoom().getRoomName() + "]에 입장했습니다. 현재 : " + user.currentRoom.getMemberCount() + "명");
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][방 입장] " + userName + "님 " + user.getCurrentRoom().getRoomName() + " 방 입장. 현재 : " + user.currentRoom.getMemberCount() + "명", "접속");
                             // user.currentRoom. 키워드 세팅
                             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, currentRoom.getMembers(), currentRoom.getReadyUsers(), inMsg.getMsg()));
                             broadcastExceptUser(user, new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, currentRoom.getMembers(), currentRoom.getReadyUsers(), inMsg.getMsg())); // currentRoom
@@ -134,42 +134,41 @@ public class ServerManager {
                         case GameMsg.CHAT_MESSAGE:
                             user = inMsg.user;
                             broadcasting(new GameMsg(GameMsg.CHAT_MESSAGE, user, inMsg.getMsg()));
-                            server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님 채팅 : " + inMsg.getMsg());
+                            server.printDisplay("[채팅][" + user.currentRoom.getRoomName() + "] " + inMsg.user.name + "님 : " + inMsg.getMsg(), "채팅+이모티콘");
                             break;
 
                         case GameMsg.CHAT_EMOTICON:
-//                            user = inMsg.user;
                             broadcasting(new GameMsg(GameMsg.CHAT_EMOTICON, inMsg.user, inMsg.getMsg()));
-                            server.printDisplay(user.currentRoom.getRoomName() + "에서 " + inMsg.user.name + "님이 " + inMsg.getMsg() + "이모티콘 전송");
+                            server.printDisplay("[이모티콘][" + user.currentRoom.getRoomName() + "] " + inMsg.user.name + "님 : \"" + inMsg.getMsg() + "\" 이모티콘 전송", "채팅+이모티콘");
                             break;
 
                         case GameMsg.GAME_READY:
                             inMsg.user.setCurrentRoom(currentRoom);
                             inMsg.user.setReady();
-//                            currentRoom.addReadyUser(inMsg.user);
-//                            user.setReady();
-                            server.printDisplay(user+"님이 준비 완료");
+                            currentRoom = inMsg.user.getCurrentRoom();
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][준비]" + user.name + " 님 준비 완료", "게임상태");
                             broadcasting(new GameMsg(GameMsg.GAME_READY_OK, inMsg.user, currentRoom.getReadyUsers()));
                             break;
 
                         case GameMsg.GAME_UN_READY:
-                            server.printDisplay(user+"님이 준비 해제");
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][준비 해제]" + user.name + " 님 준비 해제", "게임상태");
                             inMsg.user.setCurrentRoom(currentRoom);
                             inMsg.user.setUnReady();
-//                            user.setUnReady();
+                            currentRoom = inMsg.user.getCurrentRoom();
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, inMsg.user, currentRoom.getReadyUsers()));
                             break;
 
                         case GameMsg.GAME_START:
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][시작] 게임이 시작됩니다.", "게임상태");
                             readyUsers = inMsg.readyUsers;
                             liar = selectLiar(inMsg.readyUsers);
                             liar.isLiar = true;
                             if(liar == null) {
                                 System.out.println("라이어가 뽑히지 않았습니다.");
-                                server.printDisplay("에러 : 라이어가 뽑히지 않았습니다.");
+                                server.printDisplay("[" + currentRoom.getRoomName() + "][에러] 라이어가 뽑히지 않았습니다.", "게임상태");
                             } else {
+                                server.printDisplay("[" + currentRoom.getRoomName() + "][라이어] 라이어 : "+ liar.name, "게임상태");
                                 System.out.println("뽑힌 라이어 이름 : " + liar.name);
-                                server.printDisplay("뽑힌 라이어 이름 : " + liar.name);
                             }
                             currentRoom.setMembers(inMsg.userNames);
                             //턴 초기화
@@ -178,19 +177,18 @@ public class ServerManager {
 
                             broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
                             broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
-
                             // 타이머 시작
-                            server.printDisplay("타이머 시작");
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][타이머] 타이머 시작", "게임상태");
                             startRoomTimer(currentRoom, DRAWING_TIME);
                             break;
 
                         case GameMsg.VOTE:
                             String votedUser = inMsg.getMsg();
                             if (votedUser != null) {
-                                server.printDisplay(userName + "이 " + votedUser + "에게 투표했습니다.");
+                                server.printDisplay("[" + currentRoom.getRoomName() + "][투표] " + userName + "님이 " + votedUser + "에게 투표했습니다.", "투표");
                                 currentRoom.addVote(votedUser);
                             } else {
-                                server.printDisplay("투표 값이 null입니다.");
+                                server.printDisplay("[" + currentRoom.getRoomName() + "][투표] 투표 값이 null입니다.", "투표");
                             }
                             break;
 
@@ -199,37 +197,52 @@ public class ServerManager {
                             break;
 
                         case GameMsg.GAME_RETRY:
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][재시작] " + userName + "님이 다시 시작을 눌렀습니다.", "게임상태");
                             user.isLiar = false;
                             currentRoom.setReadyUsers(inMsg.readyUsers);
                             inMsg.user.setCurrentRoom(currentRoom);
                             inMsg.user.setUnReady();
-//                            user.setUnReady();
                             broadcasting(new GameMsg(GameMsg.GAME_UN_READY_OK, user, inMsg.user.currentRoom.getReadyUsers()));
                             break;
 
-
                         case GameMsg.ROOM_EXIT:
 //                            user = inMsg.user;
-                            broadcasting(new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, "finish"));
-                            user.leaveRoom(); // 안 하면, 방 관리는 되는데 순서관리가 안됨
-//                            exitRoom();
-                            server.printDisplay(userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount());
-//                            currentRoom = null;
+                            currentRoom.setReadyUsers(inMsg.readyUsers);
+                            currentRoom.removeReadyUser(inMsg.user);
+                            currentRoom.setMembers(inMsg.userNames);
+                            currentRoom.removeMember(inMsg.user);
+                            broadcastExceptUser(inMsg.user, new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, currentRoom.getMembers(), currentRoom.getReadyUsers()));
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][방 퇴장] " + userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount() +"명", "접속");
+
+                            inMsg.user.setUnReady();
+                            inMsg.user.leaveRoom(); // user의 currentRoom null됨
+                            sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT_OK, inMsg.user));
+                            currentRoom = null;
                             break;
 
                         case GameMsg.LOGOUT:
-                            broadcasting(new GameMsg(GameMsg.LOGOUT, inMsg.user));
-                            user.leaveRoom();
-                            server.printDisplay(userName + "님이 로그아웃했습니다.");
+                            currentRoom.setReadyUsers(inMsg.readyUsers);
+                            currentRoom.removeReadyUser(inMsg.user);
+                            currentRoom.setMembers(inMsg.userNames);
+                            currentRoom.removeMember(inMsg.user);
+
+                            broadcastExceptUser(inMsg.user, new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, currentRoom.getMembers(), currentRoom.getReadyUsers()));
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][방 퇴장] " + userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount() +"명", "접속");
+                            server.printDisplay("[" + currentRoom.getRoomName() + "][로그아웃] " + userName + "님이 로그아웃했습니다.", "접속");
+
+                            inMsg.user.setUnReady();
+                            inMsg.user.leaveRoom(); // user의 currentRoom null됨
+                            sendGameMsg(new GameMsg(GameMsg.LOGOUT, inMsg.user));
+                            currentRoom = null;
                             break;
 
                         default:
-                            server.printDisplay("서버 receiveMessage 알 수 없는 메시지 모드: " + inMsg.getMode());
+                            server.printDisplay("[접속][에러] 서버 receiveMessage 알 수 없는 메시지 모드: " + inMsg.getMode(), "접속");
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
                 disconnectClient();
-                server.printDisplay("서버 receiveMessage 클라이언트 연결 해제: " + e.getMessage());
+                server.printDisplay("[접속][에러] 서버 receiveMessage 클라이언트 연결 해제: " + e.getMessage(), "접속");
                 broadcasting(new GameMsg(GameMsg.LOGOUT, user));
             } finally {
                 disconnectClient();
@@ -241,7 +254,7 @@ public class ServerManager {
                 out.writeObject(msg);
                 out.flush();
             } catch (IOException e) {
-                System.out.println("서버 sendGameMsg 전송 오류>" + e.getMessage());
+                System.out.println("[접속][에러] 서버 sendGameMsg 전송 오류>" + e.getMessage());
                 e.printStackTrace();
             }
 
@@ -260,7 +273,7 @@ public class ServerManager {
                     if (currentUser != null) {
                         GameMsg firstTurnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, room.getMembers());
                         broadcasting(firstTurnMsg);
-                        server.printDisplay("현재 턴: " + currentUser.getName());
+                        server.printDisplay("[" + room.getRoomName() + "][턴] " + currentUser.getName() + " 님이 그림을 그릴 차례입니다.", "게임상태");
                     }
 
                     while (remainingTime > 0) {
@@ -277,7 +290,7 @@ public class ServerManager {
                             if (currentUser != null) {
                                 GameMsg turnMsg = new GameMsg(GameMsg.TIME, currentUser, "Your turn!", remainingTime, room.getMembers());
                                 broadcasting(turnMsg);
-                                server.printDisplay("현재 턴: " + currentUser.getName());
+                                server.printDisplay("[" + room.getRoomName() + "][턴] " + currentUser.getName() + " 님이 그림을 그릴 차례입니다.", "게임상태");
                             }
                         }
                         // TIME 메시지를 생성하여 브로드캐스트
@@ -285,7 +298,7 @@ public class ServerManager {
                         broadcasting(timeMsg);
                     }
                     //시간 종료되면 투표 모드 전환
-                    server.printDisplay("시간 종료!!");
+                    server.printDisplay("[" + room.getRoomName() + "][타이머] 타이머 종료", "게임상태");
                     // 투표 타이머:
                     GameMsg voteStartMsg = new GameMsg(GameMsg.VOTE, null, "투표를 시작하세요!", VOTE_TIME, currentRoom.getMembers());
                     voteStartMsg.setVoteStart(true); // 투표 시작 메시지로 설정
@@ -314,7 +327,7 @@ public class ServerManager {
                     }
                     collectVoteResults(room);
                     // 투표 결과 집계
-                    server.printDisplay("투표 타이머 끝");
+                    server.printDisplay("[" + room.getRoomName() + "][타이머] 투표 시간 종료", "게임상태");
                 } catch (InterruptedException e) {
                     System.err.println("투표 타이머 중단 - 방 [" + room.getRoomName() + "], 오류: " + e.getMessage());
                 }
@@ -340,7 +353,7 @@ public class ServerManager {
                 );
                 // 투표 상태 및 게임 상태 초기화
                 room.resetVoteCounts();
-                server.printDisplay("아무도 투표하지 않음. 게임 상태 초기화 완료");
+                server.printDisplay("[" + room.getRoomName() + "][투표] 아무도 투표하지 않음. 게임 상태 초기화 완료", "투표");
                 return; // 조기 종료
             }
 
@@ -381,16 +394,16 @@ public class ServerManager {
                     new GameMsg(GameMsg.GAME_END, liar, userResultMessage, isWinner)
             );
 
-            server.printDisplay("투표 결과 - 라이어 유추: " + liarCandidate);
-            server.printDisplay(resultMessage);
+            server.printDisplay("[" + room.getRoomName() + "][투표] 결과 : " + liarCandidate, "투표");
+            server.printDisplay("[" + room.getRoomName() + "][투표] 결과 : " + resultMessage, "게임상태");
             room.resetVoteCounts(); // 투표 초기화
             room.resetVoteCounts(); // 라이어 초기화
-            server.printDisplay("[ServerManager] 게임 상태 초기화 완료");
+            server.printDisplay("[" + room.getRoomName() + "][게임상태] 투표 값, 라이어 초기화", "게임상태");
         }
 
         private void broadcasting(GameMsg msg) {
             if (currentRoom == null) {
-                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
+                server.printDisplay("[접속] broadcasting 실패: " + msg.user.name + " 클라이언트가 방에 속해 있지 않습니다.", "접속");
                 return;
             }
             // 같은 방에 있는 멤버들에게만 메시지를 전송
@@ -416,7 +429,7 @@ public class ServerManager {
 
         private void broadcastIndividualUser(User liar, GameMsg msg) {
             if (currentRoom == null) {
-                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
+                server.printDisplay("[접속] broadcasting 실패: " + msg.user.name + " 클라이언트가 방에 속해 있지 않습니다.", "접속");
                 return;
             }
             // 같은 방에 있는 멤버들에게만 메시지를 전송
@@ -434,7 +447,7 @@ public class ServerManager {
 
         private void broadcastExceptUser(User liar, GameMsg msg) {
             if (currentRoom == null) {
-                server.printDisplay("broadcasting 실패: 클라이언트가 방에 속해 있지 않습니다.");
+                server.printDisplay("[접속] broadcasting 실패: " + msg.user.name + " 클라이언트가 방에 속해 있지 않습니다.", "접속");
                 return;
             }
             // 같은 방에 있는 멤버들에게만 메시지를 전송
@@ -458,13 +471,12 @@ public class ServerManager {
                         .orElseGet(() -> { // 방이 없으면 새로 생성
                             Room newRoom = new Room(roomName);
                             rooms.add(newRoom); // 새 방을 목록에 추가
-                            server.printDisplay("새 방 생성: " + roomName);
+                            server.printDisplay("[접속] 새 방 생성 : " + roomName, "접속");
                             return newRoom; // 새로 만든 방 반환
                         });
                 return room;
             }
         }
-
 
         private void enterRoom(String roomName) {
             synchronized (rooms) {
@@ -475,7 +487,7 @@ public class ServerManager {
                         .orElseGet(() -> { // 방이 없으면 새로 생성
                             Room newRoom = new Room(roomName);
                             rooms.add(newRoom); // 새 방을 목록에 추가
-                            server.printDisplay("새 방 생성: " + roomName);
+                            server.printDisplay("[접속] 새 방 생성 : " + roomName, "접속");
                             return newRoom; // 새로 만든 방 반환
                         });
                 // 현재 클라이언트가 방에 속해있다면 제거
@@ -517,7 +529,7 @@ public class ServerManager {
                     // 방의 멤버가 아무도 없다면 방 삭제
                     if (currentRoom.getMembers().isEmpty()) {
                         rooms.remove(currentRoom);
-                        server.printDisplay("빈 방 삭제: " + currentRoom.getRoomName());
+                        server.printDisplay("[접속] 빈 방 삭제: " + currentRoom.getRoomName(), "접속");
                     }
                     // 현재 방 정보 초기화
                     currentRoom = null;
@@ -545,7 +557,7 @@ public class ServerManager {
                 if (out != null) out.close();
                 if (clientSocket != null) clientSocket.close();
             } catch (IOException e) {
-                server.printDisplay("클라이언트 소켓 닫기 오류: " + e.getMessage());
+                server.printDisplay("[접속][에러]클라이언트 소켓 닫기 오류: " + e.getMessage(), "접속");
             }
         }
 
