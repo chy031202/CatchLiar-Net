@@ -7,7 +7,7 @@ public class GameMsg implements Serializable {
 
     public final static int LOGIN = 1;
     public final static int LOGIN_OK = 2;
-    public final static int LOGOUT = 4; // 로그아웃 모드
+    public final static int LOGOUT = 3; // 로그아웃 모드
 
     public final static int ROOM_SELECT = 11;//방 선택
     public final static int ROOM_NEW_MEMBER = 12;
@@ -28,12 +28,12 @@ public class GameMsg implements Serializable {
     public final static int GAME_START = 51;
     public final static int LIAR_NOTIFICATION = 52;
     public final static int KEYWORD_NOTIFICATION = 53;
-    public final static int GAME_END = 54;
-    public final static int TIME = 55;
-    public final static int GAME_RETRY = 56;
+    public final static int TIME = 54;
+    public final static int VOTE = 55;
+    public final static int GAME_END = 56;
+    public final static int GAME_RETRY = 57;
 
-    public final static int VOTE = 61;
-    public final static int VOTE_RESULT = 62;
+//    public final static int VOTE_RESULT = 62;
 
     public int mode;   // 모드 값
     User user;  //유저 정보
@@ -45,6 +45,7 @@ public class GameMsg implements Serializable {
     private Paint paintData; // 그림 데이터용 필드 추가
     String votedUser; //투표된 사용자 이름
     private String resultMessage; // 최종 결과 메시지
+    private byte[] voiceData; // 음성 데이터
 
     private boolean isWinner; // 승리 여부
 
@@ -121,6 +122,14 @@ public class GameMsg implements Serializable {
         this.room = room;
     }
 
+    public GameMsg(int mode, User user, Vector<User> userNames, Vector<User> readyUsers, String message) {
+        this.mode = mode;
+        this.user = user;
+        this.userNames = userNames;
+        this.readyUsers = readyUsers;
+        this.message = message;
+    }
+
     public GameMsg(int mode, User user, Vector<User> userNames, Vector<User> readyUsers) {
         this.mode = mode;
         this.user = user;
@@ -148,6 +157,12 @@ public class GameMsg implements Serializable {
         this.user = user;
         this.resultMessage = resultMessage;
         this.isWinner = isWinner;
+    }
+
+    public GameMsg(int mode, User user, byte[] voiceData) {
+        this.mode = mode;
+        this.user = user;
+        this.voiceData = voiceData;
     }
 
     public String getVotedUser() {
