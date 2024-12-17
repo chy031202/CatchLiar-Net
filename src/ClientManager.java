@@ -62,216 +62,73 @@ public class ClientManager {
                 System.err.println("receiveMessage 서버 연결 끊김");
                 return;
             }
-            SwingUtilities.invokeLater(() -> {
-                switch (inMsg.mode) {
-                    case GameMsg.LOGIN_OK:
-                        user = inMsg.getUser(); // user 여기에서 저장해야 유지됨
-                        client.changeSelectRoomPanel();
-                        System.out.println("클라이언트 receiveMessage 로그인OK: " + inMsg.mode + "," + inMsg.user.name);
-                        break;
-
-                    case GameMsg.ROOM_SELECT:
-                        user = inMsg.getUser();
-                        roomName = inMsg.getMsg();
-                        client.changeGameRoomPanel(inMsg);
-                        synchronized (userNames) {
-                            userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
-                        }
-                        synchronized (readyUsers) {
-                            readyUsers = new Vector<>(inMsg.readyUsers);
-                        }
-                        client.updateUserToRoom(userNames);
-                        client.updateReadyToRoom(readyUsers, null);
-
-                        System.out.println("클라이언트 ROOM_SELECT 때 userNames : " + userNames);
-                        client.getGamePanel().clearLines();
-                        break;
-
-                    case GameMsg.ROOM_NEW_MEMBER:
-                        System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
-                        synchronized (userNames) {
-                            userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
-                        }
-                        synchronized (readyUsers) {
-                            readyUsers = new Vector<>(inMsg.readyUsers);
-                        }
-                        client.updateUserToRoom(userNames);
-                        client.updateReadyToRoom(readyUsers, null);
-                        break;
-
-                    case GameMsg.ROOM_SELECT_DENIED:
-                        client.showDialog(inMsg);
-                        break;
-
-                    case GameMsg.GAME_READY_AVAILABLE:
-                        client.setReadyButtonVisibility(true);
-                        break;
-
-                    case GameMsg.GAME_READY_OK:
-                        synchronized (readyUsers) {
-                            readyUsers = new Vector<>(inMsg.readyUsers);
-                            System.out.println("readyUsers: " + readyUsers);
-                        }
-                        client.updateReadyToRoom(readyUsers, null);
-
-                        // readyUsers 4명이 되면 게임 시작
-                        if (readyUsers.size() == 4) {
-                            System.out.println("겜 시작");
-//                            System.out.println("userNames : " + userNames);
-                            // 한 명만 '게임 시작' 서버에 보내도록
-                            User firstUser = readyUsers.get(0);
-                            if (userName.equals(firstUser.name)) {
-                                sendGameMsg(new GameMsg(GameMsg.GAME_START, readyUsers, userNames)); // 첫 번째 사용자만 실행
-                            } else {
-                                System.out.println("첫 번째 사용자가 아님, 메시지 전송 안 함");
-                            }
-                        }
-                        break;
-
-                    case GameMsg.GAME_UN_READY_OK:
-//                        System.out.println("GAME_UN_READY 받음 클라이언트");
-                        synchronized (readyUsers) {
-                            readyUsers = new Vector<>(inMsg.readyUsers != null ? inMsg.readyUsers : new Vector<>());
-                            System.out.println("readyUsers: " + readyUsers);
-                        }
-                        client.updateReadyToRoom(readyUsers, inMsg.user);
-                        break;
-
-                    case GameMsg.LIAR_NOTIFICATION:
-                        client.getGameRoomPanel().changeGameMsg(inMsg, inMsg.user.name);
-                        client.startGame();
-                        client.showDialog(inMsg);
-                        break;
-
-                    case GameMsg.KEYWORD_NOTIFICATION:
-                        client.getGameRoomPanel().changeGameMsg(inMsg, userName);
-                        client.startGame();
-                        client.showDialog(inMsg);
-                        break;
-
-                    case GameMsg.TIME:
-                        userNames = inMsg.userNames;
-                        int remainingTime = inMsg.getTime(); // 서버에서 받은 남은 시간
-                        User currentTurnUser = inMsg.getUser();
-
-                        client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
-
-                        if (currentTurnUser != null) {
-                            if (!currentTurnUser.getName().equals(client.getGameRoomPanel().getCurrentTurnUserName())) {
-                                client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
-
-                                if (currentTurnUser.getName().equals(userName)) {
-                                    client.getGamePanel().setDrawingEnabled(true);
-                                } else {
-                                    client.getGamePanel().setDrawingEnabled(false);
-                                }
-                            }
-                        }
-                        //System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
-
-                        if (currentTurnUser != null) {
-                            System.out.println("Time에서 userNames : " + userNames);
-                            client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
-                        }
-                        break;
-
-                    case GameMsg.DRAW_ACTION:
-                        Paint paintData = inMsg.getPaintData();
-
-                        //드로잉 확인 콘솔
-//                        System.out.println("DRAW_ACTION 수신: " +
-//                                "시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
-//                                "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() +
-//                                "), 색상: " + paintData.getColor() +
-//                                ", 지우개 모드: " + paintData.isErasing());
-                        client.getGamePanel().receiveRemoteDrawing(
-                                paintData.getStartX(),
-                                paintData.getStartY(),
-                                paintData.getEndX(),
-                                paintData.getEndY(),
-                                paintData.getColor()
-                        );
-                        break;
-
-                    case GameMsg.VOTE:
-                        if (inMsg.isVoteStart()) {
-                            client.getGamePanel().setDrawingEnabled(false);
-                            // 투표 모드 활성화
-//                            System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
-                            if (client.getGameRoomPanel() != null) {
-                                client.getGameRoomPanel().setGameMsg(inMsg); // gameMsg를 설정하고 투표 상태를 제어
-                                client.showDialog(inMsg); // 투표 시작 다이얼로그 표시
-                            }else {
-                                System.err.println("GameRoomPanel is null!");
-                            }
-                        } else {
-                            client.updateAlarmLabel(inMsg.getTime()); // 투표 타이머 업데이트
-                        }
-                        break;
-
-                    case GameMsg.GAME_END:
-                        boolean isWinner = inMsg.isWinner();
-                        String resultMessage = inMsg.getResultMessage();
-                        client.endGame(isWinner, resultMessage);
-
-                        readyUsers = new Vector<>(); // 준비 유저 초기화
-                        user.currentRoom.setReadyUsers(readyUsers);
-                        break;
-
-                    case GameMsg.CHAT_MESSAGE:
-                        String chatUser = inMsg.user.name;
-                        String chatMsg = inMsg.message;
-                        client.getGameRoomPanel().showChat("[" + chatUser + "] : " + chatMsg);
-                        break;
-
-                    case GameMsg.CHAT_EMOTICON:
-                        client.updateEmoticonPanel(inMsg.user, inMsg.message);
-                        break;
-
-                    case GameMsg.ROOM_EXIT:
-                        User exitUser = inMsg.user;
-                        synchronized (userNames) {
-                            userNames = new Vector<>(inMsg.userNames);
-                            System.out.println("userNames: " + userNames);
-                        }
-                        synchronized (readyUsers) {
-                            readyUsers = new Vector<>(inMsg.readyUsers);
-                            System.out.println("readyUsers: " + readyUsers);
-                        }
-                        client.updateReadyToRoom(readyUsers, exitUser);
-                        client.updateUserToRoom(userNames);
-
-                        if(readyUsers.size() < 4) {
-                            client.setReadyButtonVisibility(false);
-                        }
-                        break;
-
-                    case GameMsg.ROOM_EXIT_OK:
-                        synchronized (userNames) {
-                            userNames = new Vector<>();
-                        }
-                        synchronized (readyUsers) {
-                            readyUsers = new Vector<>();
-                        }
-                        client.changeSelectRoomPanel();
-                        break;
-
-                    case GameMsg.LOGOUT:
-                        synchronized (userNames) {
-                            userNames = new Vector<>();
-                        }
-                        synchronized (readyUsers) {
-                            readyUsers = new Vector<>();
-                        }
-                        client.changeStartPanel();
-                        break;
-                }
-            });
+            SwingUtilities.invokeLater(() -> handleMessage(inMsg));
         } catch (IOException e) {
             System.err.println("receiveMessage 서버 연결 종료: " + e.getMessage());
             disconnect();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void handleMessage(GameMsg inMsg) {
+        switch (inMsg.mode) {
+            case GameMsg.LOGIN_OK:
+                handleLoginOk(inMsg);
+                break;
+            case GameMsg.ROOM_SELECT:
+                handleRoomSelect(inMsg);
+                break;
+            case GameMsg.ROOM_NEW_MEMBER:
+                handleRoomNewMember(inMsg);
+                break;
+            case GameMsg.ROOM_SELECT_DENIED:
+                handleRoomSelectDenied(inMsg);
+                break;
+            case GameMsg.GAME_READY_AVAILABLE:
+                handleGameReadyAvailable();
+                break;
+            case GameMsg.GAME_READY_OK:
+                handleGameReadyOk(inMsg);
+                break;
+            case GameMsg.GAME_UN_READY_OK:
+                handleGameUnReadyOk(inMsg);
+                break;
+            case GameMsg.LIAR_NOTIFICATION:
+                handleLiarNotification(inMsg);
+                break;
+            case GameMsg.KEYWORD_NOTIFICATION:
+                handleKeywordNotification(inMsg);
+                break;
+            case GameMsg.TIME:
+                handleTime(inMsg);
+                break;
+            case GameMsg.DRAW_ACTION:
+                handleDrawAction(inMsg);
+                break;
+            case GameMsg.VOTE:
+                handleVote(inMsg);
+                break;
+            case GameMsg.GAME_END:
+                handleGameEnd(inMsg);
+                break;
+            case GameMsg.CHAT_MESSAGE:
+                handleChatMessage(inMsg);
+                break;
+            case GameMsg.CHAT_EMOTICON:
+                handleChatEmoticon(inMsg);
+                break;
+            case GameMsg.ROOM_EXIT:
+                handleRoomExit(inMsg);
+                break;
+            case GameMsg.ROOM_EXIT_OK:
+                handleRoomExitOk();
+                break;
+            case GameMsg.LOGOUT:
+                handleLogout();
+                break;
+            default:
+                System.err.println("처리할 수 없는 메시지 유형: " + inMsg.mode);
         }
     }
 
@@ -287,6 +144,206 @@ public class ClientManager {
             System.exit(-1);
         }
     }
+
+    private void handleLoginOk(GameMsg inMsg) {
+        user = inMsg.getUser(); // user 여기에서 저장해야 유지됨
+        client.changeSelectRoomPanel();
+        System.out.println("클라이언트 receiveMessage 로그인OK: " + inMsg.mode + "," + inMsg.user.name);
+    }
+
+    private void handleRoomSelect(GameMsg inMsg) {
+        user = inMsg.getUser();
+        roomName = inMsg.getMsg();
+        client.changeGameRoomPanel(inMsg);
+        synchronized (userNames) {
+            userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
+        }
+        synchronized (readyUsers) {
+            readyUsers = new Vector<>(inMsg.readyUsers);
+        }
+        client.updateUserToRoom(userNames);
+        client.updateReadyToRoom(readyUsers, null);
+
+        System.out.println("클라이언트 ROOM_SELECT 때 userNames : " + userNames);
+        client.getGamePanel().clearLines();
+    }
+
+    private void handleRoomNewMember(GameMsg inMsg) {
+        System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
+        synchronized (userNames) {
+            userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
+        }
+        synchronized (readyUsers) {
+            readyUsers = new Vector<>(inMsg.readyUsers);
+        }
+        client.updateUserToRoom(userNames);
+        client.updateReadyToRoom(readyUsers, null);
+    }
+
+    private void handleRoomSelectDenied(GameMsg inMsg) {
+        client.showDialog(inMsg);
+    }
+
+    private void handleGameReadyAvailable() {
+        client.setReadyButtonVisibility(true);
+    }
+
+    private void handleGameReadyOk(GameMsg inMsg) {
+        synchronized (readyUsers) {
+            readyUsers = new Vector<>(inMsg.readyUsers);
+            System.out.println("readyUsers: " + readyUsers);
+        }
+        client.updateReadyToRoom(readyUsers, null);
+
+        // readyUsers 4명이 되면 게임 시작
+        if (readyUsers.size() == 4) {
+            System.out.println("겜 시작");
+            // 한 명만 '게임 시작' 서버에 보내도록
+            User firstUser = readyUsers.get(0);
+            if (userName.equals(firstUser.name)) {
+                sendGameMsg(new GameMsg(GameMsg.GAME_START, user, readyUsers, userNames)); // 첫 번째 사용자만 실행
+            } else {
+                System.out.println("첫 번째 사용자가 아님, 메시지 전송 안 함");
+            }
+        }
+    }
+
+    private void handleGameUnReadyOk(GameMsg inMsg) {
+        synchronized (readyUsers) {
+            readyUsers = new Vector<>(inMsg.readyUsers != null ? inMsg.readyUsers : new Vector<>());
+            System.out.println("readyUsers: " + readyUsers);
+        }
+        client.updateReadyToRoom(readyUsers, inMsg.user);
+    }
+
+    private void handleLiarNotification(GameMsg inMsg) {
+        client.getGameRoomPanel().changeGameMsg(inMsg, inMsg.user.name);
+        client.startGame();
+        client.showDialog(inMsg);
+    }
+
+    private void handleKeywordNotification(GameMsg inMsg) {
+        client.getGameRoomPanel().changeGameMsg(inMsg, userName);
+        client.startGame();
+        client.showDialog(inMsg);
+    }
+
+    private void handleTime(GameMsg inMsg) {
+        userNames = inMsg.userNames;
+        int remainingTime = inMsg.getTime(); // 서버에서 받은 남은 시간
+        User currentTurnUser = inMsg.getUser();
+
+        client.updateAlarmLabel(remainingTime); // 클라이언트 UI 갱신
+
+        if (currentTurnUser != null) {
+            if (!currentTurnUser.getName().equals(client.getGameRoomPanel().getCurrentTurnUserName())) {
+                client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
+
+                if (currentTurnUser.getName().equals(userName)) {
+                    client.getGamePanel().setDrawingEnabled(true);
+                } else {
+                    client.getGamePanel().setDrawingEnabled(false);
+                }
+            }
+        }
+        //System.out.println("클라이언트: 남은 시간 업데이트 -> " + remainingTime + "초");
+        if (currentTurnUser != null) {
+            System.out.println("Time에서 userNames : " + userNames);
+            client.getGameRoomPanel().updateTurnUser(currentTurnUser.getName());
+        }
+    }
+
+    private void handleDrawAction(GameMsg inMsg) {
+        Paint paintData = inMsg.getPaintData();
+        client.getGamePanel().receiveRemoteDrawing(
+                paintData.getStartX(),
+                paintData.getStartY(),
+                paintData.getEndX(),
+                paintData.getEndY(),
+                paintData.getColor()
+        );
+        //드로잉 확인 콘솔
+//                        System.out.println("DRAW_ACTION 수신: " +
+//                                "시작(" + paintData.getStartX() + ", " + paintData.getStartY() +
+//                                "), 끝(" + paintData.getEndX() + ", " + paintData.getEndY() +
+//                                "), 색상: " + paintData.getColor() +
+//                                ", 지우개 모드: " + paintData.isErasing());
+    }
+
+    private void handleVote(GameMsg inMsg) {
+        if (inMsg.isVoteStart()) {
+            client.getGamePanel().setDrawingEnabled(false);
+            // 투표 모드 활성화
+//                            System.out.println("GameMsg.VOTE 수신. isVoteStart: " + inMsg.isVoteStart());
+            if (client.getGameRoomPanel() != null) {
+                client.getGameRoomPanel().setGameMsg(inMsg); // gameMsg를 설정하고 투표 상태를 제어
+                client.showDialog(inMsg); // 투표 시작 다이얼로그 표시
+            }else {
+                System.err.println("GameRoomPanel is null!");
+            }
+        } else {
+            client.updateAlarmLabel(inMsg.getTime()); // 투표 타이머 업데이트
+        }
+    }
+
+    private void handleGameEnd(GameMsg inMsg) {
+        boolean isWinner = inMsg.isWinner();
+        String resultMessage = inMsg.getResultMessage();
+        client.endGame(isWinner, resultMessage);
+
+        readyUsers = new Vector<>(); // 준비 유저 초기화
+        user.currentRoom.setReadyUsers(readyUsers);
+    }
+
+    private void handleChatMessage(GameMsg inMsg) {
+        String chatUser = inMsg.user.name;
+        String chatMsg = inMsg.message;
+        client.getGameRoomPanel().showChat("[" + chatUser + "] : " + chatMsg);
+    }
+
+    private void handleChatEmoticon(GameMsg inMsg) {
+        client.updateEmoticonPanel(inMsg.user, inMsg.message);
+    }
+
+    private void handleRoomExit(GameMsg inMsg) {
+        User exitUser = inMsg.user;
+        synchronized (userNames) {
+            userNames = new Vector<>(inMsg.userNames);
+            System.out.println("userNames: " + userNames);
+        }
+        synchronized (readyUsers) {
+            readyUsers = new Vector<>(inMsg.readyUsers);
+            System.out.println("readyUsers: " + readyUsers);
+        }
+        client.updateReadyToRoom(readyUsers, exitUser);
+        client.updateUserToRoom(userNames);
+
+        if(readyUsers.size() < 4) {
+            client.setReadyButtonVisibility(false);
+        }
+    }
+
+    private void handleRoomExitOk() {
+        synchronized (userNames) {
+            userNames = new Vector<>();
+        }
+        synchronized (readyUsers) {
+            readyUsers = new Vector<>();
+        }
+        client.changeSelectRoomPanel();
+    }
+
+    private void handleLogout() {
+        synchronized (userNames) {
+            userNames = new Vector<>();
+        }
+        synchronized (readyUsers) {
+            readyUsers = new Vector<>();
+        }
+        client.changeStartPanel();
+    }
+
+    //
 
     void sendGameMsg(GameMsg msg) {
         try {
