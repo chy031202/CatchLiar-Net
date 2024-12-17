@@ -172,6 +172,7 @@ public class ClientManager {
         System.out.println("새로운 유저 >" + inMsg.user.name + "가 들어옴");
         synchronized (userNames) {
             userNames = new Vector<>(inMsg.userNames); // 리스트 새로 갱신
+            System.out.println("userNames : " + userNames);
         }
         synchronized (readyUsers) {
             readyUsers = new Vector<>(inMsg.readyUsers);

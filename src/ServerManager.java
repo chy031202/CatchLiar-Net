@@ -173,7 +173,7 @@ public class ServerManager {
         private void handleChatMessage(GameMsg inMsg) {
             user = inMsg.user;
             broadcasting(new GameMsg(GameMsg.CHAT_MESSAGE, user, inMsg.getMsg()));
-            server.printDisplay("[채팅][" + user.currentRoom.getRoomName() + "] " + inMsg.user.name + "님 : " + inMsg.getMsg(), "채팅+이모티콘");
+            server.printDisplay("[채팅][" + currentRoom.getRoomName() + "] " + inMsg.user.name + "님 : " + inMsg.getMsg(), "채팅+이모티콘");
         }
 
         private void handleChatEmoticon(GameMsg inMsg) {
@@ -198,6 +198,7 @@ public class ServerManager {
         }
 
         private void handleGameStart(GameMsg inMsg) {
+            currentRoom = inMsg.user.getCurrentRoom();
             server.printDisplay("[" + currentRoom.getRoomName() + "][시작] 게임이 시작됩니다.", "게임상태");
 //            currentRoom = inMsg.user.currentRoom;
             readyUsers = inMsg.readyUsers;
@@ -263,8 +264,9 @@ public class ServerManager {
             broadcastExceptUser(inMsg.user, new GameMsg(GameMsg.ROOM_EXIT, inMsg.user, currentRoom.getMembers(), currentRoom.getReadyUsers()));
             server.printDisplay("[" + currentRoom.getRoomName() + "][방 퇴장] " + userName + "님이 " + currentRoom.getRoomName() + "방을 나갔습니다. 현재 인원 : " + currentRoom.getMemberCount() +"명", "접속");
 
-            inMsg.user.setUnReady();
-            inMsg.user.leaveRoom(); // user의 currentRoom null됨
+            inMsg.user.setCurrentRoom(currentRoom);
+//            inMsg.user.setUnReady(); // inMsg.user.currentRoom 이미 null임 여기서
+//            inMsg.user.leaveRoom(); // user의 currentRoom null됨
             sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT_OK, inMsg.user));
             currentRoom = null;
         }
@@ -280,8 +282,8 @@ public class ServerManager {
             server.printDisplay("[" + currentRoom.getRoomName() + "][로그아웃] " + userName + "님이 로그아웃했습니다.", "접속");
 
             inMsg.user.setCurrentRoom(currentRoom);
-            inMsg.user.setUnReady();
-            inMsg.user.leaveRoom(); // user의 currentRoom null됨
+//            inMsg.user.setUnReady();
+//            inMsg.user.leaveRoom(); // user의 currentRoom null됨
             sendGameMsg(new GameMsg(GameMsg.LOGOUT, inMsg.user));
             currentRoom = null;
         }
