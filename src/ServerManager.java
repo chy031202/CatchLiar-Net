@@ -14,9 +14,9 @@ public class ServerManager {
     private Vector<ClientHandler> users = new Vector<ClientHandler>();
     private Vector<Room> rooms = new Vector<>();
 
-    private static final int DRAWING_TIME=12;
+    private static final int DRAWING_TIME=60; //60
     private static final int DRAWING_PERTIME=DRAWING_TIME/4;
-    private static final int VOTE_TIME=5;
+    private static final int VOTE_TIME=30;
 
     public ServerManager(int port, Server server) {
         this.port = port;
@@ -160,7 +160,6 @@ public class ServerManager {
                 return;
             }
             server.printDisplay("[" + currentRoom.getRoomName() + "][방 입장] " + userName + "님 " + user.getCurrentRoom().getRoomName() + " 방 입장. 현재 : " + user.currentRoom.getMemberCount() + "명", "접속");
-            // user.currentRoom. 키워드 세팅
             sendGameMsg(new GameMsg(GameMsg.ROOM_SELECT, user, currentRoom.getMembers(), currentRoom.getReadyUsers(), inMsg.getMsg()));
             broadcastExceptUser(user, new GameMsg(GameMsg.ROOM_NEW_MEMBER, user, currentRoom.getMembers(), currentRoom.getReadyUsers(), inMsg.getMsg())); // currentRoom
 
@@ -217,7 +216,7 @@ public class ServerManager {
             System.out.println("setMembers 함 : " + currentRoom.getMembers());
 
             broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
-            broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, user.currentRoom.getKeyword()));
+            broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, currentRoom.getKeyword()));
             // 타이머 시작
             server.printDisplay("[" + currentRoom.getRoomName() + "][타이머] 타이머 시작", "게임상태");
             startRoomTimer(currentRoom, DRAWING_TIME);

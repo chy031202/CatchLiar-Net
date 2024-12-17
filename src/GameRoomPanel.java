@@ -29,6 +29,7 @@ public class GameRoomPanel extends JPanel {
     public GamePanel gamePanel;
     public JPanel centerPanel;
     private JLabel alarmLabel;
+    private String keyword;
     private String currentTurnUserName; // 현재 턴 사용자 이름
 
     public boolean ready = false;
@@ -56,6 +57,7 @@ public class GameRoomPanel extends JPanel {
 
     public void changeGameMsg(GameMsg gameMsg, String userName) {
         this.gameMsg = gameMsg;
+        if(gameMsg.message != null) { keyword = gameMsg.message; }
         gameMsg.user.name = userName;
     }
 
@@ -302,7 +304,8 @@ public class GameRoomPanel extends JPanel {
         // 라이어 빼고 화면에 키워드 추가
         if(!gameMsg.user.isLiar) {
             System.out.println("refreshStartGame 나머지 : " + gameMsg.user.name);
-            gamePanel.addKeyword(gameMsg.user.currentRoom.getKeyword());
+//            gamePanel.addKeyword(gameMsg.user.currentRoom.getKeyword());
+            gamePanel.addKeyword(keyword);
         } else {
 //            gamePanel.southPanel.remove(gamePanel.exitPanel);
             System.out.println("refreshStartGame 라이어 : " + gameMsg.user.name);
