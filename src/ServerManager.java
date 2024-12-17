@@ -225,7 +225,9 @@ public class ServerManager {
         private void handleVote(GameMsg inMsg) {
             String votedUser = inMsg.getMsg();
             if (votedUser != null) {
+                String message = userName + "님이 투표를 완료했습니다.";
                 server.printDisplay("[" + currentRoom.getRoomName() + "][투표] " + userName + "님이 " + votedUser + "에게 투표했습니다.", "투표");
+                broadcasting(new GameMsg(GameMsg.CHAT_MESSAGE, null, message));
                 currentRoom.addVote(votedUser);
             } else {
                 server.printDisplay("[" + currentRoom.getRoomName() + "][투표] 투표 값이 null입니다.", "투표");

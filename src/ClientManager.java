@@ -201,7 +201,7 @@ public class ClientManager {
             // 한 명만 '게임 시작' 서버에 보내도록
             User firstUser = readyUsers.get(0);
             if (userName.equals(firstUser.name)) {
-                sendGameMsg(new GameMsg(GameMsg.GAME_START, user, readyUsers, userNames)); // 첫 번째 사용자만 실행
+                sendGameMsg(new GameMsg(GameMsg.GAME_START, user, userNames, readyUsers)); // 첫 번째 사용자만 실행
             } else {
                 System.out.println("첫 번째 사용자가 아님, 메시지 전송 안 함");
             }
@@ -296,9 +296,14 @@ public class ClientManager {
     }
 
     private void handleChatMessage(GameMsg inMsg) {
-        String chatUser = inMsg.user.name;
         String chatMsg = inMsg.message;
-        client.getGameRoomPanel().showChat("[" + chatUser + "] : " + chatMsg);
+        if(inMsg.user != null) {
+            String chatUser = inMsg.user.name;
+            client.getGameRoomPanel().showChat("\uD83D\uDC64 " + chatUser + " : " + chatMsg);
+        } else {
+            client.getGameRoomPanel().showChat("\uD83D\uDD14 알림 : " + chatMsg);
+        }
+
     }
 
     private void handleChatEmoticon(GameMsg inMsg) {
