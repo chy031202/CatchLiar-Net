@@ -57,7 +57,7 @@ public class GameRoomPanel extends JPanel {
 
     public void changeGameMsg(GameMsg gameMsg, String userName) {
         this.gameMsg = gameMsg;
-        if(gameMsg.message != null) { keyword = gameMsg.message; }
+        keyword = gameMsg.message;
         gameMsg.user.name = userName;
     }
 
@@ -323,8 +323,8 @@ public class GameRoomPanel extends JPanel {
 
     public void refreshEndGame() {
         System.out.println("refreshEndGame");
-        gamePanel.endGameSouthPanel(gameMsg.user.currentRoom.getKeyword());
-
+//        gamePanel.endGameSouthPanel(gameMsg.user.currentRoom.getKeyword());
+        gamePanel.endGameSouthPanel(keyword);
         revalidate();
         repaint();
     }

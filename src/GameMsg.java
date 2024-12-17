@@ -61,13 +61,13 @@ public class GameMsg implements Serializable {
         System.out.println("로그인시 User 초기화되는지 확인 " + user.getName());
     }
 
-    // LOGIN_OK, LOGOUT, ROOM_SELECT_DENIED, GAME_READY, GAME_READY_OK, GAME_UN_READY, GAME_UN_READY_OK, LIAR_NOTIFICATION
+    // LOGIN_OK, LOGOUT, ROOM_SELECT_DENIED, GAME_READY, GAME_READY_OK, GAME_UN_READY, GAME_UN_READY_OK
     public GameMsg(int mode, User user) {
         this.mode = mode;
         this.user = user;
     }
 
-    // ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_EMOTICON, KEYWORD_NOTIFICATION, VOTE, ROOM_EXIT
+    // ROOM_SELECT, ROOM_SELECT_OK, NEW_MEMBER, CHAT_MESSAGE, CHAT_EMOTICON, KEYWORD_NOTIFICATION, LIAR_NOTIFICATION, VOTE, ROOM_EXIT
     public GameMsg(int mode, User user, String message) {
         this.mode = mode;
         this.user = user; // 전에 생성한 User 객체 사용할 것

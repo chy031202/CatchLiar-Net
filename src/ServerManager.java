@@ -215,7 +215,7 @@ public class ServerManager {
             currentRoom.resetTurns();
             System.out.println("setMembers 함 : " + currentRoom.getMembers());
 
-            broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar));
+            broadcastIndividualUser(liar, new GameMsg(GameMsg.LIAR_NOTIFICATION, liar, currentRoom.getKeyword()));
             broadcastExceptUser(liar, new GameMsg(GameMsg.KEYWORD_NOTIFICATION, user, currentRoom.getKeyword()));
             // 타이머 시작
             server.printDisplay("[" + currentRoom.getRoomName() + "][타이머] 타이머 시작", "게임상태");
