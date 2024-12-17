@@ -267,7 +267,7 @@ public class ServerManager {
 //            inMsg.user.setUnReady(); // inMsg.user.currentRoom 이미 null임 여기서
 //            inMsg.user.leaveRoom(); // user의 currentRoom null됨
             sendGameMsg(new GameMsg(GameMsg.ROOM_EXIT_OK, inMsg.user));
-            currentRoom = null;
+//            currentRoom = null;
         }
 
         private void handleLogout(GameMsg inMsg) {
@@ -284,7 +284,7 @@ public class ServerManager {
 //            inMsg.user.setUnReady();
 //            inMsg.user.leaveRoom(); // user의 currentRoom null됨
             sendGameMsg(new GameMsg(GameMsg.LOGOUT, inMsg.user));
-            currentRoom = null;
+//            currentRoom = null;
         }
 
         //
