@@ -8,7 +8,7 @@ CatchLiar 는, 자바 소켓과 객체스트림을 사용하여 만든 게임 �
 
 게임이 진행되는동안 플레이어들은 이모티콘 감정표현, 채팅 기능 등을 이용할 수 있다. 
 
-
+### ✏️ 실행 화면 
 ![슬라이드4](https://github.com/user-attachments/assets/e9a347bc-76fc-4b6c-a471-56c0f8e40d50)
 ![슬라이드5](https://github.com/user-attachments/assets/1ea2474b-6987-4a30-99f2-ebcd1bec915c)
 ![슬라이드6](https://github.com/user-attachments/assets/a92f442d-62e6-47d7-9639-9bc83c262646)
